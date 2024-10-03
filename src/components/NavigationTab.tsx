@@ -13,17 +13,18 @@ export default function MyTabs() {
         <Tab.Navigator
             screenOptions={({ route }) => ({
                 tabBarIcon: ({ focused, color, size }) => {
-                    let iconName: "home" | "home-outline" | "person" | "person-outline";  // Types valides
+                    let iconName: "home" | "home-outline" | "person" | "person-outline" | "map" | "map-outline";  // Types valides
 
                     // Initialisation d'iconName en fonction de la route
                     if (route.name === 'Home') {
                         iconName = focused ? 'home' : 'home-outline';
                     } else if (route.name === 'Account') {
                         iconName = focused ? 'person' : 'person-outline';
+                    } else if (route.name === 'Map') {
+                        iconName = focused ? 'map' : 'map-outline';
                     } else {
                         iconName = 'home';
                     }
-
                     // Retourne l'icône avec la bonne couleur et taille
                     return <Ionicons name={iconName} size={size} color={color} />;
                 },
@@ -32,6 +33,7 @@ export default function MyTabs() {
             })}
         >
             <Tab.Screen name="Home" component={HomeScreen} />
+            <Tab.Screen name="Map" component={HomeScreen} />
             <Tab.Screen name="Account" component={UsersScreen} />
         </Tab.Navigator>
     );
