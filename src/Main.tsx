@@ -1,24 +1,14 @@
-import UserInfo from "./components/UserInfo";
-import {StatusBar} from "expo-status-bar";
-import NameInput from "./components/NameInput";
-import {StyleSheet, View} from "react-native";
+import { View} from "react-native";
+import NavigationTab from "./components/NavigationTab";
+import "./global.css";
 
 
 export default function Main() {
     return (
-    <View style={styles.container}>
-        <UserInfo/>
-        <StatusBar style="auto" />
-        <NameInput/>
-    </View>
+        <View className='h-full flex'>
+            <NavigationTab/>
+        </View>
     );
 }
 
-const styles = StyleSheet.create({
-    container: {
-        flex: 1,
-        backgroundColor: '#fff',
-        alignItems: 'center',
-        justifyContent: 'center',
-    },
-});
+
