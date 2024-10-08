@@ -3,6 +3,7 @@ import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import Ionicons from '@expo/vector-icons/Ionicons';
 import HomeScreen from "../screens/HomeScreen";
 import UsersScreen from "../screens/UsersScreen";
+import MapScreen from "../screens/MapScreen";
 
 
 const Tab = createBottomTabNavigator();
@@ -32,7 +33,7 @@ export default function MyTabs({ onLogout }: { onLogout: () => void }) {
             })}
         >
             <Tab.Screen name="Home" component={HomeScreen} />
-            <Tab.Screen name="Map" component={HomeScreen} />
+            <Tab.Screen name="Map" component={MapScreen} />
             <Tab.Screen name="Account">
                 {() => <UsersScreen onLogout={onLogout} />}  
             </Tab.Screen>
