@@ -46,8 +46,6 @@ function RootLayoutNav() {
     return (
         <View style={StyleSheet.absoluteFill}>
             <Stack>
-                <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
-                <Stack.Screen name="modal" options={{ presentation: "modal" }} />
             </Stack>
         </View>
     );
