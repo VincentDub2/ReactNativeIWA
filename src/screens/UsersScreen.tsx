@@ -1,7 +1,15 @@
 import React from "react";
 import {Text, View, Button, StyleSheet } from "react-native";
+import {useDispatch} from "react-redux";
+import {logout} from "../features/users/usersSlice";
 
-export default function UsersScreen( { onLogout }: { onLogout: () => void } ) {
+export default function UsersScreen(  ) {
+    const dispatch = useDispatch();
+
+    const onLogout = () => {
+        // Déconnexion de l'utilisateur
+        dispatch(logout());
+    }
     return (
         <View >
             <Text>Users Screen</Text>

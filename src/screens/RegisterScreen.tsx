@@ -2,24 +2,28 @@ import React, { useState } from 'react';
 import { View, Text, TextInput, Button, StyleSheet, TouchableOpacity } from 'react-native';
 import { StackNavigationProp } from '@react-navigation/stack';
 import { useDispatch } from 'react-redux';
-import { setName, setEmail, login } from '../features/users/usersSlice'; // Les actions à utiliser
+import { setName, setEmail, login } from '../features/users/usersSlice';
+import {RootStackParamList} from "../../types";
+import {useNavigation} from "@react-navigation/native"; // Les actions à utiliser
+type RegisterScreenNavigationProp = StackNavigationProp<RootStackParamList, 'Register'>;
 
-type RegisterScreenProps = {
-    onRegister: () => void; // Fonction onRegister pour la redirection après l'inscription
-  };
-
-export default function Register({ onRegister }: RegisterScreenProps) {
+export default function Register() {
     const [name, setNameInput] = useState('');
     const [email, setEmailInput] = useState('');
     const dispatch = useDispatch();
-  
+    const navigation = useNavigation<RegisterScreenNavigationProp>();
+
+    const onRegister = () => {
+        navigation.navigate('Login');
+    }
+
     const handleRegister = () => {
       dispatch(setName(name));  // Met à jour le nom dans le store
       dispatch(setEmail(email));  // Met à jour l'email dans le store
       dispatch(login());  // Connecte l'utilisateur
       onRegister();  // Appelle la fonction onRegister pour gérer la redirection
     };
-  
+
     return (
       <View style={styles.container}>
         <Text style={styles.title}>Créer un Compte</Text>
@@ -37,13 +41,13 @@ export default function Register({ onRegister }: RegisterScreenProps) {
         />
         <TextInput style={styles.input} placeholder="Mot de passe" secureTextEntry />
         <TextInput style={styles.input} placeholder="Confirmez le mot de passe" secureTextEntry />
-  
+
         {/* Bouton S'inscrire avec la redirection */}
         <Button
           title="S'inscrire"
           onPress={handleRegister}  // Appelle handleRegister pour mettre à jour Redux et rediriger
         />
-  
+
         <TouchableOpacity onPress={onRegister}>
           <Text style={styles.signUpText}>
             Déjà un compte ? <Text style={styles.signUpLink}>Connectez-vous</Text>
