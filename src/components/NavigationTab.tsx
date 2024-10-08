@@ -6,10 +6,9 @@ import UsersScreen from "../screens/UsersScreen";
 import MapScreen from "../screens/MapScreen";
 
 
-
 const Tab = createBottomTabNavigator();
 
-export default function MyTabs() {
+export default function MyTabs({ onLogout }: { onLogout: () => void }) {
     return (
         <Tab.Navigator
             screenOptions={({ route }) => ({
@@ -35,7 +34,9 @@ export default function MyTabs() {
         >
             <Tab.Screen name="Home" component={HomeScreen} />
             <Tab.Screen name="Map" component={MapScreen} />
-            <Tab.Screen name="Account" component={UsersScreen} />
+            <Tab.Screen name="Account">
+                {() => <UsersScreen onLogout={onLogout} />}  
+            </Tab.Screen>
         </Tab.Navigator>
     );
 }
