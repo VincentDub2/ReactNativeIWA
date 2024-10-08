@@ -1,37 +1,61 @@
 import React, { useState } from 'react';
 import { View, Text, TextInput, Button, StyleSheet, TouchableOpacity, Image } from 'react-native';
+import { useDispatch } from 'react-redux';
+import { setName, setEmail, login } from '../features/users/usersSlice';  // Les actions à utiliser
 import { useNavigation } from '@react-navigation/native';
-
+import Register from './screens/RegisterScreen';
 
 type LoginScreenProps = {
   onLogin: () => void; // Ajout d'une fonction onLogin en prop
 };
 
 export default function Login({ onLogin }: LoginScreenProps) {
-  const navigation = useNavigation();
-
-  return (
-    <View style={styles.container}>
-      <Image
-        source={require('../../assets/icon.png')} // Remplacez par le chemin correct vers votre logo
-        style={styles.logo}
-      />
-      <Text style={styles.title}>Connexion</Text>
-      <TextInput style={styles.input} placeholder="Nom d'utilisateur" />
-      <TextInput style={styles.input} placeholder="Mot de passe" secureTextEntry />
-      <Button
-        title="Connexion"
-        onPress={() => {
-          onLogin(); // Appelle la fonction onLogin pour signaler que l'utilisateur est connecté
-        }}
-      />
-      <TouchableOpacity onPress={() => navigation.navigate('Register')}>
-        <Text style={styles.signUpText}>
-          Pas de compte ? <Text style={styles.signUpLink}>Inscrivez-vous</Text>
-        </Text>
-      </TouchableOpacity>
-    </View>
-  );
+    const navigation = useNavigation();
+    const [name, setNameInput] = useState('');
+    const [email, setEmailInput] = useState('');
+    const dispatch = useDispatch();
+  
+    const handleLogin = () => {
+      dispatch(setName(name));  // Met à jour le nom dans le store
+      dispatch(setEmail(email));  // Met à jour l'email dans le store
+      onLogin();  // Appelle la fonction onLogin pour changer l'état d'authentification
+    };
+  
+    return (
+      <View style={styles.container}>
+        <Image
+          source={require('../../assets/icon.png')} // Remplacez par le chemin correct vers votre logo
+          style={styles.logo}
+        />
+        <Text style={styles.title}>Connexion</Text>
+        <TextInput
+          style={styles.input}
+          placeholder="Nom d'utilisateur"
+          value={name} // Lier l'état à l'input
+          onChangeText={setNameInput} // Mettre à jour l'état lors de la saisie
+        />
+        <TextInput
+          style={styles.input}
+          placeholder="Email"
+          value={email} // Lier l'état à l'input
+          onChangeText={setEmailInput} // Mettre à jour l'état lors de la saisie
+        />
+        <TextInput
+          style={styles.input}
+          placeholder="Mot de passe"
+          secureTextEntry
+        />
+        <Button
+          title="Connexion"
+          onPress={handleLogin} // Appeler handleLogin pour effectuer la connexion
+        />
+        <TouchableOpacity onPress={() => navigation.navigate('Register')}>
+          <Text style={styles.signUpText}>
+            Pas de compte ? <Text style={styles.signUpLink}>Inscrivez-vous</Text>
+          </Text>
+        </TouchableOpacity>
+      </View>
+    );
 }
 
 const styles = StyleSheet.create({
