@@ -17,9 +17,3 @@ export interface SetNameAction {
 
 // Union des types d'actions
 export type UserActionTypes = SetNameAction;
-
-export type RootStackParamList = {
-    Login: undefined;
-    Register: undefined;
-    NavigationTab: undefined;
-};
