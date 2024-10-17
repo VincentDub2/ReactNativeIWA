@@ -6,12 +6,14 @@ export interface User {
     id: number
     name: string
     email: string
+    isAuthenticated: boolean;
 }
 
 const initialState: User = {
     id: 0,
     name: '',
     email: '',
+    isAuthenticated: false,
 }
 
 export const usersSlice = createSlice({
@@ -27,9 +29,15 @@ export const usersSlice = createSlice({
         setId: (state, action: PayloadAction<number>) => {
             state.id = action.payload
         },
+        login: (state) => {
+            state.isAuthenticated = true;  // Action pour gérer la connexion
+        },
+        logout: (state) => {
+            state.isAuthenticated = false; // Action pour gérer la déconnexion
+        },
     },
 })
 
 
-export const {setName,setEmail,setId } = usersSlice.actions
+export const {setName,setEmail,setId, login, logout } = usersSlice.actions
 export default usersSlice.reducer
