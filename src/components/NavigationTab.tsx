@@ -3,20 +3,12 @@ import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import Ionicons from '@expo/vector-icons/Ionicons';
 import HomeScreen from "../screens/HomeScreen";
 import UsersScreen from "../screens/UsersScreen";
-import MapScreen from "../screens/MapScreen";
-import { logout } from "../features/users/usersSlice";
-import {useDispatch} from "react-redux";
+
+
 
 const Tab = createBottomTabNavigator();
 
 export default function MyTabs() {
-
-    const dispatch = useDispatch();  // Utilise pour déclencher des a
-    const onLogout = () => {
-        // Dispatch l'action logout
-        dispatch(logout());
-    }
-
     return (
         <Tab.Navigator
             screenOptions={({ route }) => ({
@@ -41,8 +33,8 @@ export default function MyTabs() {
             })}
         >
             <Tab.Screen name="Home" component={HomeScreen} />
-            <Tab.Screen name="Map" component={MapScreen} />
-            <Tab.Screen name="Account" component={UsersScreen}/>
+            <Tab.Screen name="Map" component={HomeScreen} />
+            <Tab.Screen name="Account" component={UsersScreen} />
         </Tab.Navigator>
     );
 }
