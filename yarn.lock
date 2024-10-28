@@ -1959,6 +1959,13 @@ __metadata:
   languageName: node
   linkType: hard
 
+"@react-native-community/slider@npm:^4.5.5":
+  version: 4.5.5
+  resolution: "@react-native-community/slider@npm:4.5.5"
+  checksum: 8d818e7f505694269bf8009c8c5db89efc3e9bb56054a1835613b6d7431356370bef9ce23d269519163097fe506e3f5420b34ba2c553bf380d1f144277a11942
+  languageName: node
+  linkType: hard
+
 "@react-native-vector-icons/common@npm:^0.0.1-alpha.20":
   version: 0.0.1-alpha.20
   resolution: "@react-native-vector-icons/common@npm:0.0.1-alpha.20"
@@ -8286,6 +8293,16 @@ __metadata:
   languageName: node
   linkType: hard
 
+"react-native-collapsible@npm:^1.6.2":
+  version: 1.6.2
+  resolution: "react-native-collapsible@npm:1.6.2"
+  peerDependencies:
+    react: "*"
+    react-native: "*"
+  checksum: bb5ecf1c678c101d642e8063db767f781225ac16c9a7c032495dfe759d694588707edf0c452e2691e68ac3ebd68e6b90fbfa8089ff2d0c1875a91d6e786cadd9
+  languageName: node
+  linkType: hard
+
 "react-native-css-interop@npm:0.1.9":
   version: 0.1.9
   resolution: "react-native-css-interop@npm:0.1.9"
@@ -8306,6 +8323,13 @@ __metadata:
     react-native-svg:
       optional: true
   checksum: de5af312c911b044f0e824d989796f8d34fc6d42e93c54196f7a6f3b195737fb33fd64fcf981cf1b7c7a095996132f5d17c355e10617f443ebeed6ddbe15d2f0
+  languageName: node
+  linkType: hard
+
+"react-native-geocoding@npm:^0.5.0":
+  version: 0.5.0
+  resolution: "react-native-geocoding@npm:0.5.0"
+  checksum: a33e9dc87d104abe19206660e9fa0782090909ca8b58c70eae4690faa92194817724833086b29c57387500cdd9ecd0febd6ccbbd0f4eac0e11a93696429cf9d2
   languageName: node
   linkType: hard
 
@@ -9417,6 +9441,7 @@ __metadata:
   dependencies:
     "@babel/core": ^7.20.0
     "@expo/metro-runtime": ~3.2.3
+    "@react-native-community/slider": ^4.5.5
     "@react-native-vector-icons/ionicons": ^7.4.0-alpha.27
     "@react-navigation/bottom-tabs": ^6.6.1
     "@react-navigation/native": ^6.1.18
@@ -9439,6 +9464,8 @@ __metadata:
     react-dom: 18.2.0
     react-is: ^18.3.1
     react-native: 0.74.5
+    react-native-collapsible: ^1.6.2
+    react-native-geocoding: ^0.5.0
     react-native-gesture-handler: ~2.16.1
     react-native-maps: 1.14.0
     react-native-reanimated: ~3.10.1
