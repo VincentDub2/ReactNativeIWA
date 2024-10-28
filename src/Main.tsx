@@ -6,7 +6,6 @@ import Login from './screens/LoginScreen';
 import Register from './screens/RegisterScreen';
 import { useSelector, useDispatch } from 'react-redux';
 import { RootState } from './app/store';  // Ajuste selon ton chemin
-import { login, logout } from './features/users/usersSlice';  // Les actions login/logout
 import "./global.css";
 import { RootStackParamList } from "../types";
 
@@ -14,8 +13,7 @@ const Stack = createStackNavigator<RootStackParamList>();
 
 export default function Main() {
     const isAuthenticated = useSelector((state: RootState) => state.users.isAuthenticated);  // Récupère l'état du store
-    const dispatch = useDispatch();  // Utilise pour déclencher des actions
-
+    
 
     return (
         <View style={{ flex: 1 }}>

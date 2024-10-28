@@ -6,6 +6,7 @@ import UsersScreen from "../screens/UsersScreen";
 import MapScreen from "../screens/MapScreen";
 import { logout } from "../features/users/usersSlice";
 import {useDispatch} from "react-redux";
+import HeadBar from "./HeadBar";
 
 const Tab = createBottomTabNavigator();
 
@@ -36,13 +37,28 @@ export default function MyTabs() {
                     // Retourne l'icône avec la bonne couleur et taille
                     return <Ionicons name={iconName} size={size} color={color} />;
                 },
-                tabBarActiveTintColor: 'tomato',  // Couleur des icônes actives
+                tabBarStyle: {
+                    backgroundColor: 'rgba(205, 163, 42, 0.4)',  // Couleur de fond de la barre de navigation
+                },
+                tabBarLabel : () => {
+                    return null;
+                },
+                tabBarActiveTintColor: '#CDA32A',  // Couleur des icônes actives
                 tabBarInactiveTintColor: 'gray',   // Couleur des icônes inactives
             })}
         >
-            <Tab.Screen name="Home" component={HomeScreen} />
-            <Tab.Screen name="Map" component={MapScreen} />
-            <Tab.Screen name="Account" component={UsersScreen}/>
+            <Tab.Group
+                screenOptions={
+                    {
+                        header: () => (
+                           <HeadBar/>
+                        ),
+                }}
+            >
+                <Tab.Screen name="Home" component={HomeScreen} />
+                <Tab.Screen name="Map" component={MapScreen} />
+                <Tab.Screen name="Account" component={UsersScreen}/>
+            </Tab.Group>
         </Tab.Navigator>
     );
 }
