@@ -4,6 +4,7 @@ import Slider from '@react-native-community/slider';
 import Collapsible from 'react-native-collapsible';
 import AmenitiesSelector from './AmenitiesSelector';
 import CapacitySelector from './CapacitySelector';
+import {useTranslation} from "react-i18next";
 
 interface SearchFilterProps {
     isAccordionExpanded: boolean;
@@ -34,25 +35,26 @@ const SearchFilter: React.FC<SearchFilterProps> = ({
                                                        decreaseCapacity,
                                                        handleSearch,
                                                    }) => {
+    const {t} = useTranslation();
     return (
         <View style={styles.accordionContainer}>
             <TouchableOpacity
                 onPress={() => setIsAccordionExpanded(!isAccordionExpanded)}
                 style={styles.accordionHeader}
             >
-                <Text style={styles.accordionHeaderText}>Filtres de recherche</Text>
+                <Text style={styles.accordionHeaderText}>{t('map.search_filters')}</Text>
             </TouchableOpacity>
             <Collapsible collapsed={!isAccordionExpanded}>
                 <View style={styles.accordionContent}>
                     {/* Champ de saisie pour le nom de la ville */}
                     <TextInput
                         style={styles.input}
-                        placeholder="Entrez le nom d'une ville"
+                        placeholder={t('map.enter_city_name')}
                         value={cityName}
                         onChangeText={text => setCityName(text)}
                     />
                     {/* Slider pour le rayon de recherche */}
-                    <Text>Rayon de recherche : {searchRadius} km</Text>
+                    <Text>{t('map.search_radius', { radius: searchRadius })}</Text>
                     <Slider
                         style={{ width: '100%', height: 40}}
                         minimumValue={1}
@@ -80,7 +82,7 @@ const SearchFilter: React.FC<SearchFilterProps> = ({
                         className="bg-primary p-2 justify-center items-center rounded-full mt-2"
                         onPress={handleSearch}
                     >
-                        <Text className="text-lg font-bold color-neutral-900">Rechercher</Text>
+                        <Text className="text-lg font-bold color-neutral-900">{t('map.search')}</Text>
                     </TouchableOpacity>
                 </View>
             </Collapsible>
