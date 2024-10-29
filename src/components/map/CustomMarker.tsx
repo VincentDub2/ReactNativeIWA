@@ -2,12 +2,14 @@ import React from 'react';
 import { Marker, Callout } from 'react-native-maps';
 import { Image, View, Text, StyleSheet } from 'react-native';
 import { StarRatingDisplay } from 'react-native-star-rating-widget';
+import {useTranslation} from "react-i18next";
 
 interface CustomMarkerProps {
     marker: any;
 }
 
 const CustomMarker: React.FC<CustomMarkerProps> = ({ marker }) => {
+    const {t} = useTranslation();
     return (
         <Marker
             coordinate={{
@@ -22,9 +24,9 @@ const CustomMarker: React.FC<CustomMarkerProps> = ({ marker }) => {
                 <View>
                     <Text className="text-bold text-lg">{marker.title}</Text>
                     <Text>{marker.description}</Text>
-                    <Text>Prix: {marker.prix} €</Text>
-                    <Text>Capacité : {marker.capacity} personnes</Text>
-                    <Text>Commodités :</Text>
+                    <Text>{t('map.price')}: {marker.prix} €</Text>
+                    <Text>{t('map.capacity')}: {marker.capacity} {t('map.people')}</Text>
+                    <Text>{t('map.amenities_title')}:</Text>
                     {marker.amenities.map((amenity: string, idx: number) => (
                         <Text key={idx}>- {amenity}</Text>
                     ))}

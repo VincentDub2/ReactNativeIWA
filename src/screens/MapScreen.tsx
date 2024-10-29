@@ -6,10 +6,12 @@ import { LocationObject } from 'expo-location';
 import Geocoder from 'react-native-geocoding';
 import SearchFilter from '../components/map/SearchFilter';
 import CustomMarker from '../components/map/CustomMarker';
+import { useTranslation } from "react-i18next";
 
 Geocoder.init(process.env.EXPO_PUBLIC_GOOGLE_API_KEY || '');
 
 const MapScreen = () => {
+    const { t } = useTranslation();
     const mapRef = useRef<any>();
     const [location, setLocation] = useState<LocationObject | null>(null);
     const [errorMsg, setErrorMsg] = useState<string | null>(null);
@@ -21,11 +23,11 @@ const MapScreen = () => {
     const [selectedAmenities, setSelectedAmenities] = useState<string[]>([]);
     const [minCapacity, setMinCapacity] = useState<number>(1);
 
-    const toggleAmenity = (amenity: string) => {
-        if (selectedAmenities.includes(amenity)) {
-            setSelectedAmenities(selectedAmenities.filter(item => item !== amenity));
+    const toggleAmenity = (amenityId: string) => {
+        if (selectedAmenities.includes(amenityId)) {
+            setSelectedAmenities(selectedAmenities.filter(id => id !== amenityId));
         } else {
-            setSelectedAmenities([...selectedAmenities, amenity]);
+            setSelectedAmenities([...selectedAmenities, amenityId]);
         }
     };
 
@@ -58,7 +60,15 @@ const MapScreen = () => {
     const generateRandomMarkers = (latitude: number, longitude: number, radiusInKm: number) => {
         const randomMarkers = [];
 
-        const amenitiesOptions = ['Prise électrique', 'Douche', 'Eau potable', 'Toilettes', 'Wi-Fi', 'Barbecue'];
+        const amenitiesOptions = [
+            t('map.amenities.electrical_outlet'),
+            t('map.amenities.shower'),
+            t('map.amenities.drinkable_water'),
+            t('map.amenities.toilets'),
+            t('map.amenities.wifi'),
+            t('map.amenities.barbecue')
+        ];
+
 
         for (let i = 0; i < 20; i++) {
             const randomPoint = generateRandomPoint(latitude, longitude, radiusInKm);
@@ -72,8 +82,8 @@ const MapScreen = () => {
             randomMarkers.push({
                 latitude: randomPoint.latitude,
                 longitude: randomPoint.longitude,
-                title: `Emplacement Bivouac ${i + 1}`,
-                description: `Description de l'emplacement Bivouac ${i + 1}`,
+                title: t('map.bivouac_location', { number: i + 1 }),
+                description: t('map.bivouac_description', { number: i + 1 }),
                 prix: Math.floor(Math.random() * 100) + 1,
                 rating: Math.floor(Math.random() * 5) + 1,
                 amenities: markerAmenities,
@@ -88,7 +98,7 @@ const MapScreen = () => {
             // Demande d'autorisation pour la localisation
             let { status } = await Location.requestForegroundPermissionsAsync();
             if (status !== 'granted') {
-                setErrorMsg('Permission to access location was denied');
+                Alert.alert(t('map.permission_denied'));
                 return;
             }
 
@@ -128,7 +138,7 @@ const MapScreen = () => {
 
     const handleSearch = async () => {
         if (cityName.trim() === '') {
-            Alert.alert('Veuillez entrer un nom de ville.');
+            Alert.alert(t('please_enter_city_name'));
             return;
         }
 
@@ -147,11 +157,11 @@ const MapScreen = () => {
                 });
                 setIsAccordionExpanded(false);
             } else {
-                Alert.alert('Ville non trouvée. Veuillez vérifier le nom de la ville.');
+                Alert.alert(t('map.city_not_found'));
             }
         } catch (error) {
             console.error(error);
-            Alert.alert("Une erreur s'est produite lors de la recherche de la ville.");
+            Alert.alert(t('map.error_occurred'));
         }
     };
 
@@ -190,8 +200,8 @@ const MapScreen = () => {
                     .filter(marker => {
                         // Filtrer par commodités
                         if (selectedAmenities.length > 0) {
-                            for (let amenity of selectedAmenities) {
-                                if (!marker.amenities.includes(amenity)) {
+                            for (let amenityId of selectedAmenities) {
+                                if (!marker.amenities.includes(amenityId)) {
                                     return false;
                                 }
                             }

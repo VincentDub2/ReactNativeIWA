@@ -8,12 +8,13 @@ import { useSelector, useDispatch } from 'react-redux';
 import { RootState } from './app/store';  // Ajuste selon ton chemin
 import "./global.css";
 import { RootStackParamList } from "../types";
+import './i18n';
 
 const Stack = createStackNavigator<RootStackParamList>();
 
 export default function Main() {
     const isAuthenticated = useSelector((state: RootState) => state.users.isAuthenticated);  // Récupère l'état du store
-    
+
 
     return (
         <View style={{ flex: 1 }}>
