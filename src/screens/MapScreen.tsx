@@ -1,30 +1,83 @@
-import {Button, Image, StyleSheet, Text, View} from "react-native";
-import React, {useEffect, useRef, useState} from "react";
-import MapView, {Marker, Callout} from "react-native-maps";
+import React, { useEffect, useRef, useState } from 'react';
+import { View, StyleSheet, Alert } from 'react-native';
+import MapView from 'react-native-maps';
 import * as Location from 'expo-location';
-import {LocationObject} from "expo-location";
-import { StarRatingDisplay } from 'react-native-star-rating-widget';
+import { LocationObject } from 'expo-location';
+import Geocoder from 'react-native-geocoding';
+import SearchFilter from '../components/map/SearchFilter';
+import CustomMarker from '../components/map/CustomMarker';
 
-export default function MapScreen() {
+Geocoder.init(process.env.EXPO_PUBLIC_GOOGLE_API_KEY || '');
+
+const MapScreen = () => {
     const mapRef = useRef<any>();
     const [location, setLocation] = useState<LocationObject | null>(null);
-    const [errorMsg, setErrorMsg] = useState<String | null>( null);
+    const [errorMsg, setErrorMsg] = useState<string | null>(null);
     const [markers, setMarkers] = useState<any[]>([]);
+    const [isAccordionExpanded, setIsAccordionExpanded] = useState(false);
+    const [cityName, setCityName] = useState('');
+    const [searchRadius, setSearchRadius] = useState(10); // Rayon par défaut en km
+    const [cityCoordinates, setCityCoordinates] = useState<{ latitude: number; longitude: number } | null>(null);
+    const [selectedAmenities, setSelectedAmenities] = useState<string[]>([]);
+    const [minCapacity, setMinCapacity] = useState<number>(1);
 
+    const toggleAmenity = (amenity: string) => {
+        if (selectedAmenities.includes(amenity)) {
+            setSelectedAmenities(selectedAmenities.filter(item => item !== amenity));
+        } else {
+            setSelectedAmenities([...selectedAmenities, amenity]);
+        }
+    };
 
-    // Fonction pour générer des marqueurs aléatoires autour de la localisation actuelle
-    const generateRandomMarkers = (latitude: number, longitude: number) => {
+    const increaseCapacity = () => {
+        setMinCapacity(prevCapacity => prevCapacity + 1);
+    };
+
+    const decreaseCapacity = () => {
+        setMinCapacity(prevCapacity => (prevCapacity > 1 ? prevCapacity - 1 : 1));
+    };
+
+    const generateRandomPoint = (latitude: number, longitude: number, radiusInKm: number) => {
+        const radiusInDegrees = radiusInKm / 111.32; // Approximation du rayon en degrés
+
+        const u = Math.random();
+        const v = Math.random();
+
+        const w = radiusInDegrees * Math.sqrt(u);
+        const t = 2 * Math.PI * v;
+
+        const deltaLat = w * Math.cos(t);
+        const deltaLng = w * Math.sin(t);
+
+        const newLat = latitude + deltaLat;
+        const newLng = longitude + deltaLng;
+
+        return { latitude: newLat, longitude: newLng };
+    };
+
+    const generateRandomMarkers = (latitude: number, longitude: number, radiusInKm: number) => {
         const randomMarkers = [];
+
+        const amenitiesOptions = ['Prise électrique', 'Douche', 'Eau potable', 'Toilettes', 'Wi-Fi', 'Barbecue'];
+
         for (let i = 0; i < 20; i++) {
-            const latOffset = (Math.random() - 0.4) * 0.1; // Variation légère en latitude
-            const lonOffset = (Math.random() - 0.4) * 0.1; // Variation légère en longitude
+            const randomPoint = generateRandomPoint(latitude, longitude, radiusInKm);
+
+            // Sélectionner des commodités aléatoires
+            const markerAmenities = amenitiesOptions.filter(() => Math.random() < 0.5);
+
+            // Générer une capacité aléatoire entre 1 et 10
+            const capacity = Math.floor(Math.random() * 10) + 1;
+
             randomMarkers.push({
-                latitude: latitude + latOffset,
-                longitude: longitude + lonOffset,
+                latitude: randomPoint.latitude,
+                longitude: randomPoint.longitude,
                 title: `Emplacement Bivouac ${i + 1}`,
                 description: `Description de l'emplacement Bivouac ${i + 1}`,
-                prix: Math.floor(Math.random() * 100) + 1, // Génération d'un prix aléatoire entre 1 et 100
-                rating: Math.floor(Math.random() * 5) + 1, // Génération d'une note aléatoire entre 1 et 5
+                prix: Math.floor(Math.random() * 100) + 1,
+                rating: Math.floor(Math.random() * 5) + 1,
+                amenities: markerAmenities,
+                capacity: capacity,
             });
         }
         setMarkers(randomMarkers);
@@ -42,13 +95,85 @@ export default function MapScreen() {
             // Obtenir la localisation actuelle
             let location = await Location.getCurrentPositionAsync({});
             setLocation(location);
-            generateRandomMarkers(location.coords.latitude, location.coords.longitude);
+            generateRandomMarkers(location.coords.latitude, location.coords.longitude, searchRadius);
         })();
     }, []);
 
+    // Mettre à jour les marqueurs lorsque le rayon change
+    useEffect(() => {
+        if (cityCoordinates) {
+            generateRandomMarkers(cityCoordinates.latitude, cityCoordinates.longitude, searchRadius);
+        } else if (location) {
+            generateRandomMarkers(location.coords.latitude, location.coords.longitude, searchRadius);
+        }
+    }, [searchRadius]);
+
+    const geocodeCityName = async (city: string) => {
+        try {
+            const json = await Geocoder.from(city);
+            if (json.results.length > 0) {
+                const location = json.results[0].geometry.location;
+                return {
+                    latitude: location.lat,
+                    longitude: location.lng,
+                };
+            } else {
+                return null;
+            }
+        } catch (error) {
+            console.error(error);
+            return null;
+        }
+    };
+
+    const handleSearch = async () => {
+        if (cityName.trim() === '') {
+            Alert.alert('Veuillez entrer un nom de ville.');
+            return;
+        }
+
+        try {
+            // Utiliser une API de géocodage pour obtenir les coordonnées de la ville
+            const geocodedLocation = await geocodeCityName(cityName);
+            if (geocodedLocation) {
+                setCityCoordinates(geocodedLocation);
+                generateRandomMarkers(geocodedLocation.latitude, geocodedLocation.longitude, searchRadius);
+                // Centrer la carte sur la ville
+                mapRef.current.animateToRegion({
+                    latitude: geocodedLocation.latitude,
+                    longitude: geocodedLocation.longitude,
+                    latitudeDelta: 0.1,
+                    longitudeDelta: 0.1,
+                });
+                setIsAccordionExpanded(false);
+            } else {
+                Alert.alert('Ville non trouvée. Veuillez vérifier le nom de la ville.');
+            }
+        } catch (error) {
+            console.error(error);
+            Alert.alert("Une erreur s'est produite lors de la recherche de la ville.");
+        }
+    };
 
     return (
-        <View className="flex justify-center">
+        <View style={{ flex: 1 }}>
+            {/* Filtre de recherche */}
+            <SearchFilter
+                isAccordionExpanded={isAccordionExpanded}
+                setIsAccordionExpanded={setIsAccordionExpanded}
+                cityName={cityName}
+                setCityName={setCityName}
+                searchRadius={searchRadius}
+                setSearchRadius={setSearchRadius}
+                selectedAmenities={selectedAmenities}
+                toggleAmenity={toggleAmenity}
+                minCapacity={minCapacity}
+                increaseCapacity={increaseCapacity}
+                decreaseCapacity={decreaseCapacity}
+                handleSearch={handleSearch}
+            />
+
+            {/* Carte */}
             <MapView
                 ref={mapRef}
                 style={styles.map}
@@ -60,43 +185,33 @@ export default function MapScreen() {
                 }}
                 showsUserLocation={true}
             >
-                {/* Afficher les marqueurs aléatoires */}
-                {markers.map((marker, index) => (
-                    <Marker
-                        key={index}
-                        coordinate={{
-                            latitude: marker.latitude,
-                            longitude: marker.longitude,
-                        }}
-                        title={marker.title}
-                   >
-                        <Image source={require('../../assets/images/tente2.png')} style={{ width: 28, height: 28 }} />
-                        {/* Ajouter un Callout pour afficher plus d'informations */}
-                        <Callout>
-                            <View className="flex p-2 max-h-48 space-y-6">
-                                <Text className="font-bold">{marker.title}</Text>
-                                <Text>{marker.description}</Text>
-                                <Text>Prix: {marker.prix} €</Text>
-                                <StarRatingDisplay
-                                    starStyle={{margin: 0, padding: 0, marginRight: 0,marginLeft: 0}}
-                                    rating={marker.rating}
-                                    starSize={24}
-                                />
-                                </View>
-                        </Callout>
-                    </Marker>
-                ))}
+                {/* Afficher les marqueurs filtrés */}
+                {markers
+                    .filter(marker => {
+                        // Filtrer par commodités
+                        if (selectedAmenities.length > 0) {
+                            for (let amenity of selectedAmenities) {
+                                if (!marker.amenities.includes(amenity)) {
+                                    return false;
+                                }
+                            }
+                        }
+                        // Filtrer par capacité
+                        return marker.capacity >= minCapacity;
+
+                    })
+                    .map((marker, index) => (
+                        <CustomMarker key={index} marker={marker} />
+                    ))}
             </MapView>
         </View>
     );
-}
-
-
+};
 
 const styles = StyleSheet.create({
-
     map: {
-        height: '100%',
-        width: '100%',
+        flex: 1,
     },
 });
+
+export default MapScreen;
