@@ -4,6 +4,7 @@ import NavigationTab from "./components/NavigationTab";
 import { createStackNavigator } from '@react-navigation/stack';
 import Login from './screens/LoginScreen';
 import Register from './screens/RegisterScreen';
+import WelcomeScreen from './screens/WelcomeScreen';
 import { useSelector, useDispatch } from 'react-redux';
 import { RootState } from './app/store';  // Ajuste selon ton chemin
 import "./global.css";
@@ -17,10 +18,15 @@ export default function Main() {
 
     return (
         <View style={{ flex: 1 }}>
-            <Stack.Navigator initialRouteName="Login">
+            <Stack.Navigator initialRouteName="Welcome">
                 {!isAuthenticated ? (
                     // Si l'utilisateur n'est pas connecté, affiche les écrans Login et Register
                     <>
+                        <Stack.Screen
+                            name="Welcome"
+                            component={WelcomeScreen}
+                            options={{ headerShown: false }}
+                        />
                         <Stack.Screen
                             name="Login"
                             component={Login} // Utilisation correcte de la prop component
