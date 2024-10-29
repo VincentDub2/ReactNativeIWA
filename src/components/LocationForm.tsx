@@ -1,17 +1,20 @@
-import React, { useState, useEffect } from 'react';
-import { View, TextInput, Button, Text, TouchableOpacity, StyleSheet } from 'react-native';
+import React, { useState } from 'react';
+import { StyleSheet, Text, TextInput, TouchableOpacity, View } from 'react-native';
 import { useDispatch } from 'react-redux';
 import { addLocation } from '../features/locations/locationSlice';
-// Importation du fichier JSON
+import CustomButton from './CustomButton';
 import amenitiesData from '../data/amenities.json';
 
-const LocationForm = () => {
+interface LocationFormProps {
+    onSubmit: () => void;
+}
+
+const LocationForm: React.FC<LocationFormProps> = ({ onSubmit }) => {
     const [name, setName] = useState('');
     const [address, setAddress] = useState('');
     const [selectedAmenities, setSelectedAmenities] = useState<string[]>([]);
     const dispatch = useDispatch();
 
-    // Gestion de la sélection/dé-sélection des commodités
     const toggleAmenity = (amenity: string) => {
         if (selectedAmenities.includes(amenity)) {
             setSelectedAmenities(selectedAmenities.filter(item => item !== amenity));
@@ -22,10 +25,11 @@ const LocationForm = () => {
 
     const handleAddLocation = () => {
         if (name && address && selectedAmenities.length > 0) {
-            dispatch(addLocation({ name, address, amenities: selectedAmenities }));
+            dispatch(addLocation({ name, address, amenities: selectedAmenities, image: require('../../assets/images/biv2.jpg') }));
             setName('');
             setAddress('');
             setSelectedAmenities([]);
+            onSubmit();
         }
     };
 
@@ -60,7 +64,7 @@ const LocationForm = () => {
                     </TouchableOpacity>
                 ))}
             </View>
-            <Button title="Valider" onPress={handleAddLocation} />
+            <CustomButton action={handleAddLocation} color="#f0ad4e" text="Valider" />
         </View>
     );
 };

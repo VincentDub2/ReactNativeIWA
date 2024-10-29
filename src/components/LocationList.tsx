@@ -1,17 +1,24 @@
 import React from 'react';
-import { FlatList, StyleSheet, Text, View } from 'react-native';
+import { FlatList } from 'react-native';
 import { useSelector } from 'react-redux';
 import { RootState } from '../app/store';
+import LocationCard from './LocationCard';
 
-const LocationList = () => {
+interface LocationListProps {
+    onItemPress: (location: { name: string; address: string; amenities: string[]; image: any }) => void;
+}
+
+const LocationList: React.FC<LocationListProps> = ({ onItemPress }) => {
     const locations = useSelector((state: RootState) => state.locations.locations);
 
-    const renderItem = ({ item }: { item: { name: string, address: string, amenities: string[] } }) => (
-        <View style={styles.card}>
-            <Text style={styles.title}>{item.name}</Text>
-            <Text>{item.address}</Text>
-            <Text>Commodités: {item.amenities.join(', ')}</Text>
-        </View>
+    const renderItem = ({ item }: { item: { name: string; address: string; amenities: string[]; image: any } }) => (
+        <LocationCard
+            name={item.name}
+            address={item.address}
+            amenities={item.amenities}
+            image={item.image}
+            onPress={() => onItemPress(item)} // Appel de la fonction de rappel avec l'élément sélectionné
+        />
     );
 
     return (
@@ -22,20 +29,5 @@ const LocationList = () => {
         />
     );
 };
-
-const styles = StyleSheet.create({
-    card: {
-        padding: 15,
-        borderWidth: 1,
-        borderColor: '#ccc',
-        borderRadius: 5,
-        marginBottom: 10,
-    },
-    title: {
-        fontSize: 18,
-        fontWeight: 'bold',
-        marginBottom: 5,
-    },
-});
 
 export default LocationList;

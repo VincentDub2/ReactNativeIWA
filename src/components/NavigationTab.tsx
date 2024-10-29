@@ -40,7 +40,7 @@ export default function MyTabs() {
                 tabBarInactiveTintColor: 'gray',   // Couleur des icônes inactives
             })}
         >
-            <Tab.Screen name="Home" component={HomeScreen} />
+            <Tab.Screen name="Mes emplacements" component={HomeScreen} />
             <Tab.Screen name="Map" component={MapScreen} />
             <Tab.Screen name="Account" component={UsersScreen}/>
         </Tab.Navigator>
