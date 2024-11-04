@@ -1,0 +1,45 @@
+{
+	"users": [
+		{ "id": 1, "nom": "Thezenas", "prenom": "Kylian" },
+		{ "id": 2, "nom": "Smith", "prenom": "Jane" },
+		{ "id": 3, "nom": "Doe", "prenom": "John" }
+	],
+	"conversations": [
+		{
+			"id": 1,
+			"messages": [
+				{ "id": 1, "senderId": 1, "receiverId": 2, "content": "Bonjour Jane!" },
+				{
+					"id": 2,
+					"senderId": 2,
+					"receiverId": 1,
+					"content": "Salut Kyky, comment ça va?"
+				},
+				{
+					"id": 3,
+					"senderId": 1,
+					"receiverId": 2,
+					"content": "Ça va bien, merci!"
+				}
+			]
+		},
+		{
+			"id": 2,
+			"messages": [
+				{ "id": 1, "senderId": 1, "receiverId": 3, "content": "Bonjour John!" },
+				{
+					"id": 2,
+					"senderId": 3,
+					"receiverId": 1,
+					"content": "Salut Kylian, comment ça va?"
+				},
+				{
+					"id": 3,
+					"senderId": 1,
+					"receiverId": 3,
+					"content": "Ça va bien, merci!"
+				}
+			]
+		}
+	]
+}
