@@ -27,7 +27,7 @@ export default function Login() {
         style={styles.background}
       >
         <View style={styles.container}>
-          <Text style={styles.title}>Connectez-vous à Biv'Quack !</Text>
+          <Text style={styles.title}>Connectez-vous sur Biv'Quack !</Text>
           <TextInput
             style={styles.input}
             placeholder="Nom d'utilisateur"

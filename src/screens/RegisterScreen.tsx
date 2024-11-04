@@ -34,7 +34,7 @@ export default function Register() {
         style={styles.background}
       >
         <View style={styles.container}>
-          <Text style={styles.title}>Créer un Compte</Text>
+          <Text style={styles.title}>Créer un compte Biv'Quack</Text>
           <TextInput
             style={styles.input}
             placeholder="Nom d'utilisateur"
