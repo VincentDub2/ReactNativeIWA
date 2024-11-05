@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { View, Text, Image, StyleSheet, TouchableOpacity } from 'react-native';
 
 interface LocationCardProps {
@@ -9,28 +9,47 @@ interface LocationCardProps {
     onPress: () => void;
 }
 
-const LocationCard: React.FC<LocationCardProps> = ({ name, address, amenities, image, onPress }) => (
-    <TouchableOpacity onPress={onPress} style={styles.card}>
-        <Image source={image} style={styles.image} />
-        <Text style={styles.title}>{name}</Text>
-        <Text>{address}</Text>
-        <Text>Commodités: {amenities.join(', ')}</Text>
-    </TouchableOpacity>
-);
+const LocationCard: React.FC<LocationCardProps> = ({ name, address, amenities, image, onPress }) => {
+    const [isPressed, setIsPressed] = useState(false);
+
+    return (
+        <TouchableOpacity
+            onPressIn={() => setIsPressed(true)}
+            onPressOut={() => setIsPressed(false)}
+            onPress={onPress}
+            style={[styles.card, isPressed && styles.cardPressed]}
+            activeOpacity={0.6}
+        >
+            <Image source={image} style={styles.image} />
+            <View style={styles.cardContent}>
+                <Text style={styles.title}>{name}</Text>
+                <Text>{address}</Text>
+                <Text>Commodités: {amenities.join(', ')}</Text>
+            </View>
+        </TouchableOpacity>
+    );
+};
 
 const styles = StyleSheet.create({
     card: {
-        padding: 15,
+        marginVertical: 8,
+        marginHorizontal: 15,
         borderWidth: 1,
         borderColor: '#ccc',
-        borderRadius: 5,
-        marginBottom: 10,
+        borderRadius: 8,
+        backgroundColor: 'white',
+    },
+    cardPressed: {
+        backgroundColor: '#f0ad4e', // Fond jaune lors de l’appui
+    },
+    cardContent: {
+        padding: 15, // Padding interne pour le contenu de la carte
     },
     image: {
         width: '100%',
         height: 150,
-        borderRadius: 5,
-        marginBottom: 10,
+        borderTopLeftRadius: 8,
+        borderTopRightRadius: 8,
     },
     title: {
         fontSize: 18,

@@ -3,7 +3,8 @@ import { View, StyleSheet } from 'react-native';
 import LocationForm from '../components/LocationForm';
 import { useNavigation } from '@react-navigation/native';
 
-const AddLocation = () => {
+const EditLocation = ({ route }: any) => {
+    const { location } = route.params;
     const navigation = useNavigation();
 
     const handleFormSubmit = () => {
@@ -12,7 +13,7 @@ const AddLocation = () => {
 
     return (
         <View style={styles.container}>
-            <LocationForm onSubmit={handleFormSubmit} />
+            <LocationForm onSubmit={handleFormSubmit} initialValues={location} />
         </View>
     );
 };
@@ -24,4 +25,4 @@ const styles = StyleSheet.create({
 });
 
 
-export default AddLocation;
+export default EditLocation;

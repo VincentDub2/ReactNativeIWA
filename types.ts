@@ -18,16 +18,25 @@ export interface SetNameAction {
 // Union des types d'actions
 export type UserActionTypes = SetNameAction;
 
-// export type RootStackParamList = {
-//     Login: undefined;
-//     Register: undefined;
-//     NavigationTab: undefined;
-// };
+
+export interface Location {
+    idLocation: number;
+    idHost: number;
+    name: string;
+    address: string;
+    description: string;
+    amenities: string[];
+    image: any;
+    latitude: number;
+    longitude: number;
+    pricePerNight: number;
+}
 
 export type RootStackParamList = {
     Login: undefined;
     Register: undefined;
     NavigationTab: undefined;
-    LocationDetail: { location: { name: string; address: string; amenities: string[]; image: any } };
-    AddLocation: undefined; // Ajout de AddLocation avec le type "undefined" s'il ne prend pas de paramètres
+    LocationDetail: { location: Partial<Location> }; // Utilise Partial pour rendre les propriétés optionnelles
+    AddLocation: undefined;
+    EditLocation: { location: Partial<Location> };
 };

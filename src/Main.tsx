@@ -8,6 +8,7 @@ import LocationDetail from './screens/LocationDetail';
 import AddLocation from './screens/AddLocation'; // Import du nouvel écran
 import { useSelector } from 'react-redux';
 import { RootState } from './app/store';
+import EditLocation from './screens/EditLocation';
 
 type RootStackParamList = {
     Login: undefined;
@@ -15,6 +16,7 @@ type RootStackParamList = {
     NavigationTab: undefined;
     LocationDetail: { location: { name: string; address: string; amenities: string[]; image: any } };
     AddLocation: undefined;  // Définition du nouvel écran AddLocation
+    EditLocation: { location: { name: string; address: string; amenities: string[]; image: any } };
 };
 
 const Stack = createStackNavigator<RootStackParamList>();
@@ -54,6 +56,11 @@ export default function Main() {
                             name="AddLocation" // Ajout de l'écran AddLocation
                             component={AddLocation}
                             options={{ title: 'Ajouter un emplacement' }}
+                        />
+                        <Stack.Screen
+                            name="EditLocation" // Ajout de l'écran AddLocation
+                            component={EditLocation}
+                            options={{ title: 'Modifier un emplacement' }}
                         />
                     </>
                 )}

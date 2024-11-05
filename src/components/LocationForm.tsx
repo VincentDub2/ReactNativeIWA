@@ -1,76 +1,212 @@
-import React, { useState } from 'react';
-import { StyleSheet, Text, TextInput, TouchableOpacity, View } from 'react-native';
+import * as ImagePicker from 'expo-image-picker';
+import * as Location from 'expo-location';
+import React, { useEffect, useState } from 'react';
+import { Image, ScrollView, StyleSheet, Text, TextInput, TouchableOpacity, View } from 'react-native';
+import MapView, { Marker, MapEvent } from 'react-native-maps';
 import { useDispatch } from 'react-redux';
+import amenitiesData from '../data/amenities.json';
 import { addLocation } from '../features/locations/locationSlice';
 import CustomButton from './CustomButton';
-import amenitiesData from '../data/amenities.json';
 
 interface LocationFormProps {
     onSubmit: () => void;
+    initialValues?: {
+        idLocation: number;
+        name: string;
+        address: string;
+        description: string;
+        amenities: string[];
+        latitude: number;
+        longitude: number;
+        pricePerNight: number;
+    };
 }
 
-const LocationForm: React.FC<LocationFormProps> = ({ onSubmit }) => {
-    const [name, setName] = useState('');
-    const [address, setAddress] = useState('');
-    const [selectedAmenities, setSelectedAmenities] = useState<string[]>([]);
+const LocationForm: React.FC<LocationFormProps> = ({ onSubmit, initialValues }) => {
+    const [step, setStep] = useState(1); // Étape actuelle du formulaire
+    const [name, setName] = useState(initialValues?.name || '');
+    const [address, setAddress] = useState(initialValues?.address || '');
+    const [description, setDescription] = useState(initialValues?.description || '');
+    const [pricePerNight, setPricePerNight] = useState(initialValues?.pricePerNight.toString() || '');
+    const [selectedAmenities, setSelectedAmenities] = useState<string[]>(initialValues?.amenities || []);
+    const [coordinate, setCoordinate] = useState({
+        latitude: initialValues?.latitude || 37.78825,
+        longitude: initialValues?.longitude || -122.4324,
+    });
+    const [initialRegion, setInitialRegion] = useState<{
+        latitude: number;
+        longitude: number;
+        latitudeDelta: number;
+        longitudeDelta: number;
+    } | null>(null);
+    const [selectedImage, setSelectedImage] = useState<string | null>(null);
     const dispatch = useDispatch();
 
+    useEffect(() => {
+        (async () => {
+            const { status } = await Location.requestForegroundPermissionsAsync();
+            if (status === 'granted') {
+                const userLocation = await Location.getCurrentPositionAsync({});
+                setInitialRegion({
+                    latitude: userLocation.coords.latitude,
+                    longitude: userLocation.coords.longitude,
+                    latitudeDelta: 0.0922,
+                    longitudeDelta: 0.0421,
+                });
+                setCoordinate({
+                    latitude: userLocation.coords.latitude,
+                    longitude: userLocation.coords.longitude,
+                });
+            }
+        })();
+    }, []);
+
     const toggleAmenity = (amenity: string) => {
-        if (selectedAmenities.includes(amenity)) {
-            setSelectedAmenities(selectedAmenities.filter(item => item !== amenity));
-        } else {
-            setSelectedAmenities([...selectedAmenities, amenity]);
+        setSelectedAmenities((prev) =>
+            prev.includes(amenity) ? prev.filter((item) => item !== amenity) : [...prev, amenity]
+        );
+    };
+
+    const handleMapPress = (event: MapEvent) => {
+        setCoordinate(event.nativeEvent.coordinate);
+    };
+
+    const pickImage = async () => {
+        const result = await ImagePicker.launchImageLibraryAsync({
+            mediaTypes: ImagePicker.MediaTypeOptions.Images,
+            allowsEditing: true,
+            aspect: [4, 3],
+            quality: 1,
+        });
+
+        if (!result.canceled) {
+            setSelectedImage(result.assets[0].uri);
         }
     };
 
     const handleAddLocation = () => {
-        if (name && address && selectedAmenities.length > 0) {
-            dispatch(addLocation({ name, address, amenities: selectedAmenities, image: require('../../assets/images/biv2.jpg') }));
-            setName('');
-            setAddress('');
-            setSelectedAmenities([]);
+        if (name && address && description && pricePerNight && selectedAmenities.length > 0) {
+            dispatch(addLocation({
+                idLocation: initialValues?.idLocation || Math.floor(Math.random() * 10000),
+                idHost: 1,
+                name,
+                address,
+                description,
+                amenities: selectedAmenities,
+                image: selectedImage || require('../../assets/images/biv2.jpg'),
+                latitude: coordinate.latitude,
+                longitude: coordinate.longitude,
+                pricePerNight: parseFloat(pricePerNight),
+            }));
             onSubmit();
         }
     };
 
+    const nextStep = () => setStep((prev) => prev + 1);
+    const previousStep = () => setStep((prev) => prev - 1);
+
     return (
-        <View style={styles.form}>
-            <Text style={styles.label}>Nom :</Text>
-            <TextInput
-                style={styles.input}
-                placeholder="Nom de l'emplacement"
-                value={name}
-                onChangeText={setName}
-            />
-            <Text style={styles.label}>Adresse :</Text>
-            <TextInput
-                style={styles.input}
-                placeholder="Adresse"
-                value={address}
-                onChangeText={setAddress}
-            />
-            <Text style={styles.label}>Commodités :</Text>
-            <View style={styles.amenitiesContainer}>
-                {amenitiesData.map((amenity) => (
-                    <TouchableOpacity
-                        key={amenity.id}
-                        style={[
-                            styles.amenityButton,
-                            selectedAmenities.includes(amenity.name) ? styles.amenitySelected : styles.amenityUnselected
-                        ]}
-                        onPress={() => toggleAmenity(amenity.name)}
-                    >
-                        <Text style={styles.amenityText}>{amenity.name}</Text>
-                    </TouchableOpacity>
-                ))}
+        <ScrollView contentContainerStyle={styles.scrollContainer}>
+            <View style={styles.form}>
+                {/* Étape 1 : Nom, Description et Photo */}
+                {step === 1 && (
+                    <View>
+                        <Text style={styles.label}>Nom :</Text>
+                        <TextInput
+                            style={styles.input}
+                            placeholder="Nom de l'emplacement"
+                            value={name}
+                            onChangeText={setName}
+                        />
+                        <Text style={styles.label}>Description :</Text>
+                        <TextInput
+                            style={styles.input}
+                            placeholder="Description de l'emplacement"
+                            value={description}
+                            onChangeText={setDescription}
+                        />
+                        <CustomButton action={pickImage} color="#ccc" text="Choisir une image" />
+                        {selectedImage && <Image source={{ uri: selectedImage }} style={styles.image} />}
+                    </View>
+                )}
+
+                {/* Étape 2 : Adresse / Localisation */}
+                {step === 2 && (
+                    <View>
+                        <Text style={styles.label}>Adresse :</Text>
+                        <TextInput
+                            style={styles.input}
+                            placeholder="Adresse"
+                            value={address}
+                            onChangeText={setAddress}
+                        />
+                        <Text style={styles.label}>Emplacement sur la carte :</Text>
+                        {initialRegion && (
+                            <MapView
+                                style={styles.map}
+                                initialRegion={initialRegion}
+                                onPress={handleMapPress}
+                            >
+                                <Marker coordinate={coordinate} />
+                            </MapView>
+                        )}
+                    </View>
+                )}
+
+                {/* Étape 3 : Commodités */}
+                {step === 3 && (
+                    <View>
+                        <Text style={styles.label}>Commodités :</Text>
+                        <View style={styles.amenitiesContainer}>
+                            {amenitiesData.map((amenity) => (
+                                <TouchableOpacity
+                                    key={amenity.id}
+                                    style={[
+                                        styles.amenityButton,
+                                        selectedAmenities.includes(amenity.name) ? styles.amenitySelected : styles.amenityUnselected
+                                    ]}
+                                    onPress={() => toggleAmenity(amenity.name)}
+                                >
+                                    <Text style={styles.amenityText}>{amenity.name}</Text>
+                                </TouchableOpacity>
+                            ))}
+                        </View>
+                    </View>
+                )}
+
+                {/* Étape 4 : Prix */}
+                {step === 4 && (
+                    <View>
+                        <Text style={styles.label}>Prix par nuit :</Text>
+                        <TextInput
+                            style={styles.input}
+                            placeholder="Prix par nuit (€)"
+                            value={pricePerNight}
+                            keyboardType="numeric"
+                            onChangeText={setPricePerNight}
+                        />
+                    </View>
+                )}
+
+                {/* Boutons de navigation */}
+                <View style={styles.navigationButtons}>
+                    {step > 1 && <CustomButton action={previousStep} color="#ccc" text="Précédent" />}
+                    {step < 4 && <CustomButton action={nextStep} color="#f0ad4e" text="Suivant" />}
+                    {step === 4 && (
+                        <CustomButton action={handleAddLocation} color="#f0ad4e" text="Valider" />
+                    )}
+                </View>
             </View>
-            <CustomButton action={handleAddLocation} color="#f0ad4e" text="Valider" />
-        </View>
+        </ScrollView>
     );
 };
 
 const styles = StyleSheet.create({
+    scrollContainer: {
+        paddingBottom: 20,
+    },
     form: {
+        padding: 20,
         marginBottom: 20,
     },
     label: {
@@ -84,6 +220,11 @@ const styles = StyleSheet.create({
         borderRadius: 5,
         padding: 10,
         marginBottom: 10,
+    },
+    map: {
+        height: 200,
+        marginVertical: 10,
+        borderRadius: 10,
     },
     amenitiesContainer: {
         flexDirection: 'row',
@@ -105,6 +246,17 @@ const styles = StyleSheet.create({
     amenityText: {
         color: '#fff',
         fontWeight: 'bold',
+    },
+    image: {
+        width: 200,
+        height: 200,
+        marginVertical: 10,
+        borderRadius: 10,
+    },
+    navigationButtons: {
+        flexDirection: 'row',
+        justifyContent: 'space-between',
+        marginTop: 20,
     },
 });
 
