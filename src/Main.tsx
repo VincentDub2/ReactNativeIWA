@@ -5,12 +5,9 @@ import { useDispatch, useSelector } from "react-redux";
 import type { RootState } from "./app/store"; // Ajuste selon ton chemin
 import NavigationTab from "./components/NavigationTab";
 
-import { createStackNavigator } from '@react-navigation/stack';
 import Login from './screens/LoginScreen';
 import Register from './screens/RegisterScreen';
 import WelcomeScreen from './screens/WelcomeScreen';
-import { useSelector, useDispatch } from 'react-redux';
-import { RootState } from './app/store';  // Ajuste selon ton chemin
 import MessagingScreen from "./screens/MessagerieScreen";
 
 
@@ -47,8 +44,8 @@ export default function Main() {
                             options={{ headerShown: false }}
                         />
                     </>
-                ) : (
-                    // Si connecté, affiche la barre de navigation avec onglets (NavigationTab)
+                ) : ( // Si connecté, affiche la barre de navigation avec onglets (NavigationTab)
+                    <>
                     <Stack.Screen
                         name="NavigationTab"
                         component={NavigationTab} // Utilisation correcte de la prop component
@@ -59,6 +56,7 @@ export default function Main() {
                       component={MessagingScreen}
                       options={{ headerShown: false }}
 						      />
+                    </>
                 )}
             </Stack.Navigator>
         </View>
