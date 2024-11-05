@@ -3,7 +3,7 @@ import { StyleSheet, Text, TextInput, View } from "react-native";
 import { useSelector, useDispatch } from "react-redux";
 import type { RootState } from "../app/store";
 import { setUserName, setEmail, setPhone } from "../features/users/usersSlice";
-import CustomButton from "../components/CustomButton"; // Import du bouton réutilisable
+import CustomButton from "../components/CustomButton";
 import UserInfo from "../components/UserInfo";
 
 export default function UsersScreen() {
