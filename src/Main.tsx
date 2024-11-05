@@ -1,20 +1,29 @@
-import React, { useState } from 'react';
+import { createStackNavigator } from "@react-navigation/stack";
+import React, { useState } from "react";
 import { View } from "react-native";
+import { useDispatch, useSelector } from "react-redux";
+import type { RootState } from "./app/store"; // Ajuste selon ton chemin
 import NavigationTab from "./components/NavigationTab";
+
 import { createStackNavigator } from '@react-navigation/stack';
 import Login from './screens/LoginScreen';
 import Register from './screens/RegisterScreen';
 import WelcomeScreen from './screens/WelcomeScreen';
 import { useSelector, useDispatch } from 'react-redux';
 import { RootState } from './app/store';  // Ajuste selon ton chemin
+import MessagingScreen from "./screens/MessagerieScreen";
+
+
 import "./global.css";
-import { RootStackParamList } from "../types";
+import type { RootStackParamList } from "../types";
+import "./i18n";
 
 const Stack = createStackNavigator<RootStackParamList>();
 
 export default function Main() {
-    const isAuthenticated = useSelector((state: RootState) => state.users.isAuthenticated);  // Récupère l'état du store
-    
+	const isAuthenticated = useSelector(
+		(state: RootState) => state.users.isAuthenticated,
+	); // Récupère l'état du store
 
     return (
         <View style={{ flex: 1 }}>
@@ -45,6 +54,11 @@ export default function Main() {
                         component={NavigationTab} // Utilisation correcte de la prop component
                         options={{ headerShown: false }}
                     />
+                    <Stack.Screen
+                      name="Messagerie"
+                      component={MessagingScreen}
+                      options={{ headerShown: false }}
+						      />
                 )}
             </Stack.Navigator>
         </View>
