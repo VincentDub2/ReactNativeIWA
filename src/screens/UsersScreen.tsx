@@ -43,7 +43,7 @@ export default function UsersScreen() {
 				newUsername={newUsername}
 				setNewUsername={setNewUsername}
 			/>
-
+			
 			<View style={styles.separator} />
 
 			<View style={styles.infoContainer}>
