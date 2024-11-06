@@ -135,7 +135,6 @@ export default function MessagingScreen() {
 const styles = StyleSheet.create({
 	container: {
 		flex: 1,
-		paddingTop: 30,
 		backgroundColor: "#faf3e0", // Fond beige
 	},
 	conversationItem: {

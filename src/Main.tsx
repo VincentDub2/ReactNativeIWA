@@ -21,7 +21,6 @@ export default function Main() {
 	const isAuthenticated = useSelector(
 		(state: RootState) => state.users.isAuthenticated,
 	); // Récupère l'état du store
-
     return (
         <View style={{ flex: 1 }}>
             <Stack.Navigator initialRouteName="Welcome">
@@ -54,7 +53,7 @@ export default function Main() {
                     <Stack.Screen
                       name="Messagerie"
                       component={MessagingScreen}
-                      options={{ headerShown: false }}
+                      options={{ headerShown: true }}
 						      />
                     </>
                 )}
