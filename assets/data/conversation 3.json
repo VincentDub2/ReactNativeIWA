@@ -1,0 +1,178 @@
+{
+	"users": [
+		{ "id": 1, "nom": "Thezenas", "prenom": "Kylian" },
+		{ "id": 2, "nom": "Plumefine", "prenom": "Charlie" },
+		{ "id": 3, "nom": "Caneton", "prenom": "Bobby" },
+		{ "id ": 4, "nom": "Coincourt", "prenom": "Louis" },
+		{ "id": 5, "nom": "Barboteur", "prenom": "Henry" },
+		{ "id": 6, "nom": "Plouf", "prenom": "Roger" },
+		{ "id": 7, "nom": "Lagon", "prenom": "Josephine" },
+		{ "id": 9, "nom": "Flotte", "prenom": "Mimi" },
+		{ "id": 10, "nom": "Plumet", "prenom": "Gaston" },
+		{ "id": 11, "nom": "Volaplume", "prenom": "Valérie" },
+		{ "id": 12, "nom": "Palmipède", "prenom": "Arthur" },
+		{ "id": 13, "nom": "Plumage", "prenom": "Pénélope" },
+		{ "id": 14, "nom": "Barbote", "prenom": "Alfred" },
+		{ "id": 15, "nom": "Nageoire", "prenom": "Lucie" },
+		{ "id": 16, "nom": "Duck", "prenom": "John" },
+		{ "id": 17, "nom": "Quackley", "prenom": "Clémentine" },
+		{ "id": 18, "nom": "Beakman", "prenom": "Bernard" }
+	],
+	"conversations": [
+		{
+			"id": 3,
+			"messages": [
+				{
+					"id": 1,
+					"senderId": 1,
+					"receiverId": 4,
+					"content": "Salut Louis, prêt pour le bivouac ?"
+				},
+				{ "id": 2, "senderId": 4, "receiverId": 1, "content": "Coin-coin!" },
+				{
+					"id": 3,
+					"senderId": 1,
+					"receiverId": 4,
+					"content": "Ça veut dire oui ? 😂"
+				},
+				{ "id": 4, "senderId": 4, "receiverId": 1, "content": "Coin!" }
+			]
+		},
+		{
+			"id": 4,
+			"messages": [
+				{
+					"id": 1,
+					"senderId": 1,
+					"receiverId": 5,
+					"content": "Salut Henry ! Tu arrives quand ?"
+				},
+				{
+					"id": 2,
+					"senderId": 5,
+					"receiverId": 1,
+					"content": "Coin-coin-coin."
+				},
+				{
+					"id": 3,
+					"senderId": 1,
+					"receiverId": 5,
+					"content": "Bon, j’attends un peu alors. Coin !"
+				},
+				{ "id": 4, "senderId": 5, "receiverId": 1, "content": "Coin-coin!" },
+				{
+					"id": 4,
+					"senderId": 1,
+					"receiverId": 5,
+					"content": "ouai mais grouille un peu "
+				},
+			]
+		},
+		{
+			"id": 5,
+			"messages": [
+				{
+					"id": 1,
+					"senderId": 1,
+					"receiverId": 6,
+					"content": "Hello Roger ! Pas trop de pluie aujourd'hui ?"
+				},
+				{
+					"id": 2,
+					"senderId": 6,
+					"receiverId": 1,
+					"content": "Coin, coin-coin."
+				},
+				{
+					"id": 3,
+					"senderId": 1,
+					"receiverId": 6,
+					"content": "Haha ! Bien reçu."
+				}
+			]
+		},
+		{
+			"id": 6,
+			"messages": [
+				{
+					"id": 1,
+					"senderId": 1,
+					"receiverId": 7,
+					"content": "Salut Joséphine ! Des coins ?"
+				},
+				{ "id": 2, "senderId": 7, "receiverId": 1, "content": "Coin-coin!" },
+				{
+					"id": 3,
+					"senderId": 1,
+					"receiverId": 7,
+					"content": "Ça marche, on est en forme !"
+				}
+			]
+		},
+		{
+			"id": 7,
+			"messages": [
+				{
+					"id": 1,
+					"senderId": 1,
+					"receiverId": 15,
+					"content": "Lucie ! Prête pour le départ ?"
+				},
+				{
+					"id": 2,
+					"senderId": 15,
+					"receiverId": 1,
+					"content": "Coin-coin, coin!"
+				},
+				{
+					"id": 3,
+					"senderId": 1,
+					"receiverId": 15,
+					"content": "Top ! À bientôt alors."
+				}
+			]
+		},
+		{
+			"id": 8,
+			"messages": [
+				{
+					"id": 1,
+					"senderId": 1,
+					"receiverId": 16,
+					"content": "John, tu fais la navigation ?"
+				},
+				{ "id": 2, "senderId": 16, "receiverId": 1, "content": "Coin." },
+				{
+					"id": 3,
+					"senderId": 1,
+					"receiverId": 16,
+					"content": "Super, on te suit."
+				}
+			]
+		},
+		{
+			"id": 9,
+			"messages": [
+				{
+					"id": 1,
+					"senderId": 1,
+					"receiverId": 9,
+					"content": "Salut Mimi ! Prête pour une aventure ?"
+				},
+				{
+					"id": 2,
+					"senderId": 9,
+					"receiverId": 1,
+					"content": "Coin, coin-coin-coin!"
+				},
+				{
+					"id": 3,
+					"senderId": 1,
+					"receiverId": 9,
+					"content": "Haha, à fond alors !"
+				},
+				{ "id": 4, "senderId": 9, "receiverId": 1, "content": "Coin!" }
+			]
+		}
+	]
+}

@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { StyleSheet, Text, TextInput, View } from "react-native";
+import { StyleSheet, Text, TextInput, View, ScrollView } from "react-native";
 import { useSelector, useDispatch } from "react-redux";
 import type { RootState } from "../app/store";
 import { setUserName, setEmail, setPhone } from "../features/users/usersSlice";
@@ -9,7 +9,7 @@ import UserInfo from "../components/UserInfo";
 export default function UsersScreen() {
 	const dispatch = useDispatch();
 	// Récupérer les informations de l'utilisateur via Redux
-	const { username, email, phone } = useSelector((state: RootState) => state.users);
+	const { username, email, phone, reservations } = useSelector((state: RootState) => state.users);
 
 	// Local state to manage edit mode and form inputs
 	const [isEditing, setIsEditing] = useState(false);
@@ -35,7 +35,7 @@ export default function UsersScreen() {
 	};
 
 	return (
-		<View style={styles.container}>
+		<ScrollView contentContainerStyle={styles.container}>
 			<UserInfo
 				name={username}
 				profilePicture={require("../../assets/images/quack-with-tent-background.png")}
@@ -43,7 +43,7 @@ export default function UsersScreen() {
 				newUsername={newUsername}
 				setNewUsername={setNewUsername}
 			/>
-			
+
 			<View style={styles.separator} />
 
 			<View style={styles.infoContainer}>
@@ -89,7 +89,20 @@ export default function UsersScreen() {
 
 			<View style={styles.separator} />
 
-		</View>
+			<Text style={styles.reservationsTitle}>Mes réservations</Text>
+
+			<View style={styles.reservationsContainer}>
+				{reservations.map((reservation, index) => (
+					<View key={index} style={styles.reservationBox}>
+						<Text style={styles.reservationTitle}>{reservation.nom}</Text>
+						<Text style={styles.reservationDates}>
+							du {reservation.dateDebut} au {reservation.dateFin}
+						</Text>
+						<Text style={styles.reservationAddress}>{reservation.adresse}</Text>
+					</View>
+				))}
+			</View>
+		</ScrollView>
 	);
 }
 
@@ -140,5 +153,36 @@ const styles = StyleSheet.create({
 	singleButtonContainer: {
 		width: "50%",
 		alignItems: "center",
+	},
+	reservationsTitle: {
+		fontSize: 20,
+		fontWeight: "bold",
+		marginTop: 20,
+		color: "#333",
+	},
+	reservationsContainer: {
+		width: "100%",
+		marginTop: 10,
+	},
+	reservationBox: {
+		backgroundColor: "#E9D69F",
+		padding: 10,
+		marginVertical: 5,
+		borderRadius: 8,
+	},
+	reservationTitle: {
+		fontSize: 16,
+		fontWeight: "bold",
+		color: "#333",
+	},
+	reservationDates: {
+		fontSize: 14,
+		color: "#555",
+		marginTop: 5,
+	},
+	reservationAddress: {
+		fontSize: 14,
+		color: "#555",
+		marginTop: 5,
 	},
 });

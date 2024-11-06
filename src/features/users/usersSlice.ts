@@ -1,6 +1,12 @@
 import { createAsyncThunk, createSlice } from '@reduxjs/toolkit'
 import type { PayloadAction } from '@reduxjs/toolkit'
 
+interface Reservation {
+    nom: string;
+    dateDebut: string;
+    dateFin: string;
+    adresse: string;
+}
 
 export interface User {
     id: number
@@ -10,6 +16,7 @@ export interface User {
     email: string
     phone: string
     isAuthenticated: boolean;
+    reservations: Reservation[];
 }
 
 const initialState: User = {
@@ -20,6 +27,7 @@ const initialState: User = {
     email: '',
     phone: '',
     isAuthenticated: false,
+    reservations: [],
 }
 
 export const usersSlice = createSlice({
@@ -50,9 +58,15 @@ export const usersSlice = createSlice({
         logout: (state) => {
             state.isAuthenticated = false; // Action pour gérer la déconnexion
         },
+        addReservation: (state, action: PayloadAction<Reservation>) => {
+            state.reservations.push(action.payload); // Ajouter une nouvelle réservation
+        },
+        removeReservation: (state, action: PayloadAction<number>) => {
+            state.reservations.splice(action.payload, 1); // Supprimer une réservation par son index
+        }
     },
 })
 
 
-export const {setUserName, setLastName, setFirstName ,setEmail, setPhone, setId, login, logout } = usersSlice.actions
+export const {setUserName, setLastName, setFirstName ,setEmail, setPhone, setId, login, logout, addReservation, removeReservation} = usersSlice.actions
 export default usersSlice.reducer
