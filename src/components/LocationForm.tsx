@@ -4,6 +4,7 @@ import React, { useEffect, useState } from 'react';
 import { Image, ScrollView, StyleSheet, Text, TextInput, TouchableOpacity, View } from 'react-native';
 import MapView, { Marker, MapEvent } from 'react-native-maps';
 import { useDispatch } from 'react-redux';
+import { useNavigation } from '@react-navigation/native';
 import amenitiesData from '../data/amenities.json';
 import { addLocation } from '../features/locations/locationSlice';
 import CustomButton from './CustomButton';
@@ -23,7 +24,7 @@ interface LocationFormProps {
 }
 
 const LocationForm: React.FC<LocationFormProps> = ({ onSubmit, initialValues }) => {
-    const [step, setStep] = useState(1); // Étape actuelle du formulaire
+    const [step, setStep] = useState(1);
     const [name, setName] = useState(initialValues?.name || '');
     const [address, setAddress] = useState(initialValues?.address || '');
     const [description, setDescription] = useState(initialValues?.description || '');
@@ -41,6 +42,7 @@ const LocationForm: React.FC<LocationFormProps> = ({ onSubmit, initialValues }) 
     } | null>(null);
     const [selectedImage, setSelectedImage] = useState<string | null>(null);
     const dispatch = useDispatch();
+    const navigation = useNavigation();
 
     useEffect(() => {
         (async () => {
@@ -104,11 +106,11 @@ const LocationForm: React.FC<LocationFormProps> = ({ onSubmit, initialValues }) 
 
     const nextStep = () => setStep((prev) => prev + 1);
     const previousStep = () => setStep((prev) => prev - 1);
+    const cancelForm = () => navigation.navigate('Home'); // Retour à la page d'accueil
 
     return (
         <ScrollView contentContainerStyle={styles.scrollContainer}>
             <View style={styles.form}>
-                {/* Étape 1 : Nom, Description et Photo */}
                 {step === 1 && (
                     <View>
                         <Text style={styles.label}>Nom :</Text>
@@ -130,7 +132,6 @@ const LocationForm: React.FC<LocationFormProps> = ({ onSubmit, initialValues }) 
                     </View>
                 )}
 
-                {/* Étape 2 : Adresse / Localisation */}
                 {step === 2 && (
                     <View>
                         <Text style={styles.label}>Adresse :</Text>
@@ -153,7 +154,6 @@ const LocationForm: React.FC<LocationFormProps> = ({ onSubmit, initialValues }) 
                     </View>
                 )}
 
-                {/* Étape 3 : Commodités */}
                 {step === 3 && (
                     <View>
                         <Text style={styles.label}>Commodités :</Text>
@@ -174,7 +174,6 @@ const LocationForm: React.FC<LocationFormProps> = ({ onSubmit, initialValues }) 
                     </View>
                 )}
 
-                {/* Étape 4 : Prix */}
                 {step === 4 && (
                     <View>
                         <Text style={styles.label}>Prix par nuit :</Text>
@@ -187,12 +186,21 @@ const LocationForm: React.FC<LocationFormProps> = ({ onSubmit, initialValues }) 
                         />
                     </View>
                 )}
+            </View>
 
-                {/* Boutons de navigation */}
-                <View style={styles.navigationButtons}>
-                    {step > 1 && <CustomButton action={previousStep} color="#ccc" text="Précédent" />}
-                    {step < 4 && <CustomButton action={nextStep} color="#f0ad4e" text="Suivant" />}
-                    {step === 4 && (
+            {/* Boutons de navigation en bas */}
+            <View style={styles.navigationButtons}>
+                <View style={styles.leftButtons}>
+                    {step > 1 ? (
+                        <CustomButton action={previousStep} color="#ccc" text="Précédent" />
+                    ) : (
+                        <CustomButton action={cancelForm} color="#ccc" text="Annuler" />
+                    )}
+                </View>
+                <View style={styles.rightButtons}>
+                    {step < 4 ? (
+                        <CustomButton action={nextStep} color="#f0ad4e" text="Suivant" />
+                    ) : (
                         <CustomButton action={handleAddLocation} color="#f0ad4e" text="Valider" />
                     )}
                 </View>
@@ -254,9 +262,20 @@ const styles = StyleSheet.create({
         borderRadius: 10,
     },
     navigationButtons: {
+        position: 'absolute',
+        bottom: 10,
+        left: 20,
+        right: 20,
         flexDirection: 'row',
         justifyContent: 'space-between',
-        marginTop: 20,
+    },
+    leftButtons: {
+        flex: 1,
+        alignItems: 'flex-start',
+    },
+    rightButtons: {
+        flex: 1,
+        alignItems: 'flex-end',
     },
 });
 
