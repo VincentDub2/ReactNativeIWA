@@ -35,7 +35,7 @@ export default function UsersScreen() {
 	};
 
 	return (
-		<ScrollView contentContainerStyle={styles.container}>
+		<View style={styles.container}>
 			<UserInfo
 				name={username}
 				profilePicture={require("../../assets/images/quack-with-tent-background.png")}
@@ -89,20 +89,27 @@ export default function UsersScreen() {
 
 			<View style={styles.separator} />
 
-			<Text style={styles.reservationsTitle}>Mes réservations</Text>
+			{reservations.length > 0 && (
+				<>
+					<Text style={styles.reservationsTitle}>Mes réservations</Text>
 
-			<View style={styles.reservationsContainer}>
-				{reservations.map((reservation, index) => (
-					<View key={index} style={styles.reservationBox}>
-						<Text style={styles.reservationTitle}>{reservation.nom}</Text>
-						<Text style={styles.reservationDates}>
-							du {reservation.dateDebut} au {reservation.dateFin}
-						</Text>
-						<Text style={styles.reservationAddress}>{reservation.adresse}</Text>
-					</View>
-				))}
-			</View>
-		</ScrollView>
+					<ScrollView style={styles.reservationsContainer} contentContainerStyle={{ paddingBottom: 20 }}>
+						{reservations.map((reservation, index) => (
+							<View key={index} style={styles.reservationBox}>
+								<Text style={styles.reservationTitle}>{reservation.nom}</Text>
+								<Text>
+									{reservation.dateDebut ? new Date(reservation.dateDebut).toLocaleDateString() : 'Date de début non définie'}
+								</Text>
+								<Text>
+									{reservation.dateFin ? new Date(reservation.dateFin).toLocaleDateString() : 'Date de fin non définie'}
+								</Text>
+								<Text style={styles.reservationAddress}>{reservation.adresse}</Text>
+							</View>
+						))}
+					</ScrollView>
+				</>
+			)}
+		</View>
 	);
 }
 
@@ -122,7 +129,7 @@ const styles = StyleSheet.create({
 		width: "80%",
 		backgroundColor: "#ccc",
 		marginTop: 10, // Control space between name and separator
-		marginBottom: 5, // Control space between separator and email
+		marginBottom: -10, // Control space between separator and email
 	},
 	email: {
 		fontSize: 18,
@@ -163,11 +170,13 @@ const styles = StyleSheet.create({
 	reservationsContainer: {
 		width: "100%",
 		marginTop: 10,
+		maxHeight: 300,
 	},
 	reservationBox: {
 		backgroundColor: "#E9D69F",
 		padding: 10,
 		marginVertical: 5,
+		marginHorizontal: 15,
 		borderRadius: 8,
 	},
 	reservationTitle: {

@@ -3,8 +3,8 @@ import type { PayloadAction } from '@reduxjs/toolkit'
 
 interface Reservation {
     nom: string;
-    dateDebut: string;
-    dateFin: string;
+    dateDebut: string | null;
+    dateFin: string | null;
     adresse: string;
 }
 

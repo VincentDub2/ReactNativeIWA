@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
-import { View, TextInput, Button, Text } from 'react-native';
+import { View, TextInput, Button, Text, Platform } from 'react-native';
+import DateTimePicker from '@react-native-community/datetimepicker';
 import { useDispatch } from 'react-redux';
 import { setUserName, setEmail, setPhone, addReservation, removeReservation } from '../features/users/usersSlice'; // Import de l'action setName
 
@@ -8,9 +9,11 @@ const NameInput = () => {
     const [email, setEmailInput] = useState('');
     const [phone, setPhoneInput] = useState('');
     const [reservationName, setReservationName] = useState('');
-    const [dateDebut, setDateDebut] = useState('');
-    const [dateFin, setDateFin] = useState('');
+    const [dateDebut, setDateDebut] = useState<Date | null>(null);
+    const [dateFin, setDateFin] = useState<Date | null>(null);
     const [adresse, setAdresse] = useState('');
+    const [showDateDebutPicker, setShowDateDebutPicker] = useState(false);
+    const [showDateFinPicker, setShowDateFinPicker] = useState(false);
     const dispatch = useDispatch();
 
     const handleSetName = () => {
@@ -28,16 +31,15 @@ const NameInput = () => {
     const handleSetReservation = () => {
         const reservation = {
             nom: reservationName,
-            dateDebut: dateDebut,
-            dateFin: dateFin,
+            dateDebut: dateDebut ? dateDebut.toISOString() : null, 
+            dateFin: dateFin ? dateFin.toISOString() : null,   
             adresse: adresse
         };
         dispatch(addReservation(reservation));
-
-        // Optionnel : Réinitialiser les champs après l'ajout
+    
         setReservationName('');
-        setDateDebut('');
-        setDateFin('');
+        setDateDebut(null);
+        setDateFin(null);
         setAdresse('');
     };
 
@@ -71,19 +73,33 @@ const NameInput = () => {
                 style={{ marginTop: 10 }}
             />
 
-            <TextInput
-                placeholder="Date de début"
-                value={dateDebut}
-                onChangeText={(text) => setDateDebut(text)}
-                style={{ marginTop: 10 }}
-            />
+            <Button title="Date de début" onPress={() => setShowDateDebutPicker(true)} />
+            {dateDebut && <Text>Date de début: {dateDebut.toLocaleDateString()}</Text>}
+            {showDateDebutPicker && (
+                <DateTimePicker
+                    value={dateDebut || new Date()}
+                    mode="date"
+                    display={Platform.OS === 'ios' ? 'inline' : 'default'}
+                    onChange={(event, selectedDate) => {
+                        setShowDateDebutPicker(false);
+                        if (selectedDate) setDateDebut(selectedDate);
+                    }}
+                />
+            )}
 
-            <TextInput
-                placeholder="Date de fin"
-                value={dateFin}
-                onChangeText={(text) => setDateFin(text)}
-                style={{ marginTop: 10 }}
-            />
+            <Button title="Date de fin" onPress={() => setShowDateFinPicker(true)} />
+            {dateFin && <Text>Date de fin: {dateFin.toLocaleDateString()}</Text>}
+            {showDateFinPicker && (
+                <DateTimePicker
+                    value={dateFin || new Date()}
+                    mode="date"
+                    display={Platform.OS === 'ios' ? 'inline' : 'default'}
+                    onChange={(event, selectedDate) => {
+                        setShowDateFinPicker(false);
+                        if (selectedDate) setDateFin(selectedDate);
+                    }}
+                />
+            )}
 
             <TextInput
                 placeholder="Adresse"
