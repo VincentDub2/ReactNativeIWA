@@ -19,7 +19,9 @@ export interface SetNameAction {
 export type UserActionTypes = SetNameAction;
 
 export type RootStackParamList = {
+    Welcome: undefined;
     Login: undefined;
     Register: undefined;
     NavigationTab: undefined;
+    Messagerie: undefined;
 };
