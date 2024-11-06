@@ -46,7 +46,7 @@ export default function Main() {
 						<Stack.Screen
 							name="Messagerie"
 							component={MessagingScreen}
-							options={{ headerShown: false }}
+							options={{ headerShown: true }}
 						/>
 					</>
 				)}
