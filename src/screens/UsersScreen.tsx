@@ -1,39 +1,94 @@
-import React from "react";
-import { StyleSheet, Text, View } from "react-native";
-import { useSelector } from "react-redux";
+import React, { useState } from "react";
+import { StyleSheet, Text, TextInput, View } from "react-native";
+import { useSelector, useDispatch } from "react-redux";
 import type { RootState } from "../app/store";
-import CustomButton from "../components/CustomButton"; // Import du bouton réutilisable
-import Spacer from "../components/Spacer";
+import { setUserName, setEmail, setPhone } from "../features/users/usersSlice";
+import CustomButton from "../components/CustomButton";
 import UserInfo from "../components/UserInfo";
 
 export default function UsersScreen() {
+	const dispatch = useDispatch();
 	// Récupérer les informations de l'utilisateur via Redux
-	const { name, email } = useSelector((state: RootState) => state.users);
+	const { username, email, phone } = useSelector((state: RootState) => state.users);
 
-	// Fonctions pour les boutons
-	const onEdit = () => {
-		console.log("Edit button pressed");
+	// Local state to manage edit mode and form inputs
+	const [isEditing, setIsEditing] = useState(false);
+	const [newUsername, setNewUsername] = useState(username);
+	const [newEmail, setNewEmail] = useState(email);
+	const [newPhone, setNewPhone] = useState(phone);
+
+	// Functions for handling the Edit and Save actions
+	const onEdit = () => setIsEditing(true);
+
+	const onSave = () => {
+		dispatch(setUserName(newUsername));
+		dispatch(setEmail(newEmail));
+		dispatch(setPhone(newPhone));
+		setIsEditing(false);
 	};
 
-	const onDelete = () => {
-		console.log("Delete button pressed");
+	const onCancel = () => {
+		setNewUsername(username);
+		setNewEmail(email);
+		setNewPhone(phone);
+		setIsEditing(false);
 	};
 
 	return (
 		<View style={styles.container}>
 			<UserInfo
-				name={name}
+				name={username}
 				profilePicture={require("../../assets/images/quack-with-tent-background.png")}
+				isEditing={isEditing}
+				newUsername={newUsername}
+				setNewUsername={setNewUsername}
 			/>
-			<Spacer />
-			<Text style={styles.email}>{email}</Text>
+			
+			<View style={styles.separator} />
 
-			<Spacer />
+			<View style={styles.infoContainer}>
+				{isEditing ? (
+					<View>
+						<TextInput
+							style={styles.input}
+							value={newEmail}
+							onChangeText={setNewEmail}
+							placeholder="Enter new email"
+						/>
+						<TextInput
+							style={styles.input}
+							value={newPhone}
+							onChangeText={setNewPhone}
+							placeholder="Enter new phone"
+						/>
+					</View>
+				) : (
+					<View>
+						<Text style={styles.email}>{email}</Text>
+						<Text style={styles.phone}>{phone}</Text>
+					</View>
+				)}
+			</View>
 
 			<View style={styles.buttonRow}>
-				<CustomButton action={onEdit} color="#E9D69F" text="Edit" />
-				<CustomButton action={onDelete} color="#FF0000" text="Delete" />
+				{isEditing ? (
+					<>
+						<View style={styles.buttonSpacing}>
+							<CustomButton action={onSave} color="#4CAF50" text="Save" />
+						</View>
+						<View style={styles.buttonSpacing}>
+							<CustomButton action={onCancel} color="#FF0000" text="Cancel" />
+						</View>
+					</>
+				) : (
+					<View style={styles.singleButtonContainer}>
+						<CustomButton action={onEdit} color="#E9D69F" text="Edit" />
+					</View>
+				)}
 			</View>
+
+			<View style={styles.separator} />
+
 		</View>
 	);
 }
@@ -43,17 +98,47 @@ const styles = StyleSheet.create({
 		flex: 1,
 		justifyContent: "center",
 		alignItems: "center",
-		padding: 20,
-		backgroundColor: "#f5f5f5", // Couleur de fond pour rendre la page plus agréable
+		backgroundColor: "#f5f5f5",
+	},
+	infoContainer: {
+		alignItems: "center",
+		marginTop: 20,
+	},
+	separator: {
+		height: 2,
+		width: "80%",
+		backgroundColor: "#ccc",
+		marginTop: 10, // Control space between name and separator
+		marginBottom: 5, // Control space between separator and email
 	},
 	email: {
 		fontSize: 18,
 		color: "#333",
-		marginVertical: 10,
+		marginBottom: 5,
+	},
+	phone: {
+		fontSize: 18,
+		color: "#333",
+	},
+	input: {
+		borderWidth: 1,
+		borderColor: "#ccc",
+		padding: 10,
+		marginVertical: 5,
+		width: 200,
+		fontSize: 18,
 	},
 	buttonRow: {
-		flexDirection: "row", // Affiche les boutons côte à côte
-		justifyContent: "space-between", // Espace entre les boutons
-		width: "60%", // Largeur pour contenir les deux boutons
+		flexDirection: "row",
+		justifyContent: "center",
+		width: "60%",
+		marginTop: 20,
+	},
+	buttonSpacing: {
+		marginHorizontal: 10, // Adjust the spacing as needed
+	},
+	singleButtonContainer: {
+		width: "50%",
+		alignItems: "center",
 	},
 });

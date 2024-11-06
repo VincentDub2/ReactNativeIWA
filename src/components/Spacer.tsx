@@ -12,6 +12,5 @@ const styles = StyleSheet.create({
 		height: 1,
 		width: "90%",
 		backgroundColor: "#ccc",
-		marginVertical: 10,
 	},
 });

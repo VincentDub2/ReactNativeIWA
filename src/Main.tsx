@@ -1,34 +1,39 @@
-import React from 'react';
+import { createStackNavigator } from "@react-navigation/stack";
+import React, { useState } from "react";
 import { View } from "react-native";
+import { useDispatch, useSelector } from "react-redux";
 import NavigationTab from "./components/NavigationTab";
-import { createStackNavigator } from '@react-navigation/stack';
+
 import Login from './screens/LoginScreen';
 import Register from './screens/RegisterScreen';
 import LocationDetail from './screens/LocationDetail';
 import AddLocation from './screens/AddLocation'; // Import du nouvel écran
-import { useSelector } from 'react-redux';
 import { RootState } from './app/store';
 import EditLocation from './screens/EditLocation';
+import WelcomeScreen from './screens/WelcomeScreen';
+import MessagingScreen from "./screens/MessagerieScreen";
 
-type RootStackParamList = {
-    Login: undefined;
-    Register: undefined;
-    NavigationTab: undefined;
-    LocationDetail: { location: { name: string; address: string; amenities: string[]; image: any } };
-    AddLocation: undefined;  // Définition du nouvel écran AddLocation
-    EditLocation: { location: { name: string; address: string; amenities: string[]; image: any } };
-};
+
+import "./global.css";
+import type { RootStackParamList } from "../types";
+import "./i18n";
 
 const Stack = createStackNavigator<RootStackParamList>();
 
 export default function Main() {
-    const isAuthenticated = useSelector((state: RootState) => state.users.isAuthenticated);
-
+    const isAuthenticated = useSelector(
+        (state: RootState) => state.users.isAuthenticated,
+    ); // Récupère l'état du store
     return (
         <View style={{ flex: 1 }}>
-            <Stack.Navigator initialRouteName="Login">
+            <Stack.Navigator initialRouteName="Welcome">
                 {!isAuthenticated ? (
                     <>
+                        <Stack.Screen
+                            name="Welcome"
+                            component={WelcomeScreen}
+                            options={{ headerShown: false }}
+                        />
                         <Stack.Screen
                             name="Login"
                             component={Login}
@@ -40,7 +45,7 @@ export default function Main() {
                             options={{ headerShown: false }}
                         />
                     </>
-                ) : (
+                ) : ( // Si connecté, affiche la barre de navigation avec onglets (NavigationTab)
                     <>
                         <Stack.Screen
                             name="NavigationTab"
@@ -62,6 +67,12 @@ export default function Main() {
                             component={EditLocation}
                             options={{ title: 'Modifier un emplacement' }}
                         />
+                        <Stack.Screen
+                            name="Messagerie"
+                            component={MessagingScreen}
+                            options={{ headerShown: true }}
+                        />
+
                     </>
                 )}
             </Stack.Navigator>

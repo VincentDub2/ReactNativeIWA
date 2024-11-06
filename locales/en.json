@@ -1,0 +1,30 @@
+{
+  "home": "Home",
+  "about": "About",
+  "contact": "Contact",
+  "map": {
+    "please_enter_city_name": "Please enter a city name.",
+    "permission_denied": "Permission to access location was denied.",
+    "city_not_found": "City not found. Please check the city name.",
+    "error_occurred": "An error occurred while searching for the city.",
+    "bivouac_location": "Bivouac Location {{number}}",
+    "bivouac_description": "Description of Bivouac Location {{number}}",
+    "amenities_title": "Amenities",
+    "price": "Price",
+    "capacity": "Capacity",
+    "people": "people",
+    "amenities": {
+      "electrical_outlet": "Electrical Outlet",
+      "shower": "Shower",
+      "drinkable_water": "Drinkable Water",
+      "toilets": "Toilets",
+      "wifi": "Wi-Fi",
+      "barbecue": "Barbecue"
+    },
+    "minimum_capacity": "Minimum Capacity",
+    "search_filters": "Search Filters",
+    "enter_city_name": "Enter a city name",
+    "search_radius": "Search radius: {{radius}} km",
+    "search": "Search"
+  }
+}

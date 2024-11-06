@@ -33,10 +33,12 @@ export interface Location {
 }
 
 export type RootStackParamList = {
+    Welcome: undefined;
     Login: undefined;
     Register: undefined;
     NavigationTab: undefined;
     LocationDetail: { location: Partial<Location> }; // Utilise Partial pour rendre les propriétés optionnelles
     AddLocation: undefined;
     EditLocation: { location: Partial<Location> };
+    Messagerie: undefined;
 };
