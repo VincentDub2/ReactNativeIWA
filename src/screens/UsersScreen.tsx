@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { StyleSheet, Text, TextInput, View } from "react-native";
+import { StyleSheet, Text, TextInput, View, ScrollView } from "react-native";
 import { useSelector, useDispatch } from "react-redux";
 import type { RootState } from "../app/store";
 import { setUserName, setEmail, setPhone } from "../features/users/usersSlice";
@@ -9,7 +9,7 @@ import UserInfo from "../components/UserInfo";
 export default function UsersScreen() {
 	const dispatch = useDispatch();
 	// Récupérer les informations de l'utilisateur via Redux
-	const { username, email, phone } = useSelector((state: RootState) => state.users);
+	const { username, email, phone, reservations } = useSelector((state: RootState) => state.users);
 
 	// Local state to manage edit mode and form inputs
 	const [isEditing, setIsEditing] = useState(false);
@@ -43,7 +43,7 @@ export default function UsersScreen() {
 				newUsername={newUsername}
 				setNewUsername={setNewUsername}
 			/>
-			
+
 			<View style={styles.separator} />
 
 			<View style={styles.infoContainer}>
@@ -89,6 +89,26 @@ export default function UsersScreen() {
 
 			<View style={styles.separator} />
 
+			{reservations.length > 0 && (
+				<>
+					<Text style={styles.reservationsTitle}>Mes réservations</Text>
+
+					<ScrollView style={styles.reservationsContainer} contentContainerStyle={{ paddingBottom: 20 }}>
+						{reservations.map((reservation, index) => (
+							<View key={index} style={styles.reservationBox}>
+								<Text style={styles.reservationTitle}>{reservation.nom}</Text>
+								<Text>
+									{reservation.dateDebut ? new Date(reservation.dateDebut).toLocaleDateString() : 'Date de début non définie'}
+								</Text>
+								<Text>
+									{reservation.dateFin ? new Date(reservation.dateFin).toLocaleDateString() : 'Date de fin non définie'}
+								</Text>
+								<Text style={styles.reservationAddress}>{reservation.adresse}</Text>
+							</View>
+						))}
+					</ScrollView>
+				</>
+			)}
 		</View>
 	);
 }
@@ -109,7 +129,7 @@ const styles = StyleSheet.create({
 		width: "80%",
 		backgroundColor: "#ccc",
 		marginTop: 10, // Control space between name and separator
-		marginBottom: 5, // Control space between separator and email
+		marginBottom: -10, // Control space between separator and email
 	},
 	email: {
 		fontSize: 18,
@@ -140,5 +160,38 @@ const styles = StyleSheet.create({
 	singleButtonContainer: {
 		width: "50%",
 		alignItems: "center",
+	},
+	reservationsTitle: {
+		fontSize: 20,
+		fontWeight: "bold",
+		marginTop: 20,
+		color: "#333",
+	},
+	reservationsContainer: {
+		width: "100%",
+		marginTop: 10,
+		maxHeight: 300,
+	},
+	reservationBox: {
+		backgroundColor: "#E9D69F",
+		padding: 10,
+		marginVertical: 5,
+		marginHorizontal: 15,
+		borderRadius: 8,
+	},
+	reservationTitle: {
+		fontSize: 16,
+		fontWeight: "bold",
+		color: "#333",
+	},
+	reservationDates: {
+		fontSize: 14,
+		color: "#555",
+		marginTop: 5,
+	},
+	reservationAddress: {
+		fontSize: 14,
+		color: "#555",
+		marginTop: 5,
 	},
 });
