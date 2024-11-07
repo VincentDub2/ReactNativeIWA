@@ -80,7 +80,7 @@ const styles = StyleSheet.create({
     backgroundColor: '#fff', // Fond blanc pour les champs de saisie
   },
   button: {
-    backgroundColor: '#0066cc',
+    backgroundColor: '#d2b48c',
     paddingVertical: 15,
     paddingHorizontal: 30,
     borderRadius: 30,
@@ -98,7 +98,7 @@ const styles = StyleSheet.create({
     color: '#fff',
   },
   signUpLink: {
-    color: '#0066cc',
+    color: '#d2b48c',
     fontWeight: 'bold',
   },
 });
