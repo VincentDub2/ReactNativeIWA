@@ -19,17 +19,17 @@ const LocationDetail = ({ route }: any) => {
     return (
         <View style={styles.container}>
             <ScrollView contentContainerStyle={styles.scrollContainer}>
-                <Image source={location.image} style={styles.image} />
-                
+                <Image source={typeof location.image === 'string' ? { uri: location.image } : location.image} style={styles.image} />
+
                 {/* Title Section */}
                 <Text style={styles.title}>{location.name}</Text>
-                
+
                 {/* Address Section */}
                 <View style={styles.section}>
                     <Text style={styles.sectionTitle}>Adresse</Text>
                     <Text style={styles.address}>{location.address}</Text>
                 </View>
-                
+
                 {/* Description Section */}
                 <View style={styles.section}>
                     <Text style={styles.sectionTitle}>Description</Text>

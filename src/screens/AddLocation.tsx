@@ -1,7 +1,7 @@
-import React from 'react';
-import { View, StyleSheet } from 'react-native';
-import LocationForm from '../components/LocationForm';
 import { useNavigation } from '@react-navigation/native';
+import React from 'react';
+import { StyleSheet, View } from 'react-native';
+import LocationForm from '../components/LocationForm';
 
 const AddLocation = () => {
     const navigation = useNavigation();

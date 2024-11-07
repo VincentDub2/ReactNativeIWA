@@ -1,9 +1,9 @@
 import React from 'react';
 import { FlatList } from 'react-native';
 import { useSelector } from 'react-redux';
+import { Location } from '../../types'; // Assurez-vous d'importer le type Location
 import { RootState } from '../app/store';
 import LocationCard from './LocationCard';
-import { Location } from '../../types'; // Assurez-vous d'importer le type Location
 
 interface LocationListProps {
     onItemPress: (location: Location) => void; // Utiliser directement Location comme type

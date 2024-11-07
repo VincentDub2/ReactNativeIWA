@@ -5,12 +5,15 @@ interface LocationCardProps {
     name: string;
     address: string;
     amenities: string[];
-    image: any;
+    image: any; // Image peut être une URI ou un import local
     onPress: () => void;
 }
 
 const LocationCard: React.FC<LocationCardProps> = ({ name, address, amenities, image, onPress }) => {
     const [isPressed, setIsPressed] = useState(false);
+
+    // Gestion de l'image, URI ou import local
+    const imageSource = typeof image === 'string' ? { uri: image } : image;
 
     return (
         <TouchableOpacity
@@ -20,7 +23,7 @@ const LocationCard: React.FC<LocationCardProps> = ({ name, address, amenities, i
             style={[styles.card, isPressed && styles.cardPressed]}
             activeOpacity={0.6}
         >
-            <Image source={image} style={styles.image} />
+            <Image source={imageSource} style={styles.image} />
             <View style={styles.cardContent}>
                 <Text style={styles.title}>{name}</Text>
                 <Text>{address}</Text>

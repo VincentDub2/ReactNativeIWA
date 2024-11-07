@@ -1,11 +1,10 @@
-import React from 'react';
-import { View, StyleSheet } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
 import { StackNavigationProp } from '@react-navigation/stack';
-import { RootStackParamList } from '../../types';
-import { Location } from '../../types';  // Importer l'interface Location
-import LocationList from '../components/LocationList';
+import React from 'react';
+import { StyleSheet, View } from 'react-native';
+import { Location, RootStackParamList } from '../../types';
 import CustomButton from '../components/CustomButton';
+import LocationList from '../components/LocationList';
 
 type NavigationProp = StackNavigationProp<RootStackParamList, 'LocationDetail'>;
 
