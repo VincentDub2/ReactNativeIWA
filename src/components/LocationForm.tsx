@@ -2,14 +2,13 @@ import { useNavigation } from '@react-navigation/native';
 import * as ImagePicker from 'expo-image-picker';
 import * as Location from 'expo-location';
 import React, { useEffect, useState } from 'react';
-import { Image, ScrollView, StyleSheet, Text, TextInput, TouchableOpacity, View } from 'react-native';
+import { Image, ScrollView, StyleSheet, Text, TextInput, TouchableOpacity, View, Animated, Easing } from 'react-native';
 import MapView, { MapEvent, Marker } from 'react-native-maps';
 import { useDispatch } from 'react-redux';
-import CheckmarkIcon from '../../assets/check.png';
-import CircleIcon from '../../assets/uncheck.png';
 import amenitiesData from '../data/amenities.json';
 import { addLocation } from '../features/locations/locationSlice';
 import CustomButton from './CustomButton';
+import { useModal } from '../ModalProvider';
 
 interface LocationFormProps {
     onSubmit: () => void;
@@ -44,8 +43,22 @@ const LocationForm: React.FC<LocationFormProps> = ({ onSubmit, initialValues }) 
         longitudeDelta: number;
     } | null>(null);
     const [selectedImage, setSelectedImage] = useState<string | null>(null);
+
     const dispatch = useDispatch();
     const navigation = useNavigation();
+    const { showModal } = useModal();
+
+    const progressAnim = useState(new Animated.Value(0))[0];
+
+    useEffect(() => {
+        const progress = (step - 1) / 3;
+        Animated.timing(progressAnim, {
+            toValue: progress,
+            duration: 500,
+            easing: Easing.inOut(Easing.ease),
+            useNativeDriver: false,
+        }).start();
+    }, [step]);
 
     useEffect(() => {
         (async () => {
@@ -62,6 +75,8 @@ const LocationForm: React.FC<LocationFormProps> = ({ onSubmit, initialValues }) 
                     latitude: userLocation.coords.latitude,
                     longitude: userLocation.coords.longitude,
                 });
+            } else {
+                showModal("Permissions de localisation non accordées.", "error");
             }
         })();
     }, []);
@@ -80,7 +95,7 @@ const LocationForm: React.FC<LocationFormProps> = ({ onSubmit, initialValues }) 
         const result = await ImagePicker.launchImageLibraryAsync({
             mediaTypes: ImagePicker.MediaTypeOptions.Images,
             allowsEditing: true,
-            aspect: [4, 3],
+            aspect: [2, 3],
             quality: 1,
         });
 
@@ -98,22 +113,21 @@ const LocationForm: React.FC<LocationFormProps> = ({ onSubmit, initialValues }) 
                 address,
                 description,
                 amenities: selectedAmenities,
-                image: selectedImage,  // Utilisation de l'URI de l'image
+                image: selectedImage,
                 latitude: coordinate.latitude,
                 longitude: coordinate.longitude,
                 pricePerNight: parseFloat(pricePerNight),
             }));
+            showModal("L'emplacement a été ajouté avec succès !", "success");
             onSubmit();
         } else {
-            console.log("Veuillez remplir tous les champs requis.");
+            showModal("Veuillez remplir tous les champs requis.", "error");
         }
     };
-    
-    
 
     const nextStep = () => {
         const missingFields: string[] = [];
-    
+
         switch (step) {
             case 1:
                 if (!name) missingFields.push("Nom de l'emplacement");
@@ -130,27 +144,28 @@ const LocationForm: React.FC<LocationFormProps> = ({ onSubmit, initialValues }) 
                 if (!pricePerNight) missingFields.push("Prix par nuit");
                 break;
         }
-    
+
         if (missingFields.length > 0) {
-            console.log("Champs manquants :", missingFields.join(", "));
+            showModal("Veuillez remplir tous les champs requis avant de passer à l'étape suivante.", "error");
         } else {
             setStep((prev) => prev + 1);
         }
     };
-    
+
     const previousStep = () => setStep((prev) => prev - 1);
     const cancelForm = () => navigation.navigate('Mes emplacements');
 
-    const stepTitles = ["Étape 1/4\n", "Étape 2/4\n", "Étape 3/4\n", "Étape 4/4\n"];
-    
+    const stepTitles = ["1 - Informations générales", "2 - Adresse", "3 - Commodités", "4 - Tarification"];
+
     return (
         <View style={{ flex: 1 }}>
+
+
             <ScrollView contentContainerStyle={styles.scrollContainer}>
                 <View style={styles.form}>
-                    <Text style={styles.stepTitle}>{stepTitles[step - 1]}</Text>
                     {step === 1 && (
                         <View>
-                            <Text style={styles.label}>Titre de l'emplacement :</Text>
+                            <Text style={styles.label}>Nom de l'emplacement :</Text>
                             <TextInput
                                 style={styles.input}
                                 placeholder="Nom de l'emplacement"
@@ -159,13 +174,23 @@ const LocationForm: React.FC<LocationFormProps> = ({ onSubmit, initialValues }) 
                             />
                             <Text style={styles.label}>Description :</Text>
                             <TextInput
-                                style={styles.input}
+                                style={styles.input2}
                                 placeholder="Description de l'emplacement"
                                 value={description}
                                 onChangeText={setDescription}
+                                multiline={true}       // Permet plusieurs lignes
+                                numberOfLines={5}      // Définit la hauteur en lignes, ajuste ce nombre selon tes besoins
                             />
-                            <CustomButton action={pickImage} color="#ccc" text="Choisir une image" />
-                            {selectedImage && <Image source={{ uri: selectedImage }} style={styles.image} />}
+
+                            <Text style={styles.label}>Photo :</Text>
+
+                            <TouchableOpacity style={styles.imagePlaceholder} onPress={pickImage}>
+                                {selectedImage ? (
+                                    <Image source={{ uri: selectedImage }} style={styles.image} />
+                                ) : (
+                                    <Text style={styles.plusText}>+</Text>
+                                )}
+                            </TouchableOpacity>
                         </View>
                     )}
 
@@ -226,23 +251,25 @@ const LocationForm: React.FC<LocationFormProps> = ({ onSubmit, initialValues }) 
                 </View>
             </ScrollView>
 
-            {/* Frise de progression */}
-            <View style={styles.progressBar}>
-                {[2, 3, 4, 5].map((item) => (
-                    <Image
-                        key={item}
-                        source={step >= item ? CheckmarkIcon : CircleIcon}
-                        style={styles.icon}
-                    />
-                ))}
+            <View style={styles.stepTitleContainer}>
+                <Text style={styles.stepTitle}>{stepTitles[step - 1]}</Text>
+            </View>
+
+            <View style={styles.progressBarContainer}>
+                <Animated.View style={[styles.progressBar, {
+                    width: progressAnim.interpolate({
+                        inputRange: [0, 1],
+                        outputRange: ['10%', '90%']
+                    })
+                }]} />
             </View>
 
             <View style={styles.navigationButtons}>
                 <View style={styles.leftButtons}>
                     {step > 1 ? (
-                        <CustomButton action={previousStep} color="#ccc" text="Précédent" />
+                        <CustomButton action={previousStep} color="#b4b4b4" text="Précédent" />
                     ) : (
-                        <CustomButton action={cancelForm} color="#ccc" text="Annuler" />
+                        <CustomButton action={cancelForm} color="#b4b4b4" text="Annuler" />
                     )}
                 </View>
                 <View style={styles.rightButtons}>
@@ -258,19 +285,31 @@ const LocationForm: React.FC<LocationFormProps> = ({ onSubmit, initialValues }) 
 };
 
 const styles = StyleSheet.create({
+    stepTitleContainer: {
+        alignItems: 'center',
+        paddingVertical: 10,
+        backgroundColor: '#fff',
+        marginBottom: 90,
+        borderTopLeftRadius: 20,
+        borderTopRightRadius: 20,
+        shadowColor: '#000', // Couleur de l'ombre
+        shadowOffset: { width: 0, height: 2 }, // Décalage de l'ombre
+        shadowOpacity: 0.3, // Opacité de l'ombre
+        shadowRadius: 5, // Rayon de flou de l'ombre
+        elevation: 5, // Propriété spécifique à Android pour l'ombre
+    },
+    
+    stepTitle: {
+        fontSize: 18,
+        fontWeight: 'bold',
+        color: '#333',
+    },
     scrollContainer: {
         paddingBottom: 160,
     },
     form: {
         padding: 20,
         marginBottom: 20,
-    },
-    stepTitle: {
-        fontSize: 18,
-        fontWeight: 'bold',
-        marginBottom: 10,
-        color: '#333',
-        textAlign: 'center',
     },
     label: {
         fontSize: 16,
@@ -284,6 +323,16 @@ const styles = StyleSheet.create({
         padding: 10,
         marginBottom: 10,
     },
+    input2: {
+        borderColor: '#ccc',
+        borderWidth: 1,
+        borderRadius: 5,
+        padding: 10,
+        marginBottom: 10,
+        height: 100,         // Ajuste la hauteur selon le besoin
+        textAlignVertical: 'top', // Pour aligner le texte en haut
+    },
+    
     map: {
         height: 200,
         marginVertical: 10,
@@ -310,26 +359,35 @@ const styles = StyleSheet.create({
         color: '#fff',
         fontWeight: 'bold',
     },
-    image: {
-        width: 200,
+    imagePlaceholder: {
+        width: 300,
         height: 200,
+        backgroundColor: '#e0e0e0',
+        justifyContent: 'center',
+        alignItems: 'center',
+        borderRadius: 10,
         marginVertical: 10,
+    },
+    plusText: {
+        fontSize: 40,
+        color: '#999',
+    },
+    image: {
+        width: 300,
+        height: 200,
         borderRadius: 10,
     },
-    progressBar: {
+    progressBarContainer: {
+        height: 10,
+        width: '100%',
+        backgroundColor: '#e0e0e0',
         position: 'absolute',
         bottom: 80,
         left: 0,
-        right: 0,
-        flexDirection: 'row',
-        justifyContent: 'center',
-        paddingVertical: 10,
-        backgroundColor: '#fff',
     },
-    icon: {
-        width: 35,
-        height: 35,
-        marginHorizontal: 5,
+    progressBar: {
+        height: '100%',
+        backgroundColor: '#f0ad4e',
     },
     navigationButtons: {
         position: 'absolute',
