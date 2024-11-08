@@ -23,5 +23,6 @@ export type RootStackParamList = {
     Login: undefined;
     Register: undefined;
     NavigationTab: undefined;
+    Users: undefined;
     Messagerie: undefined;
 };

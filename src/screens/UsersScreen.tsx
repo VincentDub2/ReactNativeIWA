@@ -1,12 +1,14 @@
-import React, { useState } from "react";
-import { StyleSheet, Text, TextInput, View, ScrollView } from "react-native";
+import React, { useState, useLayoutEffect } from "react";
+import { StyleSheet, Text, TextInput, View, ScrollView, TouchableOpacity } from "react-native";
 import { useSelector, useDispatch } from "react-redux";
+import { useNavigation } from "@react-navigation/native";
 import type { RootState } from "../app/store";
-import { setUserName, setEmail, setPhone } from "../features/users/usersSlice";
+import { setUserName, setEmail, setPhone, logout } from "../features/users/usersSlice";
 import CustomButton from "../components/CustomButton";
 import UserInfo from "../components/UserInfo";
 
 export default function UsersScreen() {
+	const navigation = useNavigation<any>();
 	const dispatch = useDispatch();
 	// Récupérer les informations de l'utilisateur via Redux
 	const { username, email, phone, reservations } = useSelector((state: RootState) => state.users);
@@ -34,8 +36,18 @@ export default function UsersScreen() {
 		setIsEditing(false);
 	};
 
+	const handleLogout = () => {
+        dispatch(logout()); // Déclenche la déconnexion
+        navigation.navigate("Login"); // Redirige vers l’écran de connexion
+    };
+
 	return (
 		<View style={styles.container}>
+			{/* Bouton Logout en haut de l'écran */}
+            <TouchableOpacity onPress={handleLogout} style={styles.logoutButtonContainer}>
+                <Text style={styles.logoutButtonText}>Logout</Text>
+            </TouchableOpacity>
+
 			<UserInfo
 				name={username}
 				profilePicture={require("../../assets/images/quack-with-tent-background.png")}
@@ -64,8 +76,19 @@ export default function UsersScreen() {
 					</View>
 				) : (
 					<View>
-						<Text style={styles.email}>{email}</Text>
-						<Text style={styles.phone}>{phone}</Text>
+						{email ? (
+							<View style={styles.row}>
+								<Text style={styles.label}>Email :</Text>
+								<Text style={styles.email}>{email}</Text>
+							</View>
+						) : null}
+
+						{phone ? (
+							<View style={styles.row}>
+								<Text style={styles.label}>Phone :</Text>
+								<Text style={styles.phone}>{phone}</Text>
+							</View>
+						) : null}
 					</View>
 				)}
 			</View>
@@ -124,6 +147,15 @@ const styles = StyleSheet.create({
 		alignItems: "center",
 		marginTop: 20,
 	},
+	row: {
+        flexDirection: 'row',
+        alignItems: 'center',
+    },
+    label: {
+        fontWeight: 'bold',
+        fontSize: 16,
+        marginRight: 10,
+    },
 	separator: {
 		height: 2,
 		width: "80%",
@@ -194,4 +226,20 @@ const styles = StyleSheet.create({
 		color: "#555",
 		marginTop: 5,
 	},
+	logoutButtonContainer: {
+        alignSelf: 'flex-end',
+        marginRight: 15,
+        marginTop: 10,
+        backgroundColor: "#E9D69F", // Couleur de fond
+        borderRadius: 25, // Pour rendre le bouton circulaire, il doit être la moitié de la largeur et de la hauteur
+        width: 80,
+        height: 40,
+        justifyContent: "center",
+        alignItems: "center",
+    },
+    logoutButtonText: {
+        color: "#fff", // Couleur du texte
+        fontSize: 16,
+        fontWeight: "bold",
+    },
 });

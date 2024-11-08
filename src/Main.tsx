@@ -9,6 +9,7 @@ import Login from './screens/LoginScreen';
 import Register from './screens/RegisterScreen';
 import WelcomeScreen from './screens/WelcomeScreen';
 import MessagingScreen from "./screens/MessagerieScreen";
+import UsersScreen from "./screens/UsersScreen";
 
 
 import "./global.css";
@@ -51,10 +52,15 @@ export default function Main() {
                         options={{ headerShown: false }}
                     />
                     <Stack.Screen
+                        name="Users"
+                        component={UsersScreen}
+                        options={{ headerShown: true }}
+                    />
+                    <Stack.Screen
                       name="Messagerie"
                       component={MessagingScreen}
                       options={{ headerShown: true }}
-						      />
+					/>
                     </>
                 )}
             </Stack.Navigator>
