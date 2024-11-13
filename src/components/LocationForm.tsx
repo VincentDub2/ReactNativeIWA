@@ -298,7 +298,7 @@ const styles = StyleSheet.create({
         shadowRadius: 5, // Rayon de flou de l'ombre
         elevation: 5, // Propriété spécifique à Android pour l'ombre
     },
-    
+
     stepTitle: {
         fontSize: 18,
         fontWeight: 'bold',
@@ -332,7 +332,7 @@ const styles = StyleSheet.create({
         height: 100,         // Ajuste la hauteur selon le besoin
         textAlignVertical: 'top', // Pour aligner le texte en haut
     },
-    
+
     map: {
         height: 200,
         marginVertical: 10,
