@@ -16,6 +16,10 @@ const LocationDetail = ({ route }: any) => {
         navigation.navigate('EditLocation', { location });
     };
 
+    // Formatage des dates de disponibilité
+    const startDate = new Date(location.dispo.startDate).toLocaleDateString();
+    const endDate = new Date(location.dispo.endDate).toLocaleDateString();
+
     return (
         <View style={styles.container}>
             <ScrollView contentContainerStyle={styles.scrollContainer}>
@@ -55,6 +59,12 @@ const LocationDetail = ({ route }: any) => {
                 <View style={styles.section}>
                     <Text style={styles.sectionTitle}>Commodités</Text>
                     <Text style={styles.amenities}>{location.amenities.join(', ')}</Text>
+                </View>
+
+                {/* Disponibilité Section */}
+                <View style={styles.section}>
+                    <Text style={styles.sectionTitle}>Disponibilité</Text>
+                    <Text style={styles.availability}>Du {startDate} au {endDate}</Text>
                 </View>
             </ScrollView>
 
@@ -136,6 +146,10 @@ const styles = StyleSheet.create({
         fontWeight: 'bold',
     },
     amenities: {
+        fontSize: 16,
+        color: '#333',
+    },
+    availability: {
         fontSize: 16,
         color: '#333',
     },

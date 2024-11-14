@@ -11,7 +11,12 @@ interface Location {
     latitude: number;
     longitude: number;
     pricePerNight: number;
+    dispo: {
+        startDate: string; // Date au format string
+        endDate: string;   // Date au format string
+    };
 }
+
 
 interface LocationState {
     locations: Location[];
@@ -30,6 +35,10 @@ const initialState: LocationState = {
             latitude: 43.7243,
             longitude: 3.6826,
             pricePerNight: 45,
+            dispo: {
+                startDate: '2024-03-23T00:00:00.000Z', // Exemple de date ISO
+                endDate: '2024-07-23T00:00:00.000Z'
+            },
         },
         {
             idLocation: 2,
@@ -42,6 +51,10 @@ const initialState: LocationState = {
             latitude: 43.5614,
             longitude: 6.1808,
             pricePerNight: 70,
+            dispo: {
+                startDate: '2024-03-23T00:00:00.000Z',
+                endDate: '2024-07-23T00:00:00.000Z'
+            },
         },
         {
             idLocation: 3,
@@ -54,6 +67,10 @@ const initialState: LocationState = {
             latitude: 44.5906,
             longitude: 2.1953,
             pricePerNight: 55,
+            dispo: {
+                startDate: '2024-03-23T00:00:00.000Z',
+                endDate: '2024-07-23T00:00:00.000Z'
+            },
         },
         {
             idLocation: 4,
@@ -66,9 +83,14 @@ const initialState: LocationState = {
             latitude: 45.8464,
             longitude: 0.9742,
             pricePerNight: 25,
+            dispo: {
+                startDate: '2024-03-23T00:00:00.000Z',
+                endDate: '2024-07-23T00:00:00.000Z'
+            },
         }
     ],
 };
+
 
 export const locationSlice = createSlice({
     name: 'locations',
@@ -79,6 +101,7 @@ export const locationSlice = createSlice({
         },
     },
 });
+
 
 export const { addLocation } = locationSlice.actions;
 export default locationSlice.reducer;

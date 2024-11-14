@@ -3,12 +3,14 @@ import * as ImagePicker from 'expo-image-picker';
 import * as Location from 'expo-location';
 import React, { useEffect, useState } from 'react';
 import { Image, ScrollView, StyleSheet, Text, TextInput, TouchableOpacity, View, Animated, Easing } from 'react-native';
-import MapView, { MapEvent, Marker } from 'react-native-maps';
+import MapView, { MapPressEvent, Marker } from 'react-native-maps';
 import { useDispatch } from 'react-redux';
 import amenitiesData from '../data/amenities.json';
 import { addLocation } from '../features/locations/locationSlice';
 import CustomButton from './CustomButton';
 import { useModal } from '../ModalProvider';
+import DateTimePicker from '@react-native-community/datetimepicker';
+
 
 interface LocationFormProps {
     onSubmit: () => void;
@@ -22,8 +24,15 @@ interface LocationFormProps {
         longitude: number;
         image: any;
         pricePerNight: number;
+        dispo: {
+            startDate: string; // Doit être de type string
+            endDate: string;    // Doit être de type string
+        };
     };
 }
+
+
+
 
 const LocationForm: React.FC<LocationFormProps> = ({ onSubmit, initialValues }) => {
     const [step, setStep] = useState(1);
@@ -43,6 +52,16 @@ const LocationForm: React.FC<LocationFormProps> = ({ onSubmit, initialValues }) 
         longitudeDelta: number;
     } | null>(null);
     const [selectedImage, setSelectedImage] = useState<string | null>(null);
+    const [datePickerType, setDatePickerType] = useState<'start' | 'end' | null>(null);
+    const [startDate, setStartDate] = useState<Date | null>(
+        initialValues?.dispo?.startDate ? new Date(initialValues.dispo.startDate) : null
+    );
+    const [endDate, setEndDate] = useState<Date | null>(
+        initialValues?.dispo?.endDate ? new Date(initialValues.dispo.endDate) : null
+    );
+
+
+
 
     const dispatch = useDispatch();
     const navigation = useNavigation();
@@ -87,7 +106,7 @@ const LocationForm: React.FC<LocationFormProps> = ({ onSubmit, initialValues }) 
         );
     };
 
-    const handleMapPress = (event: MapEvent) => {
+    const handleMapPress = (event: MapPressEvent) => {
         setCoordinate(event.nativeEvent.coordinate);
     };
 
@@ -105,7 +124,7 @@ const LocationForm: React.FC<LocationFormProps> = ({ onSubmit, initialValues }) 
     };
 
     const handleAddLocation = () => {
-        if (name && address && description && selectedImage && pricePerNight && selectedAmenities.length > 0) {
+        if (name && address && description && selectedImage && pricePerNight && startDate && endDate) {
             dispatch(addLocation({
                 idLocation: initialValues?.idLocation || Math.floor(Math.random() * 10000),
                 idHost: 1,
@@ -117,6 +136,10 @@ const LocationForm: React.FC<LocationFormProps> = ({ onSubmit, initialValues }) 
                 latitude: coordinate.latitude,
                 longitude: coordinate.longitude,
                 pricePerNight: parseFloat(pricePerNight),
+                dispo: {
+                    startDate: startDate.toISOString(),
+                    endDate: endDate.toISOString(),
+                },
             }));
             showModal("L'emplacement a été ajouté avec succès !", "success");
             onSubmit();
@@ -124,6 +147,16 @@ const LocationForm: React.FC<LocationFormProps> = ({ onSubmit, initialValues }) 
             showModal("Veuillez remplir tous les champs requis.", "error");
         }
     };
+
+    const getNextDay = (date: Date | null) => {
+        if (!date) return new Date(); // Retourne la date actuelle si startDate est null
+        const nextDay = new Date(date);
+        nextDay.setDate(nextDay.getDate() + 1); // Ajoute un jour à la date
+        return nextDay;
+    };
+
+
+
 
     const nextStep = () => {
         const missingFields: string[] = [];
@@ -136,12 +169,18 @@ const LocationForm: React.FC<LocationFormProps> = ({ onSubmit, initialValues }) 
                 break;
             case 2:
                 if (!address) missingFields.push("Adresse de l'emplacement");
+                if (!coordinate.latitude || !coordinate.longitude) missingFields.push("Emplacement sur la carte");
                 break;
             case 3:
                 if (selectedAmenities.length === 0) missingFields.push("Commodités");
                 break;
             case 4:
                 if (!pricePerNight) missingFields.push("Prix par nuit");
+                if (!startDate) missingFields.push("Date de début de disponibilité");
+                if (!endDate) missingFields.push("Date de fin de disponibilité");
+                if (startDate && endDate && endDate <= startDate) {
+                    missingFields.push("La date de fin doit être postérieure à la date de début");
+                }
                 break;
         }
 
@@ -153,7 +192,7 @@ const LocationForm: React.FC<LocationFormProps> = ({ onSubmit, initialValues }) 
     };
 
     const previousStep = () => setStep((prev) => prev - 1);
-    const cancelForm = () => navigation.navigate('Mes emplacements');
+    const cancelForm = () => navigation.goBack();
 
     const stepTitles = ["1 - Informations générales", "2 - Adresse", "3 - Commodités", "4 - Tarification"];
 
@@ -246,8 +285,28 @@ const LocationForm: React.FC<LocationFormProps> = ({ onSubmit, initialValues }) 
                                 keyboardType="numeric"
                                 onChangeText={setPricePerNight}
                             />
+                            <Text style={styles.label}>Date de début de disponibilité :</Text>
+                            <DateTimePicker
+                                value={startDate || new Date()} // Affiche la date actuelle ou celle choisie
+                                mode="date"
+                                display="compact"
+                                onChange={(event, date) => setStartDate(date || null)}
+                                style={styles.datePicker}
+                                minimumDate={new Date()} // Empêche les dates passées
+                            />
+
+                            <Text style={styles.label}>Date de fin de disponibilité :</Text>
+                            <DateTimePicker
+                                value={endDate || new Date()}
+                                mode="date"
+                                display="compact"
+                                onChange={(event, date) => setEndDate(date || null)}
+                                style={styles.datePicker}
+                                minimumDate={getNextDay(startDate)} // Empêche la sélection avant startDate + 1 jour
+                            />
                         </View>
                     )}
+
                 </View>
             </ScrollView>
 
@@ -407,6 +466,10 @@ const styles = StyleSheet.create({
     rightButtons: {
         flex: 1,
         alignItems: 'flex-end',
+    },
+    datePicker: {
+        width: '100%',
+        marginBottom: 10,
     },
 });
 

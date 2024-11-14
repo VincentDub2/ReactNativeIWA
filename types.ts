@@ -30,6 +30,10 @@ export interface Location {
     latitude: number;
     longitude: number;
     pricePerNight: number;
+    dispo: {
+        startDate: string; // Utilisez string au lieu de Date
+        endDate: string;   // Utilisez string au lieu de Date
+    };
 }
 
 export type RootStackParamList = {
