@@ -1,4 +1,4 @@
-import React, { useState, useLayoutEffect } from "react";
+import React, { useState, useLayoutEffect, useEffect } from "react";
 import { StyleSheet, Text, TextInput, View, ScrollView, TouchableOpacity } from "react-native";
 import { useSelector, useDispatch } from "react-redux";
 import { useNavigation } from "@react-navigation/native";
@@ -6,6 +6,7 @@ import type { RootState } from "../app/store";
 import { setUserName, setEmail, setPhone, logout } from "../features/users/usersSlice";
 import CustomButton from "../components/CustomButton";
 import UserInfo from "../components/UserInfo";
+import isAuthenticated from "../features/users/usersSlice";
 
 export default function UsersScreen() {
 	const navigation = useNavigation<any>();
@@ -36,10 +37,17 @@ export default function UsersScreen() {
 		setIsEditing(false);
 	};
 
+	useEffect(() => {
+        // Redirige vers Login si l'utilisateur est déconnecté
+        if (!isAuthenticated) {
+            navigation.navigate("Login");
+        }
+    }, [isAuthenticated, navigation]);
+
 	const handleLogout = () => {
-        dispatch(logout()); // Déclenche la déconnexion
-        navigation.navigate("Login"); // Redirige vers l’écran de connexion
-    };
+		dispatch(logout()); // Déclenche la déconnexion et met à jour isAuthenticated à false dans le store Redux
+		// La redirection se fait automatiquement via useEffect lorsque isAuthenticated passe à false
+	};
 
 	return (
 		<View style={styles.container}>

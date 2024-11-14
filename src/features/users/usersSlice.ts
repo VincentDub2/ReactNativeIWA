@@ -29,12 +29,48 @@ const initialState: User = {
     reservations: [],
 }
 
+// Action asynchrone pour gérer l'enregistrement
+export const registerAsync = createAsyncThunk(
+    'users/registerAsync',
+    async (credentials: { email: string; password: string; username: string; firstname: string; lastname: string }) => {
+        try {
+            const response = await fetch('http://localhost:8090/api/v1/user/auth/register', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify(credentials),
+            });
+
+            const contentType = response.headers.get("content-type");
+            let data;
+
+            if (contentType && contentType.includes("application/json")) {
+                data = await response.json();
+            } else {
+                const textData = await response.text();
+                //console.warn("Réponse en texte du serveur :", textData);
+                throw new Error("La réponse du serveur n'est pas au format JSON");
+            }
+
+            if (!response.ok) {
+                throw new Error(data.message || 'Erreur lors de l\'enregistrement');
+            }
+
+            return data;
+        } catch (error) {
+            //console.error("Erreur lors de l'enregistrement :", error);
+            throw error;
+        }
+    }
+);
+
 // Action asynchrone pour gérer la connexion
 export const loginAsync = createAsyncThunk(
     'users/loginAsync',
     async (credentials: { email: string; password: string }) => {
         try {
-            const response = await fetch('http://localhost:8081/auth/login', {
+            const response = await fetch('http://localhost:8090/api/v1/user/auth/login', {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
@@ -63,7 +99,7 @@ export const loginAsync = createAsyncThunk(
                 return { token };
             }
         } catch (error) {
-            console.error("Erreur lors de la connexion :", error);
+            //console.error("Erreur lors de la connexion :", error);
             throw error;
         }
     }

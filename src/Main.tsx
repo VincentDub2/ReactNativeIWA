@@ -1,9 +1,11 @@
-import { createStackNavigator } from "@react-navigation/stack";
+import { createStackNavigator, StackNavigationProp } from "@react-navigation/stack";
 import React, { useState } from "react";
 import { View } from "react-native";
 import { useDispatch, useSelector } from "react-redux";
+import { useEffect } from "react";
 import type { RootState } from "./app/store"; // Ajuste selon ton chemin
 import NavigationTab from "./components/NavigationTab";
+import { useNavigation } from "@react-navigation/native";
 
 import Login from './screens/LoginScreen';
 import Register from './screens/RegisterScreen';
@@ -19,9 +21,27 @@ import "./i18n";
 const Stack = createStackNavigator<RootStackParamList>();
 
 export default function Main() {
-	const isAuthenticated = useSelector(
-		(state: RootState) => state.users.isAuthenticated,
-	); // Récupère l'état du store
+
+    const isAuthenticated = useSelector(
+        (state: RootState) => state.users.isAuthenticated
+    );
+    const navigation = useNavigation<StackNavigationProp<RootStackParamList>>();
+
+    useEffect(() => {
+        if (isAuthenticated) {
+            navigation.navigate("NavigationTab");
+        } else {
+            navigation.navigate("Login");
+        }
+    }, [isAuthenticated, navigation]);
+
+    useEffect(() => {
+        // Rediriger vers Login si non authentifié
+        if (!isAuthenticated) {
+            navigation.navigate("Login");
+        }
+    }, [isAuthenticated]);
+
     return (
         <View style={{ flex: 1 }}>
             <Stack.Navigator initialRouteName="Welcome">

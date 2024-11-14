@@ -1,31 +1,42 @@
 import React, { useState } from 'react';
-import { View, Text, TextInput, Button, StyleSheet, TouchableOpacity, ImageBackground } from 'react-native';
+import { View, Text, TextInput, Button, StyleSheet, TouchableOpacity, ImageBackground, Alert } from 'react-native';
 import { StackNavigationProp } from '@react-navigation/stack';
 import { useDispatch } from 'react-redux';
 import { setUserName, setLastName, setFirstName, setEmail, login } from '../features/users/usersSlice';
 import {RootStackParamList} from "../../types";
 import {useNavigation} from "@react-navigation/native"; // Les actions à utiliser
+import { AppDispatch } from '../app/store';
+import { registerAsync } from '../features/users/usersSlice';
+
 type RegisterScreenNavigationProp = StackNavigationProp<RootStackParamList, 'Register'>;
 
 export default function Register() {
+    const navigation = useNavigation<RegisterScreenNavigationProp>();
     const [username, setUserNameInput] = useState('');
     const [lastname, setLastNameInput] = useState('');
     const [firstname, setFirstNameInput] = useState('');
     const [email, setEmailInput] = useState('');
-    const dispatch = useDispatch();
-    const navigation = useNavigation<RegisterScreenNavigationProp>();
+    const [password, setPasswordInput] = useState('');
+    const [confirmPassword, setConfirmPasswordInput] = useState('');
+    const dispatch = useDispatch<AppDispatch>();
 
-    const onRegister = () => {
-        navigation.navigate('Login');
-    }
-
-    const handleRegister = () => {
-      dispatch(setUserName(username));  // Met à jour le nom d'utilisateur dans le store
-      dispatch(setLastName(lastname));  // Met à jour le nom dans le store
-      dispatch(setFirstName(firstname));  // Met à jour le prénom dans le store
-      dispatch(setEmail(email));  // Met à jour l'email dans le store
-      dispatch(login());  // Connecte l'utilisateur
-      onRegister();  // Appelle la fonction onRegister pour gérer la redirection
+    
+    const handleRegister = async () => {
+      if (password !== confirmPassword) {
+        Alert.alert('Erreur', 'Les mots de passe ne correspondent pas');
+        return;
+      }
+      try {
+        const resultAction = await dispatch(registerAsync({ email, password, username, lastname, firstname }));
+        if (registerAsync.fulfilled.match(resultAction)) {
+          navigation.navigate('Login');
+        } else {
+          Alert.alert('Erreur', 'Erreur lors de l\'inscription');
+        }
+      } catch (error) {
+        console.error('Erreur lors de l\'inscription', error);
+        Alert.alert('Erreur', 'Une erreur est survenue lors de l\'inscription');
+      }
     };
 
     return (
@@ -59,14 +70,26 @@ export default function Register() {
             value={email}
             onChangeText={setEmailInput}
           />
-          <TextInput style={styles.input} placeholder="Mot de passe" secureTextEntry />
-          <TextInput style={styles.input} placeholder="Confirmez le mot de passe" secureTextEntry />
+          <TextInput
+            style={styles.input}
+            placeholder="Mot de passe"
+            secureTextEntry
+            value={password}
+            onChangeText={setPasswordInput}
+          />
+          <TextInput
+            style={styles.input}
+            placeholder="Confirmez le mot de passe"
+            secureTextEntry
+            value={confirmPassword}
+            onChangeText={setConfirmPasswordInput}
+          />
 
           <TouchableOpacity style={styles.button} onPress={handleRegister}>
             <Text style={styles.buttonText}>S'inscrire</Text>
           </TouchableOpacity>
 
-          <TouchableOpacity onPress={onRegister}>
+          <TouchableOpacity onPress={() => navigation.navigate('Login')}>
             <Text style={styles.signUpText}>
               Déjà un compte ? <Text style={styles.signUpLink}>Connectez-vous</Text>
             </Text>
