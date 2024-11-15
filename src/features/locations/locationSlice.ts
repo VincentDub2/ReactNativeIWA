@@ -1,5 +1,10 @@
 import { createSlice, PayloadAction } from '@reduxjs/toolkit';
 
+interface Dispo {
+    startDate: string;
+    endDate: string;
+}
+
 interface Location {
     idLocation: number;
     idHost: number;
@@ -11,11 +16,9 @@ interface Location {
     latitude: number;
     longitude: number;
     pricePerNight: number;
-    dispo: {
-        startDate: string; // Date au format string
-        endDate: string;   // Date au format string
-    };
+    dispo: Dispo;
 }
+
 
 
 interface LocationState {
@@ -92,16 +95,28 @@ const initialState: LocationState = {
 };
 
 
-export const locationSlice = createSlice({
+const locationSlice = createSlice({
     name: 'locations',
     initialState,
     reducers: {
         addLocation: (state, action: PayloadAction<Location>) => {
             state.locations.push(action.payload);
         },
+        deleteLocation: (state, action: PayloadAction<number>) => {
+            state.locations = state.locations.filter(
+                (location) => location.idLocation !== action.payload
+            );
+        },
+        updateLocation: (state, action: PayloadAction<Location>) => {
+            const index = state.locations.findIndex(
+                (loc) => loc.idLocation === action.payload.idLocation
+            );
+            if (index !== -1) {
+                state.locations[index] = action.payload; // Remplace l'emplacement existant
+            }
+        },
     },
 });
 
-
-export const { addLocation } = locationSlice.actions;
+export const { addLocation, deleteLocation, updateLocation } = locationSlice.actions;
 export default locationSlice.reducer;

@@ -6,7 +6,7 @@ import { Image, ScrollView, StyleSheet, Text, TextInput, TouchableOpacity, View,
 import MapView, { MapPressEvent, Marker } from 'react-native-maps';
 import { useDispatch } from 'react-redux';
 import amenitiesData from '../data/amenities.json';
-import { addLocation } from '../features/locations/locationSlice';
+import { addLocation, updateLocation } from '../features/locations/locationSlice';
 import CustomButton from './CustomButton';
 import { useModal } from '../ModalProvider';
 import DateTimePicker from '@react-native-community/datetimepicker';
@@ -35,6 +35,15 @@ interface LocationFormProps {
 
 
 const LocationForm: React.FC<LocationFormProps> = ({ onSubmit, initialValues }) => {
+
+    const [initialRegion, setInitialRegion] = useState<{
+        latitude: number;
+        longitude: number;
+        latitudeDelta: number;
+        longitudeDelta: number;
+    } | null>(null);
+
+
     const [step, setStep] = useState(1);
     const [name, setName] = useState(initialValues?.name || '');
     const [address, setAddress] = useState(initialValues?.address || '');
@@ -45,22 +54,15 @@ const LocationForm: React.FC<LocationFormProps> = ({ onSubmit, initialValues }) 
         latitude: initialValues?.latitude || 37.78825,
         longitude: initialValues?.longitude || -122.4324,
     });
-    const [initialRegion, setInitialRegion] = useState<{
-        latitude: number;
-        longitude: number;
-        latitudeDelta: number;
-        longitudeDelta: number;
-    } | null>(null);
-    const [selectedImage, setSelectedImage] = useState<string | null>(null);
-    const [datePickerType, setDatePickerType] = useState<'start' | 'end' | null>(null);
+    const [selectedImage, setSelectedImage] = useState<string | null>(
+        typeof initialValues?.image === 'string' ? initialValues.image : null
+    );
     const [startDate, setStartDate] = useState<Date | null>(
         initialValues?.dispo?.startDate ? new Date(initialValues.dispo.startDate) : null
     );
     const [endDate, setEndDate] = useState<Date | null>(
         initialValues?.dispo?.endDate ? new Date(initialValues.dispo.endDate) : null
     );
-
-
 
 
     const dispatch = useDispatch();
@@ -80,25 +82,41 @@ const LocationForm: React.FC<LocationFormProps> = ({ onSubmit, initialValues }) 
     }, [step]);
 
     useEffect(() => {
-        (async () => {
-            const { status } = await Location.requestForegroundPermissionsAsync();
-            if (status === 'granted') {
-                const userLocation = await Location.getCurrentPositionAsync({});
-                setInitialRegion({
-                    latitude: userLocation.coords.latitude,
-                    longitude: userLocation.coords.longitude,
-                    latitudeDelta: 0.0922,
-                    longitudeDelta: 0.0421,
-                });
-                setCoordinate({
-                    latitude: userLocation.coords.latitude,
-                    longitude: userLocation.coords.longitude,
-                });
-            } else {
-                showModal("Permissions de localisation non accordées.", "error");
-            }
-        })();
-    }, []);
+        if (initialValues) {
+            // Utiliser les coordonnées initiales si elles existent
+            setInitialRegion({
+                latitude: initialValues.latitude,
+                longitude: initialValues.longitude,
+                latitudeDelta: 0.0922,
+                longitudeDelta: 0.0421,
+            });
+            setCoordinate({
+                latitude: initialValues.latitude,
+                longitude: initialValues.longitude,
+            });
+        } else {
+            // Sinon, demander la localisation actuelle de l'utilisateur
+            (async () => {
+                const { status } = await Location.requestForegroundPermissionsAsync();
+                if (status === 'granted') {
+                    const userLocation = await Location.getCurrentPositionAsync({});
+                    setInitialRegion({
+                        latitude: userLocation.coords.latitude,
+                        longitude: userLocation.coords.longitude,
+                        latitudeDelta: 0.0922,
+                        longitudeDelta: 0.0421,
+                    });
+                    setCoordinate({
+                        latitude: userLocation.coords.latitude,
+                        longitude: userLocation.coords.longitude,
+                    });
+                } else {
+                    showModal("Permissions de localisation non accordées.", "error");
+                }
+            })();
+        }
+    }, [initialValues]);
+
 
     const toggleAmenity = (amenity: string) => {
         setSelectedAmenities((prev) =>
@@ -125,7 +143,7 @@ const LocationForm: React.FC<LocationFormProps> = ({ onSubmit, initialValues }) 
 
     const handleAddLocation = () => {
         if (name && address && description && selectedImage && pricePerNight && startDate && endDate) {
-            dispatch(addLocation({
+            const locationData = {
                 idLocation: initialValues?.idLocation || Math.floor(Math.random() * 10000),
                 idHost: 1,
                 name,
@@ -140,13 +158,22 @@ const LocationForm: React.FC<LocationFormProps> = ({ onSubmit, initialValues }) 
                     startDate: startDate.toISOString(),
                     endDate: endDate.toISOString(),
                 },
-            }));
-            showModal("L'emplacement a été ajouté avec succès !", "success");
+            };
+
+            if (initialValues) {
+                dispatch(updateLocation(locationData));
+                showModal("L'emplacement a été mis à jour avec succès !", "success");
+            } else {
+                dispatch(addLocation(locationData));
+                showModal("L'emplacement a été ajouté avec succès !", "success");
+            }
+
             onSubmit();
         } else {
             showModal("Veuillez remplir tous les champs requis.", "error");
         }
     };
+
 
     const getNextDay = (date: Date | null) => {
         if (!date) return new Date(); // Retourne la date actuelle si startDate est null

@@ -27,7 +27,7 @@ const LocationCard: React.FC<LocationCardProps> = ({ name, address, amenities, i
             <View style={styles.cardContent}>
                 <Text style={styles.title}>{name}</Text>
                 <Text>{address}</Text>
-                <Text>Commodités: {amenities.join(', ')}</Text>
+                {/* <Text>Commodités: {amenities.join(', ')}</Text> */}
             </View>
         </TouchableOpacity>
     );

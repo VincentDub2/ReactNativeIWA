@@ -12,7 +12,7 @@ const HomeScreen = () => {
     const navigation = useNavigation<NavigationProp>();
 
     const handleLocationPress = (location: Location) => {
-        navigation.navigate('LocationDetail', { location });
+        navigation.navigate('LocationDetail', { idLocation: location.idLocation });
     };
 
     return (

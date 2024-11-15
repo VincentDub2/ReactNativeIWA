@@ -1,5 +1,5 @@
 import React from 'react';
-import { FlatList } from 'react-native';
+import { FlatList, Text, View, StyleSheet } from 'react-native';
 import { useSelector } from 'react-redux';
 import { Location } from '../../types'; // Assurez-vous d'importer le type Location
 import { RootState } from '../app/store';
@@ -28,11 +28,35 @@ const LocationList: React.FC<LocationListProps> = ({ onItemPress }) => {
     return (
         <FlatList
             data={filteredLocations}
-            keyExtractor={(item, index) => index.toString()}
+            keyExtractor={(item) => item.idLocation.toString()} // Utilisation de idLocation comme clé
             renderItem={renderItem}
-            contentContainerStyle={{ paddingBottom: 75, paddingTop: 8 }} // Ajoute un espace sous la liste pour le bouton flottant
+            contentContainerStyle={[
+                styles.listContainer,
+                { flexGrow: filteredLocations.length === 0 ? 1 : undefined },
+            ]}
+            ListEmptyComponent={
+                <View style={styles.emptyContainer}>
+                    <Text style={styles.emptyText}>Vous n'avez pas encore proposé d'emplacement à la location pour le moment.</Text>
+                </View>
+            }
         />
     );
 };
+
+const styles = StyleSheet.create({
+    listContainer: {
+        paddingBottom: 75,
+        paddingTop: 8,
+    },
+    emptyContainer: {
+        flex: 1,
+        justifyContent: 'center',
+        alignItems: 'center',
+    },
+    emptyText: {
+        fontSize: 18,
+        color: '#888',
+    },
+});
 
 export default LocationList;
