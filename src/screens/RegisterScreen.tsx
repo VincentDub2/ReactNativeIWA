@@ -1,21 +1,21 @@
 import React, { useState } from 'react';
 import { View, Text, TextInput, Button, StyleSheet, TouchableOpacity, ImageBackground, Alert } from 'react-native';
 import { StackNavigationProp } from '@react-navigation/stack';
-import { useDispatch } from 'react-redux';
+import { useDispatch, useSelector } from 'react-redux';
 import { setUserName, setLastName, setFirstName, setEmail, login } from '../features/users/usersSlice';
 import {RootStackParamList} from "../../types";
 import {useNavigation} from "@react-navigation/native"; // Les actions à utiliser
-import { AppDispatch } from '../app/store';
+import { AppDispatch, RootState } from '../app/store';
 import { registerAsync } from '../features/users/usersSlice';
 
 type RegisterScreenNavigationProp = StackNavigationProp<RootStackParamList, 'Register'>;
 
 export default function Register() {
     const navigation = useNavigation<RegisterScreenNavigationProp>();
-    const [username, setUserNameInput] = useState('');
-    const [lastname, setLastNameInput] = useState('');
-    const [firstname, setFirstNameInput] = useState('');
-    const [email, setEmailInput] = useState('');
+    const username = useSelector((state: RootState) => state.users.username);
+    const lastname = useSelector((state: RootState) => state.users.lastname);
+    const firstname = useSelector((state: RootState) => state.users.firstname);
+    const email = useSelector((state: RootState) => state.users.email);
     const [password, setPasswordInput] = useState('');
     const [confirmPassword, setConfirmPasswordInput] = useState('');
     const dispatch = useDispatch<AppDispatch>();
@@ -50,25 +50,25 @@ export default function Register() {
             style={styles.input}
             placeholder="Nom d'utilisateur"
             value={username}
-            onChangeText={setUserNameInput}
+            onChangeText={(text) => dispatch(setUserName(text))}
           />
           <TextInput
             style={styles.input}
             placeholder="Nom de famille"
             value={lastname}
-            onChangeText={setLastNameInput}
+            onChangeText={(text) => dispatch(setLastName(text))}
           />
           <TextInput
             style={styles.input}
             placeholder="Prénom"
             value={firstname}
-            onChangeText={setFirstNameInput}
+            onChangeText={(text) => dispatch(setFirstName(text))}
           />
           <TextInput
             style={styles.input}
             placeholder="Email"
             value={email}
-            onChangeText={setEmailInput}
+            onChangeText={(text) => dispatch(setEmail(text))}
           />
           <TextInput
             style={styles.input}

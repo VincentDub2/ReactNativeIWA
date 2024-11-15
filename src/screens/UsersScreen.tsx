@@ -37,6 +37,8 @@ export default function UsersScreen() {
 		setIsEditing(false);
 	};
 
+	const isAuthenticated = useSelector((state: RootState) => state.users.isAuthenticated);
+
 	useEffect(() => {
         // Redirige vers Login si l'utilisateur est déconnecté
         if (!isAuthenticated) {
