@@ -1,9 +1,10 @@
 import { useNavigation, useRoute } from '@react-navigation/native';
-import React from 'react';
+import React, { useState } from 'react';
 import { Image, ScrollView, StyleSheet, Text, View } from 'react-native';
 import MapView, { Marker } from 'react-native-maps';
 import { useDispatch, useSelector } from 'react-redux';
 import CustomButton from '../components/CustomButton';
+import ConfirmationModal from '../components/ConfirmationModal'; // Import de la nouvelle modale
 import { RootState } from '../app/store';
 import { deleteLocation } from '../features/locations/locationSlice';
 import { Calendar } from 'react-native-calendars';
@@ -19,6 +20,8 @@ const LocationDetail = () => {
     const navigation = useNavigation();
     const dispatch = useDispatch();
 
+    const [isModalVisible, setModalVisible] = useState(false); // État pour la modale
+
     if (!location) {
         return (
             <View style={styles.container}>
@@ -31,15 +34,19 @@ const LocationDetail = () => {
         navigation.navigate('EditLocation', { location });
     };
 
-    const handleDeleteLocation = () => {
+    const confirmDeleteLocation = () => {
+        setModalVisible(false); // Ferme la modale
         dispatch(deleteLocation(location.idLocation));
         navigation.goBack();
+    };
+
+    const handleDeleteLocation = () => {
+        setModalVisible(true); // Ouvre la modale
     };
 
     const startDate = location.dispo.startDate.split('T')[0];
     const endDate = location.dispo.endDate.split('T')[0];
 
-    // Marquage des dates disponibles
     const generateAvailabilityDates = (start, end) => {
         const markedDates = {};
         let currentDate = new Date(start);
@@ -59,7 +66,6 @@ const LocationDetail = () => {
         return markedDates;
     };
 
-    // Marquage des dates de réservation
     const generateReservationDates = (start, end, numPeriods) => {
         const reservationDates = {};
         const startDate = new Date(start);
@@ -79,14 +85,11 @@ const LocationDetail = () => {
                 reservationDates[dateString] = {
                     color: '#3b98a8',
                     textColor: 'white',
-                    // startingDay: j === 0,
-                    // endingDay: j === periodLength - 1,
                 };
             }
         }
         return reservationDates;
     };
-
 
     const markedDates = {
         ...generateAvailabilityDates(startDate, endDate),
@@ -95,11 +98,10 @@ const LocationDetail = () => {
 
     const handleDayPress = (day) => {
         const dateStr = day.dateString;
-        if (markedDates[dateStr] && markedDates[dateStr].color === '#3b98a8') { // Vérifie si le jour est réservé (en rouge)
+        if (markedDates[dateStr] && markedDates[dateStr].color === '#3b98a8') {
             console.log(`Reservation day clicked: ${dateStr}`);
         }
     };
-
 
     return (
         <View style={styles.container}>
@@ -156,7 +158,6 @@ const LocationDetail = () => {
                         firstDay={1}
                         locale={'fr'}
                     />
-                    {/* Légende */}
                     <View style={styles.legendContainer}>
                         <View style={styles.legendItem}>
                             <View style={[styles.legendColor, { backgroundColor: '#b6e9f2' }]} />
@@ -183,6 +184,13 @@ const LocationDetail = () => {
                     text="Modifier l'emplacement"
                 />
             </View>
+
+            <ConfirmationModal
+                visible={isModalVisible}
+                message="Êtes-vous sûr de vouloir supprimer cet emplacement ?"
+                onConfirm={confirmDeleteLocation}
+                onCancel={() => setModalVisible(false)}
+            />
         </View>
     );
 };

@@ -12,6 +12,7 @@ import { useModal } from '../ModalProvider';
 import DateTimePicker from '@react-native-community/datetimepicker';
 
 
+
 interface LocationFormProps {
     onSubmit: () => void;
     initialValues?: {
@@ -54,6 +55,7 @@ const LocationForm: React.FC<LocationFormProps> = ({ onSubmit, initialValues }) 
         latitude: initialValues?.latitude || 37.78825,
         longitude: initialValues?.longitude || -122.4324,
     });
+    console.log(initialValues);
     const [selectedImage, setSelectedImage] = useState<string | null>(
         typeof initialValues?.image === 'string' ? initialValues.image : null
     );
@@ -63,6 +65,9 @@ const LocationForm: React.FC<LocationFormProps> = ({ onSubmit, initialValues }) 
     const [endDate, setEndDate] = useState<Date | null>(
         initialValues?.dispo?.endDate ? new Date(initialValues.dispo.endDate) : null
     );
+    const [filteredSuggestions, setFilteredSuggestions] = useState([]);
+    const [showSuggestions, setShowSuggestions] = useState(false);
+
 
 
     const dispatch = useDispatch();
@@ -116,6 +121,25 @@ const LocationForm: React.FC<LocationFormProps> = ({ onSubmit, initialValues }) 
             })();
         }
     }, [initialValues]);
+
+    const handleAddressChange = (text) => {
+        setAddress(text);
+        if (text.length > 1) {
+            const normalizedInput = text.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '');
+            const filtered = addressData.filter((item) =>
+                item.full_address
+                    .toLowerCase()
+                    .normalize('NFD')
+                    .replace(/[\u0300-\u036f]/g, '')
+                    .includes(normalizedInput)
+            );
+            setFilteredSuggestions(filtered.slice(0, 5)); // Limitez à 5 suggestions
+            setShowSuggestions(true);
+        } else {
+            setShowSuggestions(false);
+        }
+    };
+    
 
 
     const toggleAmenity = (amenity: string) => {
