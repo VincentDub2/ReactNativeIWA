@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from "react";
+import axios from "axios";
 import {
 	View,
 	Text,
@@ -8,18 +9,13 @@ import {
 	TouchableOpacity,
 	StyleSheet,
 } from "react-native";
-import conversationsData from "../../assets/data/conversation.json";
 
 export default function MessagingScreen() {
 	const [conversations, setConversations] = useState<
 		{
 			id: number;
-			messages: {
-				id: number;
-				senderId: number;
-				receiverId: number;
-				content: string;
-			}[];
+			personOneId: number;
+			personTwoId: number;
 		}[]
 	>([]);
 	const [selectedConversation, setSelectedConversation] = useState<{
@@ -27,41 +23,80 @@ export default function MessagingScreen() {
 		messages: {
 			id: number;
 			senderId: number;
-			receiverId: number;
 			content: string;
+			date: string;
 		}[];
 	} | null>(null);
 	const [newMessage, setNewMessage] = useState("");
 
 	useEffect(() => {
-		// Charge les conversations depuis le fichier JSON
-		setConversations(conversationsData.conversations);
+		const fetchConversations = async () => {
+			try {
+				const userId = 1; // A remplacer par l'ID réel de l'utilisateur connecté
+				const response = await axios.get(
+					`http://162.38.38.87:8090/api/v1/messages/user/${userId}`,
+				);
+				setConversations(response.data);
+			} catch (error) {
+				console.error(
+					"Erreur lors de la récupération des conversations",
+					error,
+				);
+			}
+		};
+		fetchConversations();
 	}, []);
 
-	const handleSelectConversation = (conversationId: number) => {
-		const conversation = conversations.find(
-			(conv) => conv.id === conversationId,
-		);
-		if (conversation) {
-			setSelectedConversation(conversation);
+	const handleSelectConversation = async (conversationId: number) => {
+		try {
+			const response = await axios.get(
+				`http://162.38.38.87:8090/api/v1/messages/conversation/${conversationId}`,
+			);
+			const conversation = response.data;
+			setSelectedConversation({
+				id: conversationId,
+				messages: conversation.messages.map((msg: any) => ({
+					id: msg.id,
+					senderId: msg.sender_id,
+					content: msg.contenu,
+					date: msg.date,
+				})),
+			});
+		} catch (error) {
+			console.error("Erreur lors de la récupération des messages", error);
 		}
 	};
 
-	const handleSendMessage = () => {
+	const handleSendMessage = async () => {
 		if (newMessage.trim() !== "" && selectedConversation) {
 			const message = {
-				id: selectedConversation.messages.length + 1,
-				senderId: 1, // Simuler l'utilisateur connecté avec l'id 1
-				receiverId: 2, // À adapter selon la conversation
-				content: newMessage,
+				conversationId: selectedConversation.id,
+				senderId: 1, // A remplacer par l'ID de l'utilisateur connecté
+				contenu: newMessage,
 			};
 
-			// Mettre à jour les messages dans la conversation
-			setSelectedConversation({
-				...selectedConversation,
-				messages: [...selectedConversation.messages, message],
-			});
-			setNewMessage("");
+			try {
+				const response = await axios.post(
+					"http://162.38.38.87:8090/api/v1/messages/send",
+					message,
+				);
+				const newMsg = response.data;
+				setSelectedConversation({
+					...selectedConversation,
+					messages: [
+						...selectedConversation.messages,
+						{
+							id: newMsg.id,
+							senderId: newMsg.sender_id,
+							content: newMsg.contenu,
+							date: newMsg.date,
+						},
+					],
+				});
+				setNewMessage(""); // Réinitialiser le champ de saisie
+			} catch (error) {
+				console.error("Erreur lors de l'envoi du message", error);
+			}
 		}
 	};
 
@@ -74,7 +109,9 @@ export default function MessagingScreen() {
 					style={styles.conversationItem}
 					onPress={() => handleSelectConversation(item.id)}
 				>
-					<Text style={styles.conversationText}>Conversation {item.id}</Text>
+					<Text style={styles.conversationText}>
+						Conversation entre {item.personOneId} et {item.personTwoId}
+					</Text>
 				</TouchableOpacity>
 			)}
 		/>
@@ -83,10 +120,10 @@ export default function MessagingScreen() {
 	const renderMessages = () => (
 		<View style={styles.messagesContainer}>
 			<FlatList
-				data={selectedConversation.messages}
+				data={selectedConversation?.messages}
 				keyExtractor={(item) => item.id.toString()}
 				renderItem={({ item }) => {
-					const isSender = item.senderId === 1; // Simuler l'utilisateur connecté avec l'id 1
+					const isSender = item.senderId === 1; // L'utilisateur connecté
 					return (
 						<View
 							style={[
@@ -95,6 +132,7 @@ export default function MessagingScreen() {
 							]}
 						>
 							<Text style={styles.messageText}>{item.content}</Text>
+							<Text style={styles.messageDate}>{item.date}</Text>
 						</View>
 					);
 				}}
@@ -171,6 +209,10 @@ const styles = StyleSheet.create({
 	messageText: {
 		color: "#3e2723",
 		fontSize: 16,
+	},
+	messageDate: {
+		fontSize: 12,
+		color: "#999",
 	},
 	inputContainer: {
 		flexDirection: "row",
