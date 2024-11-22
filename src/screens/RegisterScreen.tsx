@@ -28,7 +28,7 @@ export default function Register() {
       }
       try {
         const resultAction = await dispatch(registerAsync({ email, password, username, lastname, firstname }));
-        if (registerAsync.fulfilled.match(resultAction)) {
+        if (registerAsync.fulfilled.match(resultAction)) {;
           navigation.navigate('Login');
         } else {
           Alert.alert('Erreur', 'Erreur lors de l\'inscription');

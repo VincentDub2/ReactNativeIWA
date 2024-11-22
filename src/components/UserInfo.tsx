@@ -33,26 +33,27 @@ const UserInfo: React.FC<UserInfoProps> = ({ profilePicture, isEditing, newUsern
 
 const styles = StyleSheet.create({
 	container: {
-		flex: 1,
+		flex: 1, // Utilisez un ratio normal pour le conteneur
 		justifyContent: "center",
 		alignItems: "center",
-		marginTop: 30,
+		paddingVertical: 20, // Ajoute de l'espace en haut et en bas à l'intérieur du conteneur
+		marginVertical: 20, // Ajoute de l'espace autour du conteneur dans son parent
 	},
 	profilePicture: {
 		width: 100,
 		height: 100,
 		borderRadius: 50,
-		marginBottom: 20,
+		marginBottom: 4,
 	},
 	userName: {
 		fontSize: 24,
 		fontWeight: "bold",
 	},
 	userNameInput: {
-		fontSize: 24,
+		fontSize: 18,
 		borderWidth: 1,
 		borderColor: "#ccc",
-		padding: 5,
+		padding: 15,
 		width: 200,
 		textAlign: "center",
 	},

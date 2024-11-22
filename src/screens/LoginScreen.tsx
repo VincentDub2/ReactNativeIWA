@@ -23,6 +23,7 @@ export default function Login() {
           const resultAction = await dispatch(loginAsync({ email, password }));
           if (loginAsync.fulfilled.match(resultAction)) {
               // Naviguer vers l'écran principal si la connexion réussit
+              dispatch(setEmail(email));
               navigation.navigate('NavigationTab');
           } else {
               Alert.alert('Erreur', 'Email ou mot de passe incorrect');
