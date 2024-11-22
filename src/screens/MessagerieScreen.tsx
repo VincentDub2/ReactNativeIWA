@@ -1,13 +1,13 @@
-import React, { useState, useEffect } from "react";
 import axios from "axios";
+import React, { useState, useEffect } from "react";
 import {
-	View,
-	Text,
-	FlatList,
-	TextInput,
 	Button,
-	TouchableOpacity,
+	FlatList,
 	StyleSheet,
+	Text,
+	TextInput,
+	TouchableOpacity,
+	View,
 } from "react-native";
 
 export default function MessagingScreen() {
@@ -52,14 +52,22 @@ export default function MessagingScreen() {
 			const response = await axios.get(
 				`http://162.38.38.87:8090/api/v1/messages/conversation/${conversationId}`,
 			);
-			const conversation = response.data;
+
+			// La réponse est un tableau de messages
+			const messages = response.data;
+
+			if (!Array.isArray(messages)) {
+				console.warn("Response data is not an array:", messages);
+				throw new Error("Invalid response format");
+			}
+
 			setSelectedConversation({
 				id: conversationId,
-				messages: conversation.messages.map((msg: any) => ({
+				messages: messages.map((msg: any) => ({
 					id: msg.id,
-					senderId: msg.sender_id,
-					content: msg.contenu,
-					date: msg.date,
+					senderId: msg.senderId, // Utilise senderId directement
+					content: msg.contenu, // Utilise contenu directement
+					date: msg.date, // Utilise date directement
 				})),
 			});
 		} catch (error) {
@@ -69,17 +77,22 @@ export default function MessagingScreen() {
 
 	const handleSendMessage = async () => {
 		if (newMessage.trim() !== "" && selectedConversation) {
-			const message = {
-				conversationId: selectedConversation.id,
-				senderId: 1, // A remplacer par l'ID de l'utilisateur connecté
-				contenu: newMessage,
-			};
+			const message = new URLSearchParams();
+			message.append("conversationId", selectedConversation.id.toString());
+			message.append("senderId", "1"); // Remplacez par l'ID réel de l'utilisateur
+			message.append("contenu", newMessage);
 
 			try {
 				const response = await axios.post(
 					"http://162.38.38.87:8090/api/v1/messages/send",
 					message,
+					{
+						headers: {
+							"Content-Type": "application/x-www-form-urlencoded",
+						},
+					},
 				);
+
 				const newMsg = response.data;
 				setSelectedConversation({
 					...selectedConversation,
@@ -87,7 +100,7 @@ export default function MessagingScreen() {
 						...selectedConversation.messages,
 						{
 							id: newMsg.id,
-							senderId: newMsg.sender_id,
+							senderId: newMsg.senderId,
 							content: newMsg.contenu,
 							date: newMsg.date,
 						},
@@ -110,7 +123,7 @@ export default function MessagingScreen() {
 					onPress={() => handleSelectConversation(item.id)}
 				>
 					<Text style={styles.conversationText}>
-						Conversation entre {item.personOneId} et {item.personTwoId}
+						Conversation avec user {item.personTwoId}
 					</Text>
 				</TouchableOpacity>
 			)}
