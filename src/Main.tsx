@@ -32,14 +32,14 @@ export default function Main() {
         if (isAuthenticated) {
             navigation.navigate("NavigationTab");
         } else {
-            navigation.navigate("Login");
+            navigation.navigate("Welcome");
         }
     }, [isAuthenticated, navigation]);
 
     useEffect(() => {
         // Rediriger vers Login si non authentifié
         if (!isAuthenticated) {
-            navigation.navigate("Login");
+            navigation.navigate("Welcome");
         }
     }, [isAuthenticated]);
 
@@ -85,7 +85,7 @@ export default function Main() {
                     <Stack.Screen
                         name="ReservationScreen"
                         component={ReservationScreen}
-                        options={{ title: "Réserver un emplacement" }}
+                        options={{ title: "Réservation" }}
                     />
                     </>
                 )}

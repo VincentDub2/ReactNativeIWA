@@ -184,6 +184,41 @@ export const updateUserAsync = createAsyncThunk(
     }
 );
 
+export const fetchUserReservationsAsync = createAsyncThunk(
+    'users/fetchUserReservations',
+    async (_, { getState }) => {
+        const state: RootState = getState() as RootState;
+        const token = state.users.token;
+        const userId = state.users.id;
+
+        if (!token || !userId) {
+            throw new Error("Token ou ID utilisateur manquant.");
+        }
+
+        const response = await fetch(`http://localhost:8090/api/v1/reservation`, {
+            method: 'GET',
+            headers: {
+                'Authorization': `Bearer ${token}`,
+                'Content-Type': 'application/json',
+            },
+        });
+
+        if (!response.ok) {
+            const errorText = await response.text();
+            throw new Error(`Erreur lors de la récupération des réservations : ${errorText}`);
+        }
+
+        const data = await response.json();
+
+        // Filtrer les réservations pour celles de l'utilisateur connecté
+        const userReservations = data.filter(
+            (reservation: any) => reservation.idVoyageur === userId
+        );
+
+        return userReservations;
+    }
+);
+
 
 export const usersSlice = createSlice({
     name: 'users',
@@ -266,6 +301,17 @@ export const usersSlice = createSlice({
             })
             .addCase(updateUserAsync.rejected, (state, action) => {
                 //console.error('Erreur lors de la mise à jour des informations utilisateur :', action.error.message);
+            })
+            .addCase(fetchUserReservationsAsync.fulfilled, (state, action) => {
+                state.reservations = action.payload.map((reservation: any) => ({
+                    nom: `Emplacement ${reservation.idEmplacement}`, // Nom générique ou réel si disponible
+                    dateDebut: reservation.dateArrive,
+                    dateFin: reservation.dateDepart,
+                    adresse: `Adresse: ${reservation.idEmplacement}`, // Adresse générique ou réelle
+                }));
+            })
+            .addCase(fetchUserReservationsAsync.rejected, (state, action) => {
+                console.error('Erreur lors de la récupération des réservations :', action.error.message);
             });
     },
 })
