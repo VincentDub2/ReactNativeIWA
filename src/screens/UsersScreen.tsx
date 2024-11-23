@@ -3,7 +3,7 @@ import { StyleSheet, Text, TextInput, View, ScrollView, TouchableOpacity } from 
 import { useSelector, useDispatch } from "react-redux";
 import { useNavigation } from "@react-navigation/native";
 import type { AppDispatch, RootState } from "../app/store";
-import { setUserName, setEmail, setPhone, logout, setFirstName, setLastName, updateUserAsync } from "../features/users/usersSlice";
+import { setUserName, setEmail, setPhone, logout, setFirstName, setLastName, updateUserAsync, fetchUserReservationsAsync } from "../features/users/usersSlice";
 import CustomButton from "../components/CustomButton";
 import UserInfo from "../components/UserInfo";
 import isAuthenticated from "../features/users/usersSlice";
@@ -52,6 +52,12 @@ export default function UsersScreen() {
 	
 			// Nettoyage de l’intervalle
 			return () => clearInterval(interval);
+		}
+	}, [isAuthenticated, id, dispatch]);
+
+	useEffect(() => {
+		if (isAuthenticated && id) {
+			dispatch(fetchUserReservationsAsync());
 		}
 	}, [isAuthenticated, id, dispatch]);
 
@@ -204,7 +210,7 @@ export default function UsersScreen() {
 
 			<View style={styles.separator} />
 
-			{reservations.length > 0 && (
+			{reservations.length > 0 ? (
 				<>
 					<Text style={styles.reservationsTitle}>Mes réservations</Text>
 
@@ -213,16 +219,20 @@ export default function UsersScreen() {
 							<View key={index} style={styles.reservationBox}>
 								<Text style={styles.reservationTitle}>{reservation.nom}</Text>
 								<Text>
-									{reservation.dateDebut ? new Date(reservation.dateDebut).toLocaleDateString() : 'Date de début non définie'}
+									Date d'arrivée :{" "}
+									{reservation.dateDebut ? new Date(reservation.dateDebut).toLocaleDateString() : "Non définie"}
 								</Text>
 								<Text>
-									{reservation.dateFin ? new Date(reservation.dateFin).toLocaleDateString() : 'Date de fin non définie'}
+									Date de départ :{" "}
+									{reservation.dateFin ? new Date(reservation.dateFin).toLocaleDateString() : "Non définie"}
 								</Text>
 								<Text style={styles.reservationAddress}>{reservation.adresse}</Text>
 							</View>
 						))}
 					</ScrollView>
 				</>
+			) : (
+				<Text style={styles.noReservations}>Vous n'avez aucune réservation pour le moment.</Text>
 			)}
 		</View>
 	);
@@ -333,4 +343,10 @@ const styles = StyleSheet.create({
         fontSize: 16,
         fontWeight: "bold",
     },
+	noReservations: {
+		marginTop: 20,
+		fontSize: 16,
+		color: "#555",
+		textAlign: "center",
+	},
 });
