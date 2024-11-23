@@ -1,21 +1,59 @@
-import React, { useState } from "react";
-import { StyleSheet, Text, TextInput, View, ScrollView } from "react-native";
+import React, { useState, useLayoutEffect, useEffect } from "react";
+import { StyleSheet, Text, TextInput, View, ScrollView, TouchableOpacity } from "react-native";
 import { useSelector, useDispatch } from "react-redux";
-import type { RootState } from "../app/store";
-import { setUserName, setEmail, setPhone } from "../features/users/usersSlice";
+import { useNavigation } from "@react-navigation/native";
+import type { AppDispatch, RootState } from "../app/store";
+import { setUserName, setEmail, setPhone, logout, setFirstName, setLastName, updateUserAsync } from "../features/users/usersSlice";
 import CustomButton from "../components/CustomButton";
 import UserInfo from "../components/UserInfo";
+import isAuthenticated from "../features/users/usersSlice";
+import { fetchUserByIdAsync } from "../features/users/usersSlice";
 
 export default function UsersScreen() {
-	const dispatch = useDispatch();
+	const navigation = useNavigation<any>();
+	const dispatch = useDispatch<AppDispatch>();
 	// Récupérer les informations de l'utilisateur via Redux
-	const { username, email, phone, reservations } = useSelector((state: RootState) => state.users);
+	const { username, email, firstname, lastname, phone, reservations, isAuthenticated, id } = useSelector((state: RootState) => state.users);
 
 	// Local state to manage edit mode and form inputs
 	const [isEditing, setIsEditing] = useState(false);
 	const [newUsername, setNewUsername] = useState(username);
 	const [newEmail, setNewEmail] = useState(email);
+	const [newFirstName, setNewFirstName] = useState(firstname);
+	const [newLastName, setNewLastName] = useState(lastname);
 	const [newPhone, setNewPhone] = useState(phone);
+
+	// Synchronize local state with Redux state
+	useEffect(() => {
+		if (!isEditing) {
+			setNewUsername(username);
+			setNewEmail(email);
+			setNewFirstName(firstname);
+			setNewLastName(lastname);
+			setNewPhone(phone);
+		}
+	}, [username, email, firstname, lastname, phone, isEditing]);
+
+	useEffect(() => {
+		if (isAuthenticated && id !== undefined) {
+			// Fonction pour actualiser les données utilisateur
+			const refreshUserData = () => {
+				//console.log('Rafraîchissement des données utilisateur...');
+				dispatch(fetchUserByIdAsync(id));
+			};
+	
+			// Définir un intervalle
+			const interval = setInterval(() => {
+				refreshUserData();
+			}, 5000); // Actualise toutes les 5 secondes
+	
+			// Rafraîchir immédiatement une première fois
+			refreshUserData();
+	
+			// Nettoyage de l’intervalle
+			return () => clearInterval(interval);
+		}
+	}, [isAuthenticated, id, dispatch]);
 
 	// Functions for handling the Edit and Save actions
 	const onEdit = () => setIsEditing(true);
@@ -23,19 +61,59 @@ export default function UsersScreen() {
 	const onSave = () => {
 		dispatch(setUserName(newUsername));
 		dispatch(setEmail(newEmail));
+		dispatch(setFirstName(newFirstName));
+		dispatch(setLastName(newLastName));
 		dispatch(setPhone(newPhone));
 		setIsEditing(false);
+
+		const updatedUser = {
+			id, // Récupérez l'ID de l'utilisateur depuis Redux
+			username: newUsername,
+			email: newEmail,
+			firstname: newFirstName,
+			lastname: newLastName,
+			phone: newPhone,
+		};
+	
+		// Envoyez les données à l'API
+		dispatch(updateUserAsync(updatedUser))
+			.then(() => {
+				//console.log('Mise à jour réussie.');
+				setIsEditing(false);
+			})
+			.catch((error) => {
+				//console.error('Erreur lors de la mise à jour :', error);
+			});
 	};
 
 	const onCancel = () => {
 		setNewUsername(username);
 		setNewEmail(email);
+		setNewFirstName(firstname);
+		setNewLastName(lastname);
 		setNewPhone(phone);
 		setIsEditing(false);
 	};
 
+	useEffect(() => {
+        // Redirige vers Login si l'utilisateur est déconnecté
+        if (!isAuthenticated) {
+            navigation.navigate("Login");
+        }
+    }, [isAuthenticated, navigation]);
+
+	const handleLogout = () => {
+		dispatch(logout()); // Déclenche la déconnexion et met à jour isAuthenticated à false dans le store Redux
+		// La redirection se fait automatiquement via useEffect lorsque isAuthenticated passe à false
+	};
+
 	return (
 		<View style={styles.container}>
+			{/* Bouton Logout en haut de l'écran */}
+            <TouchableOpacity onPress={handleLogout} style={styles.logoutButtonContainer}>
+                <Text style={styles.logoutButtonText}>Logout</Text>
+            </TouchableOpacity>
+
 			<UserInfo
 				name={username}
 				profilePicture={require("../../assets/images/quack-with-tent-background.png")}
@@ -57,6 +135,18 @@ export default function UsersScreen() {
 						/>
 						<TextInput
 							style={styles.input}
+							value={newFirstName}
+							onChangeText={setNewFirstName}
+							placeholder="Enter new first name"
+						/>
+						<TextInput
+							style={styles.input}
+							value={newLastName}
+							onChangeText={setNewLastName}
+							placeholder="Enter new last name"
+						/>
+						<TextInput
+							style={styles.input}
 							value={newPhone}
 							onChangeText={setNewPhone}
 							placeholder="Enter new phone"
@@ -64,8 +154,33 @@ export default function UsersScreen() {
 					</View>
 				) : (
 					<View>
-						<Text style={styles.email}>{email}</Text>
-						<Text style={styles.phone}>{phone}</Text>
+						{email ? (
+							<View style={styles.row}>
+								<Text style={styles.label}>Email :</Text>
+								<Text style={styles.email}>{email}</Text>
+							</View>
+						) : null}
+
+						{firstname ? (
+							<View style={styles.row}>
+								<Text style={styles.label}>First name :</Text>
+								<Text style={styles.email}>{firstname}</Text>
+							</View>
+						) : null}
+
+						{lastname ? (
+							<View style={styles.row}>
+								<Text style={styles.label}>Last name :</Text>
+								<Text style={styles.email}>{lastname}</Text>
+							</View>
+						) : null}
+
+						{phone ? (
+							<View style={styles.row}>
+								<Text style={styles.label}>Phone :</Text>
+								<Text style={styles.phone}>{phone}</Text>
+							</View>
+						) : null}
 					</View>
 				)}
 			</View>
@@ -124,12 +239,20 @@ const styles = StyleSheet.create({
 		alignItems: "center",
 		marginTop: 20,
 	},
+	row: {
+        flexDirection: 'row',
+        alignItems: 'center',
+    },
+    label: {
+        fontWeight: 'bold',
+        fontSize: 16,
+        marginRight: 10,
+    },
 	separator: {
 		height: 2,
 		width: "80%",
 		backgroundColor: "#ccc",
-		marginTop: 10, // Control space between name and separator
-		marginBottom: -10, // Control space between separator and email
+		marginTop: 30, // Control space between name and separator
 	},
 	email: {
 		fontSize: 18,
@@ -170,7 +293,7 @@ const styles = StyleSheet.create({
 	reservationsContainer: {
 		width: "100%",
 		marginTop: 10,
-		maxHeight: 300,
+		maxHeight: 200,
 	},
 	reservationBox: {
 		backgroundColor: "#E9D69F",
@@ -194,4 +317,20 @@ const styles = StyleSheet.create({
 		color: "#555",
 		marginTop: 5,
 	},
+	logoutButtonContainer: {
+        alignSelf: 'flex-end',
+        marginRight: 15,
+        marginTop: 10,
+        backgroundColor: "#E9D69F", // Couleur de fond
+        borderRadius: 25, // Pour rendre le bouton circulaire, il doit être la moitié de la largeur et de la hauteur
+        width: 80,
+        height: 40,
+        justifyContent: "center",
+        alignItems: "center",
+    },
+    logoutButtonText: {
+        color: "#fff", // Couleur du texte
+        fontSize: 16,
+        fontWeight: "bold",
+    },
 });
