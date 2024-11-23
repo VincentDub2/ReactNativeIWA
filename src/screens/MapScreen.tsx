@@ -15,7 +15,6 @@ const MapScreen = () => {
 	const mapRef = useRef<any>();
 	const [location, setLocation] = useState<LocationObject | null>(null);
 	const [errorMsg, setErrorMsg] = useState<string | null>(null);
-	const [markers, setMarkers] = useState<any[]>([]);
 	const [isAccordionExpanded, setIsAccordionExpanded] = useState(false);
 	const [cityName, setCityName] = useState("");
 	const [searchRadius, setSearchRadius] = useState(10); // Rayon par défaut en km
@@ -25,6 +24,9 @@ const MapScreen = () => {
 	} | null>(null);
 	const [selectedAmenities, setSelectedAmenities] = useState<string[]>([]);
 	const [minCapacity, setMinCapacity] = useState<number>(1);
+
+	const [markers, setMarkers] = useState<any[]>([]);
+
 
 	const toggleAmenity = (amenityId: string) => {
 		if (selectedAmenities.includes(amenityId)) {

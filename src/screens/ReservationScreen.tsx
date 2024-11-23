@@ -3,6 +3,7 @@ import { View, Text, TextInput, Button, Platform, StyleSheet, Alert } from "reac
 import DateTimePicker from "@react-native-community/datetimepicker";
 import { useRoute, useNavigation, RouteProp } from "@react-navigation/native";
 import { useSelector } from "react-redux";
+import { RootState } from "../app/store";
 
 type RouteParams = {
     marker: {
@@ -16,13 +17,28 @@ const ReservationScreen = () => {
     const route = useRoute<RouteProp<{ params: RouteParams }, 'params'>>();
     const navigation = useNavigation();
     const { marker } = route.params; // Récupère les infos du marqueur sélectionné
-    const userId = useSelector((state: { users: { id: string } }) => state.users.id); // Récupère l'ID de l'utilisateur depuis Redux
     const [dateDebut, setDateDebut] = useState<Date | null>(null);
     const [dateFin, setDateFin] = useState<Date | null>(null);
     const [showDateDebutPicker, setShowDateDebutPicker] = useState(false);
     const [showDateFinPicker, setShowDateFinPicker] = useState(false);
+    const token = useSelector((state: RootState) => {
+        console.log("State users :", state.users); // Debug pour vérifier les données utilisateur
+        return state.users.token;
+    });
+    const userId = useSelector((state: { users: { id: string } }) => state.users.id); // Récupère l'ID de l'utilisateur depuis Redux
+    console.log("User ID :", userId);
 
     const handleReservation = async () => {
+        console.log("Début de handleReservation");
+        console.log("Token :", token);
+        console.log("User ID :", userId);
+
+        if (!token) {
+            console.log("Token non trouvé");
+            Alert.alert("Erreur", "Vous devez être connecté pour effectuer cette action.");
+            return;
+        }
+        
         if (!dateDebut || !dateFin) {
             Alert.alert("Erreur", "Veuillez sélectionner les dates.");
             return;
@@ -41,15 +57,17 @@ const ReservationScreen = () => {
                 method: "POST",
                 headers: {
                     "Content-Type": "application/json",
+                    "Authorization": `Bearer ${token}`,
                 },
                 body: JSON.stringify(body),
             });
 
             if (response.ok) {
-                Alert.alert("Succès", "Votre réservation a été enregistrée.");
-                navigation.goBack(); // Retourne à la carte après la réservation
+                const data = await response.json();
+                Alert.alert("Succès", "Réservation effectuée !");
             } else {
-                Alert.alert("Erreur", "Impossible d'effectuer la réservation.");
+                const errorText = await response.text();
+                Alert.alert("Erreur", `Échec : ${errorText}`);
             }
         } catch (error) {
             console.error(error);

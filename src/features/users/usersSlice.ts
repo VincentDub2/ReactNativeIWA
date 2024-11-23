@@ -235,6 +235,7 @@ export const usersSlice = createSlice({
                 if (decodedToken) {
                     state.id = parseInt(decodedToken.sub, 10);
                 }
+
                 state.isAuthenticated = true;
                 state.username = action.payload.username;
                 state.lastname = action.payload.lastname;
