@@ -11,14 +11,14 @@ interface Reservation {
 export interface User {
     id: number
     username: string //nom
-    lastname: string //prenom 
+    lastname: string //prenom
     firstname : string
     email: string
     phone: string
     password?: string;
     isAuthenticated: boolean;
     reservations: Reservation[];
-    token?: string; 
+    token?: string;
 }
 
 const initialState: User = {
@@ -39,7 +39,7 @@ export const registerAsync = createAsyncThunk(
     'users/registerAsync',
     async (credentials: { email: string; password: string; username: string; firstname: string; lastname: string }) => {
         try {
-            const response = await fetch('http://localhost:8090/api/v1/user/auth/register', {
+            const response = await fetch(`${process.env.EXPO_PUBLIC_API_URL}/user/auth/register`, {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
@@ -74,7 +74,7 @@ export const loginAsync = createAsyncThunk(
     'users/loginAsync',
     async (credentials: { email: string; password: string }) => {
         try {
-            const response = await fetch('http://localhost:8090/api/v1/user/auth/login', {
+            const response = await fetch(`${process.env.EXPO_PUBLIC_API_URL}/user/auth/login`, {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
@@ -266,7 +266,7 @@ export const usersSlice = createSlice({
         builder
             .addCase(loginAsync.fulfilled, (state, action) => {
                 const decodedToken = decodeJWT(action.payload.token);
-            
+
                 if (decodedToken) {
                     state.id = parseInt(decodedToken.sub, 10);
                 }
