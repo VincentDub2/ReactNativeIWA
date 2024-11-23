@@ -7,8 +7,31 @@ import MapScreen from "../screens/MapScreen";
 import { logout } from "../features/users/usersSlice";
 import {useDispatch} from "react-redux";
 import HeadBar from "./HeadBar";
+import { createStackNavigator } from '@react-navigation/stack';
+import ReservationScreen from '../screens/ReservationScreen';
 
 const Tab = createBottomTabNavigator();
+const Stack = createStackNavigator();
+
+function MapStack() {
+    return (
+        <Stack.Navigator
+            // Supprimer le `header` ici pour éviter la duplication
+            screenOptions={{
+                headerShown: false,
+            }}
+        >
+            <Stack.Screen name="Map" component={MapScreen} />
+            <Stack.Screen
+                name="ReservationScreen"
+                component={ReservationScreen}
+                options={{
+                    title: "Réserver un emplacement",
+                }}
+            />
+        </Stack.Navigator>
+    );
+}
 
 export default function MyTabs() {
 
@@ -56,7 +79,11 @@ export default function MyTabs() {
                 }}
             >
                 <Tab.Screen name="Home" component={HomeScreen} />
-                <Tab.Screen name="Map" component={MapScreen} />
+                <Tab.Screen 
+                    name="MapStack" 
+                    component={MapStack} 
+                    options={{ title: "Carte" }} 
+                />
                 <Tab.Screen name="Account" component={UsersScreen}/>
             </Tab.Group>
         </Tab.Navigator>
