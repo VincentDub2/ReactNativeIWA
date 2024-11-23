@@ -89,13 +89,18 @@ const MapScreen = () => {
 			);
 
 			// Générer une capacité aléatoire entre 1 et 10
-			const capacity = Math.floor(Math.random() * 10) + 1;
-
+			const capacity = Math.floor(Math.random() * 10) + 1;	
+			
+			// Générer un id aléatoire pour chaque emplacement
+			const id = Math.floor(Math.random() * 100) + 1;
+			
 			randomMarkers.push({
+				id: id,
 				latitude: randomPoint.latitude,
 				longitude: randomPoint.longitude,
 				title: t("map.bivouac_location", { number: i + 1 }),
-				description: t("map.bivouac_description", { number: i + 1 }),
+				//description: t("map.bivouac_description", { number: i + 1 }),
+				description: `${t("map.bivouac_description", { number: i + 1 })}\nID: ${id}`,
 				prix: Math.floor(Math.random() * 100) + 1,
 				rating: Math.floor(Math.random() * 5) + 1,
 				amenities: markerAmenities,

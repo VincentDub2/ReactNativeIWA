@@ -12,6 +12,7 @@ import Register from './screens/RegisterScreen';
 import WelcomeScreen from './screens/WelcomeScreen';
 import MessagingScreen from "./screens/MessagerieScreen";
 import UsersScreen from "./screens/UsersScreen";
+import ReservationScreen from "./screens/ReservationScreen";
 
 
 import "./global.css";
@@ -81,6 +82,11 @@ export default function Main() {
                       component={MessagingScreen}
                       options={{ headerShown: true }}
 					/>
+                    <Stack.Screen
+                        name="ReservationScreen"
+                        component={ReservationScreen}
+                        options={{ title: "Réserver un emplacement" }}
+                    />
                     </>
                 )}
             </Stack.Navigator>

@@ -1,7 +1,9 @@
 import React from 'react';
 import { Marker, Callout } from 'react-native-maps';
-import { Image, View, Text, StyleSheet } from 'react-native';
+import { Image, View, Text, StyleSheet, Alert, Button } from 'react-native';
 import { StarRatingDisplay } from 'react-native-star-rating-widget';
+import { useNavigation, NavigationProp } from '@react-navigation/native';
+import { RootStackParamList } from '../../../types'; // Adjust the path as necessary
 import {useTranslation} from "react-i18next";
 
 interface CustomMarkerProps {
@@ -9,7 +11,10 @@ interface CustomMarkerProps {
 }
 
 const CustomMarker: React.FC<CustomMarkerProps> = ({ marker }) => {
+    
     const {t} = useTranslation();
+    const navigation = useNavigation<NavigationProp<RootStackParamList>>();
+    
     return (
         <Marker
             coordinate={{
@@ -27,6 +32,12 @@ const CustomMarker: React.FC<CustomMarkerProps> = ({ marker }) => {
                     <Text>{t('map.price')}: {marker.prix} €</Text>
                     <Text>{t('map.capacity')}: {marker.capacity} {t('map.people')}</Text>
                     <Text>{t('map.amenities_title')}:</Text>
+                    <Button
+                        title="Réserver"
+                        onPress={() =>
+                            navigation.navigate("ReservationScreen", { marker })
+                        }
+                    />
                     {marker.amenities.map((amenity: string, idx: number) => (
                         <Text key={idx}>- {amenity}</Text>
                     ))}
