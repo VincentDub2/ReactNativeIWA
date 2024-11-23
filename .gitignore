@@ -11,6 +11,8 @@ node_modules/
 dist/
 web-build/
 
+.yarn.lock
+
 # Native
 *.orig.*
 *.jks
