@@ -34,7 +34,7 @@ export default function MessagingScreen() {
 			try {
 				const userId = 1; // A remplacer par l'ID réel de l'utilisateur connecté
 				const response = await axios.get(
-					`http://162.38.38.87:8090/api/v1/messages/user/${userId}`,
+					`${process.env.EXPO_PUBLIC_API_URL}/messages/user/${userId}`,
 				);
 				setConversations(response.data);
 			} catch (error) {
@@ -50,7 +50,7 @@ export default function MessagingScreen() {
 	const handleSelectConversation = async (conversationId: number) => {
 		try {
 			const response = await axios.get(
-				`http://162.38.38.87:8090/api/v1/messages/conversation/${conversationId}`,
+				`${process.env.EXPO_PUBLIC_API_URL}/messages/conversation/${conversationId}`,
 			);
 
 			// La réponse est un tableau de messages
@@ -84,7 +84,7 @@ export default function MessagingScreen() {
 
 			try {
 				const response = await axios.post(
-					"http://162.38.38.87:8090/api/v1/messages/send",
+					`${process.env.EXPO_PUBLIC_API_URL}/messages/send`,
 					message,
 					{
 						headers: {
