@@ -28,7 +28,7 @@ const MapScreen = () => {
 	const [selectedAmenities, setSelectedAmenities] = useState<string[]>([]);
 	const [minCapacity, setMinCapacity] = useState<number>(1);
 
-	const [markers, setMarkers] = useState<any[]>([]);
+	const [markers, setMarkers] = useState<Emplacement[]>([]);
 
 
 	const toggleAmenity = (amenityId: string) => {
@@ -46,7 +46,7 @@ const MapScreen = () => {
 	const decreaseCapacity = () => {
 		setMinCapacity((prevCapacity) => (prevCapacity > 1 ? prevCapacity - 1 : 1));
 	};
-  
+
 	// Charger les emplacements
 	useEffect(() => {
 		const loadMarkers = async () => {
@@ -104,7 +104,7 @@ const MapScreen = () => {
 			// Filtrer par commodités
 			if (selectedAmenities.length > 0) {
 				for (const amenityId of selectedAmenities) {
-					if (!marker.amenities.includes(amenityId)) {
+					if (!marker.commodites.includes(amenityId)) {
 						return false;
 					}
 				}

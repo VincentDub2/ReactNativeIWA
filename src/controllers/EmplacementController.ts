@@ -23,23 +23,36 @@ export default class EmplacementController {
             }
 
             const data = await responseAxios.data;
-            return data.map(
-                (item: any) =>
-                    new Emplacement(
-                        item.idEmplacement,
-                        item.idHote,
-                        item.nom,
-                        item.adresse,
-                        item.description,
-                        item.commodites || [],
-                        item.image || null,
-                        item.latitude,
-                        item.longitude,
-                        item.prixParNuit,
-                        item.dateDebut,
-                        item.dateFin
-                    )
-            );
+
+            const mapData = data.map((item: any) => {
+
+                if (typeof item.prixParNuit !== "number") {
+                    console.error(
+                        `Erreur : prixParNuit est incorrect pour l'emplacement ${item.idEmplacement}`,
+                        item.prixParNuit
+                    );
+                }
+
+                const emplacement = new Emplacement(
+                    item.idEmplacement,
+                    item.idHote,
+                    item.nom,
+                    item.adresse,
+                    item.description,
+                    item.commodites || [],
+                    item.image || null,
+                    item.latitude,
+                    item.longitude,
+                    item.capacity || 10,
+                    item.prixParNuit, // Valide que ceci est bien un nombre
+                    item.dateDebut,
+                    item.dateFin
+                );
+
+                return emplacement;
+            });
+
+            return mapData;
         } catch (error) {
             console.error("Erreur lors de la récupération des emplacements :", error);
             throw error;
@@ -75,7 +88,8 @@ export default class EmplacementController {
                 item.longitude,
                 item.prixParNuit,
                 item.dateDebut,
-                item.dateFin
+                item.dateFin,
+                item.capacity
             );
         } catch (error) {
             console.error(`Erreur lors de la récupération de l'emplacement ${id} :`, error);
@@ -112,7 +126,8 @@ export default class EmplacementController {
                 item.longitude,
                 item.prixParNuit,
                 item.dateDebut,
-                item.dateFin
+                item.dateFin,
+                item.capacity
             ));
         } catch (error) {
             console.error("Erreur lors de la recherche d'emplacements :", error);
@@ -147,7 +162,8 @@ export default class EmplacementController {
                 item.longitude,
                 item.prixParNuit,
                 item.dateDebut,
-                item.dateFin
+                item.dateFin,
+                item.capacity
             );
         } catch (error) {
             console.error("Erreur lors de la création d'un emplacement :", error);

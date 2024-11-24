@@ -4,13 +4,10 @@ import DateTimePicker from "@react-native-community/datetimepicker";
 import { useRoute, useNavigation, RouteProp } from "@react-navigation/native";
 import { useSelector } from "react-redux";
 import { RootState } from "../app/store";
+import {Emplacement} from "../models/Emplacement";
 
 type RouteParams = {
-    marker: {
-        id: string;
-        title: string;
-        prix: number;
-    };
+   marker: Emplacement;
 };
 
 const ReservationScreen = () => {
@@ -26,6 +23,13 @@ const ReservationScreen = () => {
     });
     const userId = useSelector((state: { users: { id: string } }) => state.users.id); // Récupère l'ID de l'utilisateur depuis Redux
 
+    const formatDateToLocalDateTime = (date: Date) => {
+        const year = date.getFullYear();
+        const month = String(date.getMonth() + 1).padStart(2, "0");
+        const day = String(date.getDate()).padStart(2, "0");
+        return `${year}-${month}-${day}T00:00:00`; // Ajoute "T00:00:00" à la date
+    };
+
     const handleReservation = async () => {
         if (!token) {
             Alert.alert("Erreur", "Vous devez être connecté pour effectuer cette action.");
@@ -38,12 +42,13 @@ const ReservationScreen = () => {
         }
 
         const body = {
-            idEmplacement: marker.id,
+            idEmplacement: marker.idEmplacement,
             idVoyageur: userId,
-            dateArrive: dateDebut.toISOString(),
-            dateDepart: dateFin.toISOString(),
-            prix: marker.prix,
+            dateArrive: formatDateToLocalDateTime(dateDebut),
+            dateDepart: formatDateToLocalDateTime(dateFin),
+            prix: marker.prixParNuit,
         };
+
 
         try {
             const response = await fetch("http://localhost:8090/api/v1/reservation", {
@@ -72,7 +77,7 @@ const ReservationScreen = () => {
         <ScrollView contentContainerStyle={styles.scrollContainer}>
             <View style={styles.container}>
                 <Text style={styles.title}>
-                    Réserver l'emplacement : {marker.title}
+                    Réserver l'emplacement : {marker.nom}
                 </Text>
 
                 <TouchableOpacity

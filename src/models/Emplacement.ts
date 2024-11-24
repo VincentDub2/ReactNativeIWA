@@ -9,6 +9,7 @@ export class Emplacement {
         public image: string | null, // Encodé en Base64
         public latitude: number,
         public longitude: number,
+        public capacity: number = 10,
         public prixParNuit: number,
         public dateDebut: string, // Format ISO 8601
         public dateFin: string // Format ISO 8601

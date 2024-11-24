@@ -5,9 +5,10 @@ import { StarRatingDisplay } from 'react-native-star-rating-widget';
 import { useNavigation, NavigationProp } from '@react-navigation/native';
 import { RootStackParamList } from '../../../types'; // Adjust the path as necessary
 import {useTranslation} from "react-i18next";
+import {Emplacement} from "../../models/Emplacement";
 
 interface CustomMarkerProps {
-    marker: any; // Marqueur contenant les données
+    marker: Emplacement; // Marqueur contenant les données
 }
 
 const CustomMarker: React.FC<CustomMarkerProps> = ({ marker }) => {
@@ -27,7 +28,7 @@ const CustomMarker: React.FC<CustomMarkerProps> = ({ marker }) => {
                     latitude: marker.latitude,
                     longitude: marker.longitude,
                 }}
-                title={marker.title}
+                title={marker.nom}
             >
                 <Image
                     source={require('../../../assets/images/tente2.png')}
@@ -35,17 +36,17 @@ const CustomMarker: React.FC<CustomMarkerProps> = ({ marker }) => {
                 />
                 <Callout style={styles.customCallout} onPress={handleReservation}>
                     <View>
-                        <Text style={styles.calloutTitle}>{marker.title}</Text>
+                        <Text style={styles.calloutTitle}>{marker.nom}</Text>
                         <Text>{marker.description}</Text>
-                        <Text>{t('map.price')}: {marker.prix} €</Text>
+                        <Text>{t('map.price')}: {marker.prixParNuit} €</Text>
                         <Text>{t('map.capacity')}: {marker.capacity} {t('map.people')}</Text>
                         <Text>{t('map.amenities_title')}:</Text>
-                        {marker.amenities.map((amenity: string, idx: number) => (
-                            <Text key={idx}>- {amenity}</Text>
-                        ))}
+                        {marker.commodites?.map((amenity: string, idx: number) => (
+                                <Text key={idx}>- {amenity}</Text>
+                            ))}
                         <StarRatingDisplay
                             starStyle={{ margin: 0, padding: 0 }}
-                            rating={marker.rating}
+                            rating={3.5}
                             starSize={24}
                         />
                     </View>
