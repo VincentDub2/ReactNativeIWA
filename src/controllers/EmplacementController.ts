@@ -1,9 +1,10 @@
 import { Emplacement } from "../models/Emplacement";
 import { getToken } from "../utils/auth";
 import axios from "axios";
+import {getApiUrl} from "../utils/api";
 
 export default class EmplacementController {
-    private static API_URL ="http://localhost:8090/api/v1";
+    private static API_URL = getApiUrl();
 
     // Méthode pour récupérer tous les emplacements depuis l'API
     static async fetchAllEmplacements(): Promise<Emplacement[]> {
@@ -23,23 +24,36 @@ export default class EmplacementController {
             }
 
             const data = await responseAxios.data;
-            return data.map(
-                (item: any) =>
-                    new Emplacement(
-                        item.idEmplacement,
-                        item.idHote,
-                        item.nom,
-                        item.adresse,
-                        item.description,
-                        item.commodites || [],
-                        item.image || null,
-                        item.latitude,
-                        item.longitude,
-                        item.prixParNuit,
-                        item.dateDebut,
-                        item.dateFin
-                    )
-            );
+
+            const mapData = data.map((item: any) => {
+
+                if (typeof item.prixParNuit !== "number") {
+                    console.error(
+                        `Erreur : prixParNuit est incorrect pour l'emplacement ${item.idEmplacement}`,
+                        item.prixParNuit
+                    );
+                }
+
+                const emplacement = new Emplacement(
+                    item.idEmplacement,
+                    item.idHote,
+                    item.nom,
+                    item.adresse,
+                    item.description,
+                    item.commodites || [],
+                    item.image || null,
+                    item.latitude,
+                    item.longitude,
+                    item.capacity || 10,
+                    item.prixParNuit, // Valide que ceci est bien un nombre
+                    item.dateDebut,
+                    item.dateFin
+                );
+
+                return emplacement;
+            });
+
+            return mapData;
         } catch (error) {
             console.error("Erreur lors de la récupération des emplacements :", error);
             throw error;
@@ -75,7 +89,8 @@ export default class EmplacementController {
                 item.longitude,
                 item.prixParNuit,
                 item.dateDebut,
-                item.dateFin
+                item.dateFin,
+                item.capacity
             );
         } catch (error) {
             console.error(`Erreur lors de la récupération de l'emplacement ${id} :`, error);
@@ -87,7 +102,7 @@ export default class EmplacementController {
     static async fetchEmplacementsByCity(city: string): Promise<Emplacement[]> {
         const token = getToken();
         try {
-            const response = await fetch(`${this.API_URL}/search?city=${city}`,
+            const response = await fetch(`${this.API_URL}/emplacements/search?city=${city}`,
             {
                 method: "GET",
                     headers: {
@@ -112,7 +127,8 @@ export default class EmplacementController {
                 item.longitude,
                 item.prixParNuit,
                 item.dateDebut,
-                item.dateFin
+                item.dateFin,
+                item.capacity
             ));
         } catch (error) {
             console.error("Erreur lors de la recherche d'emplacements :", error);
@@ -124,7 +140,7 @@ export default class EmplacementController {
     static async createEmplacement(newEmplacement: Emplacement): Promise<Emplacement> {
         const token = getToken();
         try {
-            const response = await fetch(this.API_URL, {
+            const response = await fetch(`${this.API_URL}/emplacements`, {
                 method: "POST",
                 headers: { "Content-Type": "application/json",
                 Authorization: `Bearer ${token}`}, // Ajout du Bearer Token
@@ -147,7 +163,8 @@ export default class EmplacementController {
                 item.longitude,
                 item.prixParNuit,
                 item.dateDebut,
-                item.dateFin
+                item.dateFin,
+                item.capacity
             );
         } catch (error) {
             console.error("Erreur lors de la création d'un emplacement :", error);

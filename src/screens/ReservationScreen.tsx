@@ -1,30 +1,34 @@
 import React, { useState } from "react";
-import { View, Text, TextInput, Button, Platform, StyleSheet, Alert, ScrollView, TouchableOpacity } from "react-native";
+import { View, Text, Platform, StyleSheet, Alert, ScrollView, TouchableOpacity } from "react-native";
 import DateTimePicker from "@react-native-community/datetimepicker";
-import { useRoute, useNavigation, RouteProp } from "@react-navigation/native";
+import { useRoute, RouteProp } from "@react-navigation/native";
 import { useSelector } from "react-redux";
 import { RootState } from "../app/store";
+import {Emplacement} from "../models/Emplacement";
+import {ReservationRequest} from "../models/Reservation";
+import {ReservationController} from "../controllers/ReservationController";
 
 type RouteParams = {
-    marker: {
-        id: string;
-        title: string;
-        prix: number;
-    };
+   marker: Emplacement;
 };
 
 const ReservationScreen = () => {
-    const route = useRoute<RouteProp<{ params: RouteParams }, 'params'>>();
-    const navigation = useNavigation();
-    const { marker } = route.params; // Récupère les infos du marqueur sélectionné
+    const route = useRoute<RouteProp<{ params: RouteParams }, "params">>();
+    const { marker } = route.params;
     const [dateDebut, setDateDebut] = useState<Date | null>(null);
     const [dateFin, setDateFin] = useState<Date | null>(null);
     const [showDateDebutPicker, setShowDateDebutPicker] = useState(false);
     const [showDateFinPicker, setShowDateFinPicker] = useState(false);
-    const token = useSelector((state: RootState) => {
-        return state.users.token;
-    });
-    const userId = useSelector((state: { users: { id: string } }) => state.users.id); // Récupère l'ID de l'utilisateur depuis Redux
+
+    const token = useSelector((state: RootState) => state.users.token);
+    const userId = useSelector((state: RootState) => state.users.id);
+
+    const formatDateToLocalDateTime = (date: Date): string => {
+        const year = date.getFullYear();
+        const month = String(date.getMonth() + 1).padStart(2, "0");
+        const day = String(date.getDate()).padStart(2, "0");
+        return `${year}-${month}-${day}T00:00:00`;
+    };
 
     const handleReservation = async () => {
         if (!token) {
@@ -37,55 +41,27 @@ const ReservationScreen = () => {
             return;
         }
 
-        const body = {
-            idEmplacement: marker.id,
+        const body: ReservationRequest = {
+            idEmplacement: marker.idEmplacement,
             idVoyageur: userId,
-            dateArrive: dateDebut.toISOString(),
-            dateDepart: dateFin.toISOString(),
-            prix: marker.prix,
+            dateArrive: formatDateToLocalDateTime(dateDebut),
+            dateDepart: formatDateToLocalDateTime(dateFin),
+            prix: marker.prixParNuit,
         };
-
-        try {
-            const response = await fetch(`${process.env.EXPO_PUBLIC_API_URL}/reservation`, {
-                method: "POST",
-                headers: {
-                    "Content-Type": "application/json",
-                    "Authorization": `Bearer ${token}`,
-                },
-                body: JSON.stringify(body),
-            });
-
-            if (response.ok) {
-                const data = await response.json();
-                Alert.alert("Félicitation !", "Votre réservation a été effectuée avec succès!");
-            } else {
-                const errorText = await response.text();
-                Alert.alert("Erreur", `Échec : ${errorText}`);
-            }
-        } catch (error) {
-            console.error(error);
-            Alert.alert("Erreur", "Une erreur est survenue.");
-        }
+        await ReservationController.makeReservation(body, token);
     };
 
     return (
         <ScrollView contentContainerStyle={styles.scrollContainer}>
             <View style={styles.container}>
                 <Text style={styles.title}>
-                    Réserver l'emplacement : {marker.title}
+                    Réserver l'emplacement : {marker.nom}
                 </Text>
 
-                <TouchableOpacity
-                    style={styles.button}
-                    onPress={() => setShowDateDebutPicker(true)}
-                >
+                <TouchableOpacity style={styles.button} onPress={() => setShowDateDebutPicker(true)}>
                     <Text style={styles.buttonText}>Choisir ma date d'arrivée</Text>
                 </TouchableOpacity>
-                {dateDebut && (
-                    <Text style={styles.dateText}>
-                        Date d'arrivée: {dateDebut.toLocaleDateString()}
-                    </Text>
-                )}
+                {dateDebut && <Text style={styles.dateText}>Date d'arrivée: {dateDebut.toLocaleDateString()}</Text>}
                 {showDateDebutPicker && (
                     <DateTimePicker
                         value={dateDebut || new Date()}
@@ -98,17 +74,10 @@ const ReservationScreen = () => {
                     />
                 )}
 
-                <TouchableOpacity
-                    style={styles.button}
-                    onPress={() => setShowDateFinPicker(true)}
-                >
+                <TouchableOpacity style={styles.button} onPress={() => setShowDateFinPicker(true)}>
                     <Text style={styles.buttonText}>Choisir ma date de départ</Text>
                 </TouchableOpacity>
-                {dateFin && (
-                    <Text style={styles.dateText}>
-                        Date de départ: {dateFin.toLocaleDateString()}
-                    </Text>
-                )}
+                {dateFin && <Text style={styles.dateText}>Date de départ: {dateFin.toLocaleDateString()}</Text>}
                 {showDateFinPicker && (
                     <DateTimePicker
                         value={dateFin || new Date()}
@@ -121,13 +90,8 @@ const ReservationScreen = () => {
                     />
                 )}
 
-                <TouchableOpacity
-                    style={styles.confirmButton}
-                    onPress={handleReservation}
-                >
-                    <Text style={styles.confirmButtonText}>
-                        Confirmer la réservation
-                    </Text>
+                <TouchableOpacity style={styles.confirmButton} onPress={handleReservation}>
+                    <Text style={styles.confirmButtonText}>Confirmer la réservation</Text>
                 </TouchableOpacity>
             </View>
         </ScrollView>
