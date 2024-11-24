@@ -1,9 +1,10 @@
 import { Emplacement } from "../models/Emplacement";
 import { getToken } from "../utils/auth";
 import axios from "axios";
+import {getApiUrl} from "../utils/api";
 
 export default class EmplacementController {
-    private static API_URL ="http://localhost:8090/api/v1";
+    private static API_URL = getApiUrl();
 
     // Méthode pour récupérer tous les emplacements depuis l'API
     static async fetchAllEmplacements(): Promise<Emplacement[]> {
@@ -101,7 +102,7 @@ export default class EmplacementController {
     static async fetchEmplacementsByCity(city: string): Promise<Emplacement[]> {
         const token = getToken();
         try {
-            const response = await fetch(`${this.API_URL}/search?city=${city}`,
+            const response = await fetch(`${this.API_URL}/emplacements/search?city=${city}`,
             {
                 method: "GET",
                     headers: {
@@ -139,7 +140,7 @@ export default class EmplacementController {
     static async createEmplacement(newEmplacement: Emplacement): Promise<Emplacement> {
         const token = getToken();
         try {
-            const response = await fetch(this.API_URL, {
+            const response = await fetch(`${this.API_URL}/emplacements`, {
                 method: "POST",
                 headers: { "Content-Type": "application/json",
                 Authorization: `Bearer ${token}`}, // Ajout du Bearer Token
