@@ -48,7 +48,6 @@ const ReservationScreen = () => {
             dateDepart: formatDateToLocalDateTime(dateFin),
             prix: marker.prixParNuit,
         };
-
         await ReservationController.makeReservation(body, token);
     };
 

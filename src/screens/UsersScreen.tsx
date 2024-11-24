@@ -215,26 +215,50 @@ export default function UsersScreen() {
 					<Text style={styles.reservationsTitle}>Mes réservations</Text>
 
 					<ScrollView style={styles.reservationsContainer} contentContainerStyle={{ paddingBottom: 20 }}>
-						{reservations.map((reservation, index) => (
-							<View key={index} style={styles.reservationBox}>
-								<Text style={styles.reservationTitle}>{reservation.nom}</Text>
-								<Text>
-									Date d'arrivée :{" "}
-									{reservation.dateDebut ? new Date(reservation.dateDebut).toLocaleDateString() : "Non définie"}
-								</Text>
-								<Text>
-									Date de départ :{" "}
-									{reservation.dateFin ? new Date(reservation.dateFin).toLocaleDateString() : "Non définie"}
-								</Text>
-								<Text style={styles.reservationAddress}>{reservation.adresse}</Text>
-							</View>
-						))}
+						{reservations.map((reservation, index) => {
+							const isPastReservation =
+								reservation.dateFin && new Date(reservation.dateFin) < new Date();
+
+							return (
+								<TouchableOpacity
+									key={index}
+									style={styles.reservationBox}
+									onPress={() => {
+										if (isPastReservation) {
+											navigation.navigate("EvaluationScreen", { reservation });
+										}
+									}}
+								>
+									<Text style={styles.reservationTitle}>{reservation.nom}</Text>
+									<Text>
+										Date d'arrivée :{" "}
+										{reservation.dateDebut
+											? new Date(reservation.dateDebut).toLocaleDateString()
+											: "Non définie"}
+									</Text>
+									<Text>
+										Date de départ :{" "}
+										{reservation.dateFin
+											? new Date(reservation.dateFin).toLocaleDateString()
+											: "Non définie"}
+									</Text>
+									<Text style={styles.reservationAddress}>{reservation.adresse}</Text>
+									{isPastReservation && (
+										<Text style={styles.pastReservationText}>
+											Cliquez pour évaluer cette réservation
+										</Text>
+									)}
+								</TouchableOpacity>
+							);
+						})}
 					</ScrollView>
 				</>
 			) : (
-				<Text style={styles.noReservations}>Vous n'avez aucune réservation pour le moment.</Text>
+				<Text style={styles.noReservations}>
+					Vous n'avez aucune réservation pour le moment.
+				</Text>
 			)}
-		</View>
+			</View>
 	);
 }
 
@@ -326,6 +350,12 @@ const styles = StyleSheet.create({
 		fontSize: 14,
 		color: "#555",
 		marginTop: 5,
+	},
+	pastReservationText: {
+		marginTop: 5,
+		fontSize: 14,
+		color: "#FF4500", // Rouge ou couleur d'avertissement
+		fontStyle: "italic",
 	},
 	logoutButtonContainer: {
         alignSelf: 'flex-end',

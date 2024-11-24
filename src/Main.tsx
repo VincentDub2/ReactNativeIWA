@@ -13,6 +13,7 @@ import WelcomeScreen from './screens/WelcomeScreen';
 import MessagingScreen from "./screens/MessagerieScreen";
 import UsersScreen from "./screens/UsersScreen";
 import ReservationScreen from "./screens/ReservationScreen";
+import EvaluationScreen from "./screens/EvaluationScreen";
 
 
 import "./global.css";
@@ -86,6 +87,11 @@ export default function Main() {
                         name="ReservationScreen"
                         component={ReservationScreen}
                         options={{ title: "Réservation" }}
+                    />
+                    <Stack.Screen
+                        name="EvaluationScreen"
+                        component={EvaluationScreen}
+                        options={{ title: "Évaluation" }}
                     />
                     </>
                 )}
