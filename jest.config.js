@@ -5,7 +5,7 @@ module.exports = {
     transform: {
         '^.+\\.(js|jsx|ts|tsx)$': 'babel-jest',
     },
-    setupFilesAfterEnv: ['@testing-library/jest-native/extend-expect'],
+    setupFilesAfterEnv: ["@testing-library/jest-native/extend-expect"],
     transformIgnorePatterns: [
         'node_modules/(?!(@react-native|react-native|react-native-.*|@react-navigation)/)',
     ],
