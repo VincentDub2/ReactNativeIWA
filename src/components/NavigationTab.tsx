@@ -9,6 +9,7 @@ import {useDispatch} from "react-redux";
 import HeadBar from "./HeadBar";
 import { createStackNavigator } from '@react-navigation/stack';
 import ReservationScreen from '../screens/ReservationScreen';
+import EvaluationScreen from '../screens/EvaluationScreen';
 
 const Tab = createBottomTabNavigator();
 const Stack = createStackNavigator();
@@ -33,6 +34,25 @@ function MapStack() {
     );
 }
 
+function UserStack() {
+    return(
+        <Stack.Navigator
+            screenOptions={{
+                headerShown: false,
+            }}
+        >
+            <Stack.Screen name="Users" component={UsersScreen} />
+            <Stack.Screen
+                name="EvaluationScreen"
+                component={EvaluationScreen}
+                options={{
+                    title: "Évaluer un séjour",
+                }}
+            />
+        </Stack.Navigator>
+    );
+}
+
 export default function MyTabs() {
 
     const dispatch = useDispatch();  // Utilise pour déclencher des a
@@ -50,9 +70,9 @@ export default function MyTabs() {
                     // Initialisation d'iconName en fonction de la route
                     if (route.name === 'Home') {
                         iconName = focused ? 'home' : 'home-outline';
-                    } else if (route.name === 'Account') {
+                    } else if (route.name === 'Compte' || route.name === 'UserStack') {
                         iconName = focused ? 'person' : 'person-outline';
-                    } else if (route.name === 'Map') {
+                    } else if (route.name === 'Map' || route.name === 'MapStack') {
                         iconName = focused ? 'map' : 'map-outline';
                     } else {
                         iconName = 'home';
@@ -82,9 +102,13 @@ export default function MyTabs() {
                 <Tab.Screen 
                     name="MapStack" 
                     component={MapStack} 
-                    options={{ title: "Carte" }} 
+                    options={{ title: "Map" }} 
                 />
-                <Tab.Screen name="Account" component={UsersScreen}/>
+                <Tab.Screen 
+                    name="UserStack"  
+                    component={UserStack}
+                    options={{ title: "Compte" }}
+                />
             </Tab.Group>
         </Tab.Navigator>
     );

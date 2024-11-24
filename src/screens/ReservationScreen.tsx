@@ -46,7 +46,7 @@ const ReservationScreen = () => {
         };
 
         try {
-            const response = await fetch("http://localhost:8090/api/v1/reservation", {
+            const response = await fetch(`${process.env.EXPO_PUBLIC_API_URL}/reservation`, {
                 method: "POST",
                 headers: {
                     "Content-Type": "application/json",
