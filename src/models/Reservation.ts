@@ -5,3 +5,11 @@ export interface ReservationRequest {
     dateDepart: string;
     prix: number;
 }
+
+
+export interface Reservation {
+    nom: string;
+    dateDebut: string | null;
+    dateFin: string | null;
+    adresse: string;
+}
