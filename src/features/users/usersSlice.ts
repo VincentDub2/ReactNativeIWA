@@ -1,25 +1,9 @@
 import { createAsyncThunk, createSlice, PayloadAction } from '@reduxjs/toolkit'
 import { RootState } from '../../app/store';
+import {User} from "../../models/User";
+import {Reservation} from "../../models/Reservation";
 
-interface Reservation {
-    nom: string;
-    dateDebut: string | null;
-    dateFin: string | null;
-    adresse: string;
-}
 
-export interface User {
-    id: number
-    username: string //nom
-    lastname: string //prenom
-    firstname : string
-    email: string
-    phone: string
-    password?: string;
-    isAuthenticated: boolean;
-    reservations: Reservation[];
-    token?: string;
-}
 
 const initialState: User = {
     id: 0,
