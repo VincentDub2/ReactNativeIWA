@@ -26,8 +26,8 @@ interface LocationFormProps {
         image: any;
         pricePerNight: number;
         dispo: {
-            startDate: string; // Doit être de type string
-            endDate: string;    // Doit être de type string
+            startDate: string;
+            endDate: string;
         };
     };
 }

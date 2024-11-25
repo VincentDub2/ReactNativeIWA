@@ -31,8 +31,8 @@ export interface Location {
     longitude: number;
     pricePerNight: number;
     dispo: {
-        startDate: string; // Utilisez string au lieu de Date
-        endDate: string;   // Utilisez string au lieu de Date
+        startDate: string;
+        endDate: string;
     };
 }
 
