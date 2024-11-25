@@ -7,8 +7,51 @@ import MapScreen from "../screens/MapScreen";
 import { logout } from "../features/users/usersSlice";
 import {useDispatch} from "react-redux";
 import HeadBar from "./HeadBar";
+import { createStackNavigator } from '@react-navigation/stack';
+import ReservationScreen from '../screens/ReservationScreen';
+import EvaluationScreen from '../screens/EvaluationScreen';
 
 const Tab = createBottomTabNavigator();
+const Stack = createStackNavigator();
+
+function MapStack() {
+    return (
+        <Stack.Navigator
+            // Supprimer le `header` ici pour éviter la duplication
+            screenOptions={{
+                headerShown: false,
+            }}
+        >
+            <Stack.Screen name="Map" component={MapScreen} />
+            <Stack.Screen
+                name="ReservationScreen"
+                component={ReservationScreen}
+                options={{
+                    title: "Réserver un emplacement",
+                }}
+            />
+        </Stack.Navigator>
+    );
+}
+
+function UserStack() {
+    return(
+        <Stack.Navigator
+            screenOptions={{
+                headerShown: false,
+            }}
+        >
+            <Stack.Screen name="Users" component={UsersScreen} />
+            <Stack.Screen
+                name="EvaluationScreen"
+                component={EvaluationScreen}
+                options={{
+                    title: "Évaluer un séjour",
+                }}
+            />
+        </Stack.Navigator>
+    );
+}
 
 export default function MyTabs() {
 
@@ -27,9 +70,9 @@ export default function MyTabs() {
                     // Initialisation d'iconName en fonction de la route
                     if (route.name === 'Home') {
                         iconName = focused ? 'home' : 'home-outline';
-                    } else if (route.name === 'Account') {
+                    } else if (route.name === 'Compte' || route.name === 'UserStack') {
                         iconName = focused ? 'person' : 'person-outline';
-                    } else if (route.name === 'Map') {
+                    } else if (route.name === 'Map' || route.name === 'MapStack') {
                         iconName = focused ? 'map' : 'map-outline';
                     } else {
                         iconName = 'home';
@@ -58,6 +101,16 @@ export default function MyTabs() {
                 <Tab.Screen name="Mes emplacements" component={HomeScreen} />
                 <Tab.Screen name="Map" component={MapScreen} />
                 <Tab.Screen name="Account" component={UsersScreen}/>
+                <Tab.Screen 
+                    name="MapStack" 
+                    component={MapStack} 
+                    options={{ title: "Map" }} 
+                />
+                <Tab.Screen 
+                    name="UserStack"  
+                    component={UserStack}
+                    options={{ title: "Compte" }}
+                />
             </Tab.Group>
         </Tab.Navigator>
     );

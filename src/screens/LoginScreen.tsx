@@ -1,10 +1,12 @@
 import React, { useState } from 'react';
-import { View, Text, TextInput, TouchableOpacity, StyleSheet, ImageBackground } from 'react-native';
+import { View, Text, TextInput, TouchableOpacity, StyleSheet, ImageBackground, Alert } from 'react-native';
 import { useDispatch } from 'react-redux';
+import { loginAsync } from '../features/users/usersSlice'; 
 import { setUserName, setEmail, login } from '../features/users/usersSlice';
 import { useNavigation } from '@react-navigation/native';
 import { StackNavigationProp } from '@react-navigation/stack';
 import { RootStackParamList } from "../../types";
+import { AppDispatch } from '../app/store';
 
 type LoginScreenNavigationProp = StackNavigationProp<RootStackParamList, 'Login'>;
 
@@ -13,13 +15,24 @@ export default function Login() {
 
     const [username, setUserNameInput] = useState('');
     const [email, setEmailInput] = useState('');
-    const dispatch = useDispatch();
+    const [password, setPasswordInput] = useState('');
+    const dispatch = useDispatch<AppDispatch>();
 
-    const handleLogin = () => {
-        dispatch(setUserName(username));
-        dispatch(setEmail(email));
-        dispatch(login());
-    };
+    const handleLogin = async () => {
+      try {
+          const resultAction = await dispatch(loginAsync({ email, password }));
+          if (loginAsync.fulfilled.match(resultAction)) {
+              // Naviguer vers l'écran principal si la connexion réussit
+              dispatch(setEmail(email));
+              navigation.navigate('NavigationTab');
+          } else {
+              Alert.alert('Erreur', 'Email ou mot de passe incorrect');
+          }
+      } catch (error) {
+          console.error('Erreur lors de la connexion', error);
+          Alert.alert('Erreur', 'Une erreur est survenue lors de la connexion');
+      }
+  };
 
     return (
       <ImageBackground 
@@ -30,14 +43,16 @@ export default function Login() {
           <Text style={styles.title}>Connectez-vous sur Biv'Quack !</Text>
           <TextInput
             style={styles.input}
-            placeholder="Nom d'utilisateur"
-            value={username}
-            onChangeText={setUserNameInput}
+            placeholder="Email"
+            value={email}
+            onChangeText={setEmailInput}
           />
           <TextInput
             style={styles.input}
             placeholder="Mot de passe"
             secureTextEntry
+            value={password}
+            onChangeText={setPasswordInput}
           />
           <TouchableOpacity style={styles.button} onPress={handleLogin}>
             <Text style={styles.buttonText}>Connexion</Text>
@@ -80,7 +95,7 @@ const styles = StyleSheet.create({
     backgroundColor: '#fff', // Fond blanc pour les champs de saisie
   },
   button: {
-    backgroundColor: '#0066cc',
+    backgroundColor: '#d2b48c',
     paddingVertical: 15,
     paddingHorizontal: 30,
     borderRadius: 30,
@@ -98,7 +113,7 @@ const styles = StyleSheet.create({
     color: '#fff',
   },
   signUpLink: {
-    color: '#0066cc',
+    color: '#d2b48c',
     fontWeight: 'bold',
   },
 });

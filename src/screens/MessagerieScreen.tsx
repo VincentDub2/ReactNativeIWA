@@ -1,25 +1,21 @@
+import axios from "axios";
 import React, { useState, useEffect } from "react";
 import {
-	View,
-	Text,
-	FlatList,
-	TextInput,
 	Button,
-	TouchableOpacity,
+	FlatList,
 	StyleSheet,
+	Text,
+	TextInput,
+	TouchableOpacity,
+	View,
 } from "react-native";
-import conversationsData from "../../assets/data/conversation.json";
 
 export default function MessagingScreen() {
 	const [conversations, setConversations] = useState<
 		{
 			id: number;
-			messages: {
-				id: number;
-				senderId: number;
-				receiverId: number;
-				content: string;
-			}[];
+			personOneId: number;
+			personTwoId: number;
 		}[]
 	>([]);
 	const [selectedConversation, setSelectedConversation] = useState<{
@@ -27,41 +23,93 @@ export default function MessagingScreen() {
 		messages: {
 			id: number;
 			senderId: number;
-			receiverId: number;
 			content: string;
+			date: string;
 		}[];
 	} | null>(null);
 	const [newMessage, setNewMessage] = useState("");
 
 	useEffect(() => {
-		// Charge les conversations depuis le fichier JSON
-		setConversations(conversationsData.conversations);
+		const fetchConversations = async () => {
+			try {
+				const userId = 1; // A remplacer par l'ID réel de l'utilisateur connecté
+				const response = await axios.get(
+					`${process.env.EXPO_PUBLIC_API_URL}/messages/user/${userId}`,
+				);
+				setConversations(response.data);
+			} catch (error) {
+				console.error(
+					"Erreur lors de la récupération des conversations",
+					error,
+				);
+			}
+		};
+		fetchConversations();
 	}, []);
 
-	const handleSelectConversation = (conversationId: number) => {
-		const conversation = conversations.find(
-			(conv) => conv.id === conversationId,
-		);
-		if (conversation) {
-			setSelectedConversation(conversation);
+	const handleSelectConversation = async (conversationId: number) => {
+		try {
+			const response = await axios.get(
+				`${process.env.EXPO_PUBLIC_API_URL}/messages/conversation/${conversationId}`,
+			);
+
+			// La réponse est un tableau de messages
+			const messages = response.data;
+
+			if (!Array.isArray(messages)) {
+				console.warn("Response data is not an array:", messages);
+				throw new Error("Invalid response format");
+			}
+
+			setSelectedConversation({
+				id: conversationId,
+				messages: messages.map((msg: any) => ({
+					id: msg.id,
+					senderId: msg.senderId, // Utilise senderId directement
+					content: msg.contenu, // Utilise contenu directement
+					date: msg.date, // Utilise date directement
+				})),
+			});
+		} catch (error) {
+			console.error("Erreur lors de la récupération des messages", error);
 		}
 	};
 
-	const handleSendMessage = () => {
+	const handleSendMessage = async () => {
 		if (newMessage.trim() !== "" && selectedConversation) {
-			const message = {
-				id: selectedConversation.messages.length + 1,
-				senderId: 1, // Simuler l'utilisateur connecté avec l'id 1
-				receiverId: 2, // À adapter selon la conversation
-				content: newMessage,
-			};
+			const message = new URLSearchParams();
+			message.append("conversationId", selectedConversation.id.toString());
+			message.append("senderId", "1"); // Remplacez par l'ID réel de l'utilisateur
+			message.append("contenu", newMessage);
 
-			// Mettre à jour les messages dans la conversation
-			setSelectedConversation({
-				...selectedConversation,
-				messages: [...selectedConversation.messages, message],
-			});
-			setNewMessage("");
+			try {
+				const response = await axios.post(
+					`${process.env.EXPO_PUBLIC_API_URL}/messages/send`,
+					message,
+					{
+						headers: {
+							"Content-Type": "application/x-www-form-urlencoded",
+						},
+					},
+				);
+
+				const newMsg = response.data;
+				setSelectedConversation({
+					...selectedConversation,
+					messages: [
+						...selectedConversation.messages,
+						{
+							id: newMsg.id,
+							senderId: newMsg.senderId,
+							content: newMsg.contenu,
+							date: newMsg.date,
+						},
+					],
+				});
+				setNewMessage(""); // Réinitialiser le champ de saisie
+			} catch (error) {
+				console.error("Erreur lors de l'envoi du message", error);
+			}
 		}
 	};
 
@@ -74,7 +122,9 @@ export default function MessagingScreen() {
 					style={styles.conversationItem}
 					onPress={() => handleSelectConversation(item.id)}
 				>
-					<Text style={styles.conversationText}>Conversation {item.id}</Text>
+					<Text style={styles.conversationText}>
+						Conversation avec user {item.personTwoId}
+					</Text>
 				</TouchableOpacity>
 			)}
 		/>
@@ -83,10 +133,10 @@ export default function MessagingScreen() {
 	const renderMessages = () => (
 		<View style={styles.messagesContainer}>
 			<FlatList
-				data={selectedConversation.messages}
+				data={selectedConversation?.messages}
 				keyExtractor={(item) => item.id.toString()}
 				renderItem={({ item }) => {
-					const isSender = item.senderId === 1; // Simuler l'utilisateur connecté avec l'id 1
+					const isSender = item.senderId === 1; // L'utilisateur connecté
 					return (
 						<View
 							style={[
@@ -95,6 +145,7 @@ export default function MessagingScreen() {
 							]}
 						>
 							<Text style={styles.messageText}>{item.content}</Text>
+							<Text style={styles.messageDate}>{item.date}</Text>
 						</View>
 					);
 				}}
@@ -171,6 +222,10 @@ const styles = StyleSheet.create({
 	messageText: {
 		color: "#3e2723",
 		fontSize: 16,
+	},
+	messageDate: {
+		fontSize: 12,
+		color: "#999",
 	},
 	inputContainer: {
 		flexDirection: "row",

@@ -44,5 +44,8 @@ export type RootStackParamList = {
     LocationDetail: { location: Partial<Location> }; // Utilise Partial pour rendre les propriétés optionnelles
     AddLocation: undefined;
     EditLocation: { location: Partial<Location> };
+    Users: undefined;
     Messagerie: undefined;
+    ReservationScreen: { marker: any };
+    EvaluationScreen: undefined;
 };

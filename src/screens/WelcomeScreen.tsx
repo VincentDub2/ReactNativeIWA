@@ -60,7 +60,7 @@ export default function WelcomeScreen() {
       alignItems: 'center',
     },
     button: {
-      backgroundColor: '#0066cc', // Couleur de fond pour le bouton principal
+      backgroundColor: '#d2b48c', // Couleur de fond pour le bouton principal
       paddingVertical: 15,
       paddingHorizontal: 30,
       borderRadius: 30,
@@ -74,7 +74,7 @@ export default function WelcomeScreen() {
       fontWeight: 'bold',
     },
     buttonOutline: {
-      borderColor: '#0066cc', // Couleur de bordure pour le bouton outline
+      borderColor: '#d2b48c', // Couleur de bordure pour le bouton outline
       borderWidth: 2,
       paddingVertical: 15,
       paddingHorizontal: 30,
@@ -84,7 +84,7 @@ export default function WelcomeScreen() {
       marginVertical: 10,
     },
     buttonOutlineText: {
-      color: '#0066cc',
+      color: '#d2b48c',
       fontSize: 18,
       fontWeight: 'bold',
     },

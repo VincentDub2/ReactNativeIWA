@@ -1,8 +1,10 @@
-import { createStackNavigator } from "@react-navigation/stack";
+import { createStackNavigator, StackNavigationProp } from "@react-navigation/stack";
 import React, { useState } from "react";
 import { View } from "react-native";
 import { useDispatch, useSelector } from "react-redux";
+import { useEffect } from "react";
 import NavigationTab from "./components/NavigationTab";
+import { useNavigation } from "@react-navigation/native";
 
 import Login from './screens/LoginScreen';
 import Register from './screens/RegisterScreen';
@@ -12,6 +14,9 @@ import { RootState } from './app/store';
 import EditLocation from './screens/EditLocation';
 import WelcomeScreen from './screens/WelcomeScreen';
 import MessagingScreen from "./screens/MessagerieScreen";
+import UsersScreen from "./screens/UsersScreen";
+import ReservationScreen from "./screens/ReservationScreen";
+import EvaluationScreen from "./screens/EvaluationScreen";
 
 
 import "./global.css";
@@ -21,9 +26,27 @@ import "./i18n";
 const Stack = createStackNavigator<RootStackParamList>();
 
 export default function Main() {
+
     const isAuthenticated = useSelector(
-        (state: RootState) => state.users.isAuthenticated,
-    ); // Récupère l'état du store
+        (state: RootState) => state.users.isAuthenticated
+    );
+    const navigation = useNavigation<StackNavigationProp<RootStackParamList>>();
+
+    useEffect(() => {
+        if (isAuthenticated) {
+            navigation.navigate("NavigationTab");
+        } else {
+            navigation.navigate("Welcome");
+        }
+    }, [isAuthenticated, navigation]);
+
+    useEffect(() => {
+        // Rediriger vers Login si non authentifié
+        if (!isAuthenticated) {
+            navigation.navigate("Welcome");
+        }
+    }, [isAuthenticated]);
+
     return (
         <View style={{ flex: 1 }}>
             <Stack.Navigator initialRouteName="Welcome">
@@ -49,8 +72,28 @@ export default function Main() {
                     <>
                         <Stack.Screen
                             name="NavigationTab"
-                            component={NavigationTab}
+                            component={NavigationTab} // Utilisation correcte de la prop component
                             options={{ headerShown: false }}
+                        />
+                        <Stack.Screen
+                            name="Users"
+                            component={UsersScreen}
+                            options={{ headerShown: true }}
+                        />
+                        <Stack.Screen
+                            name="Messagerie"
+                            component={MessagingScreen}
+                            options={{ headerShown: true }}
+                        />
+                        <Stack.Screen
+                            name="ReservationScreen"
+                            component={ReservationScreen}
+                            options={{ title: "Réservation" }}
+                        />
+                        <Stack.Screen
+                            name="EvaluationScreen"
+                            component={EvaluationScreen}
+                            options={{ title: "Évaluation" }}
                         />
                         <Stack.Screen
                             name="LocationDetail"
@@ -67,15 +110,10 @@ export default function Main() {
                             component={EditLocation}
                             options={{ title: 'Modifier un emplacement' }}
                         />
-                        <Stack.Screen
-                            name="Messagerie"
-                            component={MessagingScreen}
-                            options={{ headerShown: true }}
-                        />
-
                     </>
-                )}
-            </Stack.Navigator>
-        </View>
+                )
+                }
+            </Stack.Navigator >
+        </View >
     );
 }
