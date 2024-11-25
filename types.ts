@@ -27,4 +27,5 @@ export type RootStackParamList = {
     Messagerie: undefined;
     ReservationScreen: { marker: any };
     EvaluationScreen: undefined;
+    MapScreen: undefined;
 };

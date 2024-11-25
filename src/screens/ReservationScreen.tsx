@@ -8,6 +8,9 @@ import {Emplacement} from "../models/Emplacement";
 import {ReservationRequest} from "../models/Reservation";
 import {ReservationController} from "../controllers/ReservationController";
 import { addReservation } from "../features/users/usersSlice";
+import { useNavigation } from "@react-navigation/native";
+import { StackNavigationProp } from '@react-navigation/stack';
+import { RootStackParamList } from "../../types";
 
 type RouteParams = {
    marker: Emplacement;
@@ -20,6 +23,10 @@ const ReservationScreen = () => {
     const [dateFin, setDateFin] = useState<Date | null>(null);
     const [showDateDebutPicker, setShowDateDebutPicker] = useState(false);
     const [showDateFinPicker, setShowDateFinPicker] = useState(false);
+    
+    type ReservationScreenNavigationProp = StackNavigationProp<RootStackParamList, 'ReservationScreen'>;
+    
+    const navigation = useNavigation<ReservationScreenNavigationProp>();
 
     const token = useSelector((state: RootState) => state.users.token);
     const userId = useSelector((state: RootState) => state.users.id);
