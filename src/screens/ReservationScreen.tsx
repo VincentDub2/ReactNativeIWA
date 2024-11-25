@@ -7,6 +7,7 @@ import { RootState } from "../app/store";
 import {Emplacement} from "../models/Emplacement";
 import {ReservationRequest} from "../models/Reservation";
 import {ReservationController} from "../controllers/ReservationController";
+import { addReservation } from "../features/users/usersSlice";
 
 type RouteParams = {
    marker: Emplacement;
@@ -49,6 +50,15 @@ const ReservationScreen = () => {
             prix: marker.prixParNuit,
         };
         await ReservationController.makeReservation(body, token);
+        dispatch(
+            addReservation({
+                nom: marker.nom,
+                dateDebut: formatDateToLocalDateTime(dateDebut),
+                dateFin: formatDateToLocalDateTime(dateFin),
+                adresse: marker.adresse,
+                idEmplacement: marker.idEmplacement,
+            })
+        );
     };
 
     return (
@@ -150,3 +160,7 @@ const styles = StyleSheet.create({
 });
 
 export default ReservationScreen;
+function dispatch(arg0: any) {
+    throw new Error("Function not implemented.");
+}
+
