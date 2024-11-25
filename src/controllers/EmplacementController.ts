@@ -171,4 +171,30 @@ export default class EmplacementController {
             throw error;
         }
     }
+
+    // Méthode pour récupérer la note moyenne d'un emplacement
+    static async fetchAverageNote(emplacementId: number): Promise<number | null> {
+        const token = getToken();
+        try {
+            const response = await axios.get(
+                `${this.API_URL}/evaluation/emplacement/${emplacementId}/average-note`,
+                {
+                    headers: {
+                        "Content-Type": "application/json",
+                        Authorization: `Bearer ${token}`,
+                    },
+                }
+            );
+    
+            if (response.status === 200) {
+                return response.data; // Retourne `null` si aucune note n'est disponible
+            } else {
+                throw new Error(`Erreur HTTP : ${response.status}`);
+            }
+        } catch (error) {
+            //console.error(`Erreur lors de la récupération de la note moyenne pour l'emplacement ${emplacementId} :`, error);
+            return null; // Retourne `null` par défaut en cas d'erreur
+        }
+    }
+
 }

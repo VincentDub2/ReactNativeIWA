@@ -12,7 +12,7 @@ export class Emplacement {
         public capacity: number = 10,
         public prixParNuit: number,
         public dateDebut: string, // Format ISO 8601
-        public dateFin: string // Format ISO 8601
+        public dateFin: string, // Format ISO 8601
     ) {}
 
     // Méthode pour calculer la distance à partir d'une localisation donnée

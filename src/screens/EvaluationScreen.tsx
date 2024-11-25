@@ -6,6 +6,7 @@ import CustomButton from "../components/CustomButton";
 
 export default function EvaluationScreen({ route, navigation }: any) {
     const { reservation } = route.params;
+    const emplacementId = reservation.emplacementId; // Utilisez l'ID de l'emplacement
 
     const [rating, setRating] = useState(0);
     const handleRatingChange = (newRating: number) => {
@@ -21,11 +22,12 @@ export default function EvaluationScreen({ route, navigation }: any) {
 
         try {
             // Créer une évaluation et l'envoyer via le contrôleur
+            //console.log("Soumission de l'évaluation :", rating, comment, reservation);
             await EvaluationController.submitEvaluation({
                 hotelId: reservation.hotelId,
                 voyageurId: reservation.voyageurId,
                 reservationId: reservation.id,
-                emplacementId: reservation.emplacementId,
+                emplacementId: reservation.idEmplacement,
                 note: rating,
                 commentaire: comment,
             });
