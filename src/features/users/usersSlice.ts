@@ -1,4 +1,4 @@
-import { createAsyncThunk, createSlice, PayloadAction } from '@reduxjs/toolkit'
+import { createAsyncThunk, createSlice, PayloadAction } from '@reduxjs/toolkit';
 import { RootState } from '../../app/store';
 import {User} from "../../models/User";
 import {Reservation} from "../../models/Reservation";
@@ -56,6 +56,8 @@ export const registerAsync = createAsyncThunk(
 export const loginAsync = createAsyncThunk(
     'users/loginAsync',
     async (credentials: { email: string; password: string }) => {
+        console.log('Tentative de connexion avec les informations suivantes:', credentials);
+        console.log('URL de l\'API publique:', process.env.EXPO_PUBLIC_API_URL);
         try {
             const response = await fetch(`${process.env.EXPO_PUBLIC_API_URL}/user/auth/login`, {
                 method: 'POST',
