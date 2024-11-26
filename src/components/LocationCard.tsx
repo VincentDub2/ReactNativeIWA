@@ -26,7 +26,7 @@ const LocationCard: React.FC<LocationCardProps> = ({ name, address, amenities, i
             <Image source={imageSource} style={styles.image} />
             <View style={styles.cardContent}>
                 <Text style={styles.title}>{name}</Text>
-                <Text>{address}</Text>
+                <Text style={styles.adress}>{address}</Text>
                 {/* <Text>Commodités: {amenities.join(', ')}</Text> */}
             </View>
         </TouchableOpacity>
@@ -55,9 +55,13 @@ const styles = StyleSheet.create({
         borderTopRightRadius: 8,
     },
     title: {
-        fontSize: 18,
+        fontSize: 16,
         fontWeight: 'bold',
         marginBottom: 5,
+    },
+    adress: {
+        color: '#666',
+        fontSize: 14,
     },
 });
 

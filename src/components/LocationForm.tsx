@@ -1,41 +1,50 @@
+import DateTimePicker from '@react-native-community/datetimepicker';
 import { useNavigation } from '@react-navigation/native';
 import * as ImagePicker from 'expo-image-picker';
 import * as Location from 'expo-location';
-import React, { useEffect, useState } from 'react';
-import { Image, ScrollView, StyleSheet, Text, TextInput, TouchableOpacity, View, Animated, Easing } from 'react-native';
+import React, { useEffect, useState, useRef } from 'react';
+import { Animated, Easing, Image, ScrollView, StyleSheet, Text, TextInput, TouchableOpacity, View } from 'react-native';
 import MapView, { MapPressEvent, Marker } from 'react-native-maps';
-import { useDispatch } from 'react-redux';
-import amenitiesData from '../data/amenities.json';
-import { addLocation, updateLocation } from '../features/locations/locationSlice';
-import CustomButton from './CustomButton';
+import { useDispatch, useSelector } from 'react-redux';
+import { RootState } from '../app/store';
+import commoditesData from '../data/commodites.json';
+import { addLocationAsync, updateLocationAsync } from '../features/locations/locationSlice';
 import { useModal } from '../ModalProvider';
-import DateTimePicker from '@react-native-community/datetimepicker';
-
+import CustomButton from './CustomButton';
+import GooglePlacesAutocompleteCustom from './GooglePlacesAutocompleteCustom';
+import FrAmenitiesSelector from './FrAmenitiesSelector';
 
 
 interface LocationFormProps {
     onSubmit: () => void;
     initialValues?: {
-        idLocation: number;
-        name: string;
-        address: string;
+        idEmplacement?: number; // Optionnel pour la mise à jour
+        nom: string;
+        adresse: string;
         description: string;
-        amenities: string[];
+        commodites: string[];
         latitude: number;
         longitude: number;
-        image: any;
-        pricePerNight: number;
-        dispo: {
-            startDate: string;
-            endDate: string;
-        };
+        image: string | null;
+        prixParNuit: number;
+        dateDebut: string;
+        dateFin: string;
     };
 }
 
+interface commodites {
+    id: number;
+    nom: string;
+}
 
-
+interface Coordonnées {
+    latitude: number;
+    longitude: number;
+}
 
 const LocationForm: React.FC<LocationFormProps> = ({ onSubmit, initialValues }) => {
+
+    const mapViewRef = useRef(null);
 
     const [initialRegion, setInitialRegion] = useState<{
         latitude: number;
@@ -45,13 +54,15 @@ const LocationForm: React.FC<LocationFormProps> = ({ onSubmit, initialValues }) 
     } | null>(null);
 
 
+    const idHote = useSelector((state: RootState) => state.users.id); // Assurez-vous que l'ID est récupéré depuis le store.
+
     const [step, setStep] = useState(1);
-    const [name, setName] = useState(initialValues?.name || '');
-    const [address, setAddress] = useState(initialValues?.address || '');
+    const [nom, setNom] = useState(initialValues?.nom || '');
+    const [adresse, setAdresse] = useState(initialValues?.adresse || '');
     const [description, setDescription] = useState(initialValues?.description || '');
-    const [pricePerNight, setPricePerNight] = useState(initialValues?.pricePerNight.toString() || '');
-    const [selectedAmenities, setSelectedAmenities] = useState<string[]>(initialValues?.amenities || []);
-    const [coordinate, setCoordinate] = useState({
+    const [prixParNuit, setPrixParNuit] = useState(initialValues?.prixParNuit.toString() || '');
+    const [selectedcommodites, setSelectedCommodites] = useState<string[]>(initialValues?.commodites || []);
+    const [coordonnées, setCoordonnées] = useState({
         latitude: initialValues?.latitude || 37.78825,
         longitude: initialValues?.longitude || -122.4324,
     });
@@ -59,21 +70,16 @@ const LocationForm: React.FC<LocationFormProps> = ({ onSubmit, initialValues }) 
     const [selectedImage, setSelectedImage] = useState<string | null>(
         typeof initialValues?.image === 'string' ? initialValues.image : null
     );
-    const [startDate, setStartDate] = useState<Date | null>(
-        initialValues?.dispo?.startDate ? new Date(initialValues.dispo.startDate) : null
+    const [dateDebut, setDateDebut] = useState<Date | null>(
+        initialValues?.dateDebut ? new Date(initialValues.dateDebut) : null
     );
-    const [endDate, setEndDate] = useState<Date | null>(
-        initialValues?.dispo?.endDate ? new Date(initialValues.dispo.endDate) : null
+    const [dateFin, setDateFin] = useState<Date | null>(
+        initialValues?.dateFin ? new Date(initialValues.dateFin) : null
     );
-    const [filteredSuggestions, setFilteredSuggestions] = useState([]);
-    const [showSuggestions, setShowSuggestions] = useState(false);
-
-
 
     const dispatch = useDispatch();
     const navigation = useNavigation();
     const { showModal } = useModal();
-
     const progressAnim = useState(new Animated.Value(0))[0];
 
     useEffect(() => {
@@ -95,7 +101,7 @@ const LocationForm: React.FC<LocationFormProps> = ({ onSubmit, initialValues }) 
                 latitudeDelta: 0.0922,
                 longitudeDelta: 0.0421,
             });
-            setCoordinate({
+            setCoordonnées({
                 latitude: initialValues.latitude,
                 longitude: initialValues.longitude,
             });
@@ -111,7 +117,7 @@ const LocationForm: React.FC<LocationFormProps> = ({ onSubmit, initialValues }) 
                         latitudeDelta: 0.0922,
                         longitudeDelta: 0.0421,
                     });
-                    setCoordinate({
+                    setCoordonnées({
                         latitude: userLocation.coords.latitude,
                         longitude: userLocation.coords.longitude,
                     });
@@ -122,74 +128,53 @@ const LocationForm: React.FC<LocationFormProps> = ({ onSubmit, initialValues }) 
         }
     }, [initialValues]);
 
-    const handleAddressChange = (text) => {
-        setAddress(text);
-        if (text.length > 1) {
-            const normalizedInput = text.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '');
-            const filtered = addressData.filter((item) =>
-                item.full_address
-                    .toLowerCase()
-                    .normalize('NFD')
-                    .replace(/[\u0300-\u036f]/g, '')
-                    .includes(normalizedInput)
-            );
-            setFilteredSuggestions(filtered.slice(0, 5)); // Limitez à 5 suggestions
-            setShowSuggestions(true);
-        } else {
-            setShowSuggestions(false);
-        }
-    };
-    
-
-
-    const toggleAmenity = (amenity: string) => {
-        setSelectedAmenities((prev) =>
-            prev.includes(amenity) ? prev.filter((item) => item !== amenity) : [...prev, amenity]
+    const togglecommodites = (commodites: string) => {
+        setSelectedCommodites((prev) =>
+            prev.includes(commodites) ? prev.filter((item) => item !== commodites) : [...prev, commodites]
         );
     };
 
     const handleMapPress = (event: MapPressEvent) => {
-        setCoordinate(event.nativeEvent.coordinate);
+        setCoordonnées(event.nativeEvent.coordinate);
     };
 
     const pickImage = async () => {
         const result = await ImagePicker.launchImageLibraryAsync({
             mediaTypes: ImagePicker.MediaTypeOptions.Images,
             allowsEditing: true,
-            aspect: [2, 3],
-            quality: 1,
+            aspect: [2, 3], // Ajuster selon vos besoins
+            quality: 0.8, // Réduire légèrement la qualité pour optimiser la taille
         });
 
         if (!result.canceled) {
-            setSelectedImage(result.assets[0].uri);
+            setSelectedImage(result.assets[0].uri); // Utilisez l'URI directement
         }
     };
 
     const handleAddLocation = () => {
-        if (name && address && description && selectedImage && pricePerNight && startDate && endDate) {
+        if (nom && adresse && description && selectedImage && prixParNuit && dateDebut && dateFin) {
             const locationData = {
-                idLocation: initialValues?.idLocation || Math.floor(Math.random() * 10000),
-                idHost: 1,
-                name,
-                address,
+                idHote,
+                nom,
+                adresse,
                 description,
-                amenities: selectedAmenities,
-                image: selectedImage,
-                latitude: coordinate.latitude,
-                longitude: coordinate.longitude,
-                pricePerNight: parseFloat(pricePerNight),
-                dispo: {
-                    startDate: startDate.toISOString(),
-                    endDate: endDate.toISOString(),
-                },
+                commodites: selectedcommodites,
+                image: selectedImage, // Utilisation de l'URI directement
+                latitude: coordonnées.latitude,
+                longitude: coordonnées.longitude,
+                prixParNuit: parseFloat(prixParNuit),
+                dateDebut: dateDebut.toISOString(),
+                dateFin: dateFin.toISOString(),
             };
 
+            console.log('[FRONT] Données envoyées :', locationData);
+
             if (initialValues) {
-                dispatch(updateLocation(locationData));
-                showModal("L'emplacement a été mis à jour avec succès !", "success");
+                dispatch(updateLocationAsync({ ...locationData, idEmplacement: initialValues.idEmplacement }));
+                showModal("L'emplacement a été mis à jour.", "success");
             } else {
-                dispatch(addLocation(locationData));
-                showModal("L'emplacement a été ajouté avec succès !", "success");
+                dispatch(addLocationAsync(locationData));
+                showModal("L'emplacement a été ajouté.", "success");
             }
 
             onSubmit();
@@ -199,37 +184,35 @@ const LocationForm: React.FC<LocationFormProps> = ({ onSubmit, initialValues }) 
     };
 
 
+
     const getNextDay = (date: Date | null) => {
-        if (!date) return new Date(); // Retourne la date actuelle si startDate est null
+        if (!date) return new Date(); // Retourne la date actuelle si dateDebut est null
         const nextDay = new Date(date);
         nextDay.setDate(nextDay.getDate() + 1); // Ajoute un jour à la date
         return nextDay;
     };
-
-
-
 
     const nextStep = () => {
         const missingFields: string[] = [];
 
         switch (step) {
             case 1:
-                if (!name) missingFields.push("Nom de l'emplacement");
+                if (!nom) missingFields.push("Nom de l'emplacement");
                 if (!description) missingFields.push("Description de l'emplacement");
                 if (!selectedImage) missingFields.push("Image de l'emplacement");
                 break;
             case 2:
-                if (!address) missingFields.push("Adresse de l'emplacement");
-                if (!coordinate.latitude || !coordinate.longitude) missingFields.push("Emplacement sur la carte");
+                if (!adresse) missingFields.push("Adresse de l'emplacement");
+                if (!coordonnées.latitude || !coordonnées.longitude) missingFields.push("Emplacement sur la carte");
                 break;
             case 3:
-                if (selectedAmenities.length === 0) missingFields.push("Commodités");
+                if (selectedcommodites.length === 0) missingFields.push("Commodités");
                 break;
             case 4:
-                if (!pricePerNight) missingFields.push("Prix par nuit");
-                if (!startDate) missingFields.push("Date de début de disponibilité");
-                if (!endDate) missingFields.push("Date de fin de disponibilité");
-                if (startDate && endDate && endDate <= startDate) {
+                if (!prixParNuit) missingFields.push("Prix par nuit");
+                if (!dateDebut) missingFields.push("Date de début de disponibilité");
+                if (!dateFin) missingFields.push("Date de fin de disponibilité");
+                if (dateDebut && dateFin && dateFin <= dateDebut) {
                     missingFields.push("La date de fin doit être postérieure à la date de début");
                 }
                 break;
@@ -250,19 +233,18 @@ const LocationForm: React.FC<LocationFormProps> = ({ onSubmit, initialValues }) 
     return (
         <View style={{ flex: 1 }}>
 
-
             <ScrollView contentContainerStyle={styles.scrollContainer}>
                 <View style={styles.form}>
                     {step === 1 && (
                         <View>
-                            <Text style={styles.label}>Nom de l'emplacement :</Text>
+                            <Text style={styles.label}>Quel sera le nom de votre emplacement ?</Text>
                             <TextInput
                                 style={styles.input}
                                 placeholder="Nom de l'emplacement"
-                                value={name}
-                                onChangeText={setName}
+                                value={nom}
+                                onChangeText={setNom}
                             />
-                            <Text style={styles.label}>Description :</Text>
+                            <Text style={styles.label}>Décrivez le.</Text>
                             <TextInput
                                 style={styles.input2}
                                 placeholder="Description de l'emplacement"
@@ -272,7 +254,7 @@ const LocationForm: React.FC<LocationFormProps> = ({ onSubmit, initialValues }) 
                                 numberOfLines={5}      // Définit la hauteur en lignes, ajuste ce nombre selon tes besoins
                             />
 
-                            <Text style={styles.label}>Photo :</Text>
+                            <Text style={styles.label}>Choisissez une photo dans votre galerie.</Text>
 
                             <TouchableOpacity style={styles.imagePlaceholder} onPress={pickImage}>
                                 {selectedImage ? (
@@ -286,74 +268,84 @@ const LocationForm: React.FC<LocationFormProps> = ({ onSubmit, initialValues }) 
 
                     {step === 2 && (
                         <View>
-                            <Text style={styles.label}>Adresse :</Text>
-                            <TextInput
-                                style={styles.input}
-                                placeholder="Adresse"
-                                value={address}
-                                onChangeText={setAddress}
+                            <Text style={styles.label}>Entrez l'adresse de votre emplacement :</Text>
+                            <GooglePlacesAutocompleteCustom
+                                onPlaceSelected={({ address, latitude, longitude }) => {
+                                    setAdresse(address); // Mettre à jour l'adresse sélectionnée
+                                    setCoordonnées({ latitude, longitude }); // Mettre à jour les coordonnées
+
+                                    // Centrer la carte sur le nouvel emplacement
+                                    if (mapViewRef.current) {
+                                        mapViewRef.current.animateToRegion({
+                                            latitude,
+                                            longitude,
+                                            latitudeDelta: 0.01,
+                                            longitudeDelta: 0.01,
+                                        }, 1000);
+                                    }
+                                }}
                             />
-                            <Text style={styles.label}>Emplacement sur la carte :</Text>
+
+                            <Text style={styles.label}>Ajustez le point sur la carte si nécessaire :</Text>
                             {initialRegion && (
                                 <MapView
+                                    ref={mapViewRef} // Utilisation de la référence useRef
                                     style={styles.map}
-                                    initialRegion={initialRegion}
-                                    onPress={handleMapPress}
+                                    initialRegion={{
+                                        ...initialRegion,
+                                        latitude: coordonnées.latitude,
+                                        longitude: coordonnées.longitude,
+                                    }}
+                                    onPress={handleMapPress} // Mise à jour manuelle via la carte
                                 >
-                                    <Marker coordinate={coordinate} />
+                                    <Marker coordinate={coordonnées} />
                                 </MapView>
                             )}
                         </View>
                     )}
 
+
+
+
+
                     {step === 3 && (
                         <View>
-                            <Text style={styles.label}>Commodités :</Text>
-                            <View style={styles.amenitiesContainer}>
-                                {amenitiesData.map((amenity) => (
-                                    <TouchableOpacity
-                                        key={amenity.id}
-                                        style={[
-                                            styles.amenityButton,
-                                            selectedAmenities.includes(amenity.name) ? styles.amenitySelected : styles.amenityUnselected
-                                        ]}
-                                        onPress={() => toggleAmenity(amenity.name)}
-                                    >
-                                        <Text style={styles.amenityText}>{amenity.name}</Text>
-                                    </TouchableOpacity>
-                                ))}
-                            </View>
+                            <Text style={styles.label}>Choisissez des commodités :</Text>
+                            <FrAmenitiesSelector
+                                selectedAmenities={selectedcommodites} // Utiliser les commodités sélectionnées
+                                toggleAmenity={(amenity) => togglecommodites(amenity)} // Fonction pour basculer l'état
+                            />
                         </View>
                     )}
 
                     {step === 4 && (
                         <View>
-                            <Text style={styles.label}>Prix par nuit :</Text>
+                            <Text style={styles.label}>Quel sera la tarification par nuit ? (€)</Text>
                             <TextInput
                                 style={styles.input}
                                 placeholder="Prix par nuit (€)"
-                                value={pricePerNight}
+                                value={prixParNuit}
                                 keyboardType="numeric"
-                                onChangeText={setPricePerNight}
+                                onChangeText={setPrixParNuit}
                             />
                             <Text style={styles.label}>Date de début de disponibilité :</Text>
                             <DateTimePicker
-                                value={startDate || new Date()} // Affiche la date actuelle ou celle choisie
+                                value={dateDebut || new Date()} // Affiche la date actuelle ou celle choisie
                                 mode="date"
                                 display="compact"
-                                onChange={(event, date) => setStartDate(date || null)}
+                                onChange={(event, date) => setDateDebut(date || null)}
                                 style={styles.datePicker}
                                 minimumDate={new Date()} // Empêche les dates passées
                             />
 
                             <Text style={styles.label}>Date de fin de disponibilité :</Text>
                             <DateTimePicker
-                                value={endDate || new Date()}
+                                value={dateFin || new Date()}
                                 mode="date"
                                 display="compact"
-                                onChange={(event, date) => setEndDate(date || null)}
+                                onChange={(event, date) => setDateFin(date || null)}
                                 style={styles.datePicker}
-                                minimumDate={getNextDay(startDate)} // Empêche la sélection avant startDate + 1 jour
+                                minimumDate={getNextDay(dateDebut)} // Empêche la sélection avant dateDebut + 1 jour
                             />
                         </View>
                     )}
@@ -362,7 +354,7 @@ const LocationForm: React.FC<LocationFormProps> = ({ onSubmit, initialValues }) 
             </ScrollView>
 
             <View style={styles.stepTitleContainer}>
-                <Text style={styles.stepTitle}>{stepTitles[step - 1]}</Text>
+                {/* <Text style={styles.stepTitle}>{stepTitles[step - 1]}</Text> */}
             </View>
 
             <View style={styles.progressBarContainer}>
@@ -397,16 +389,16 @@ const LocationForm: React.FC<LocationFormProps> = ({ onSubmit, initialValues }) 
 const styles = StyleSheet.create({
     stepTitleContainer: {
         alignItems: 'center',
-        paddingVertical: 10,
-        backgroundColor: '#fff',
-        marginBottom: 90,
-        borderTopLeftRadius: 20,
-        borderTopRightRadius: 20,
-        shadowColor: '#000', // Couleur de l'ombre
-        shadowOffset: { width: 0, height: 2 }, // Décalage de l'ombre
-        shadowOpacity: 0.3, // Opacité de l'ombre
-        shadowRadius: 5, // Rayon de flou de l'ombre
-        elevation: 5, // Propriété spécifique à Android pour l'ombre
+        paddingVertical: 20,
+        backgroundColor: '#e3d2a1',
+        marginBottom: 80,
+        // borderTopLeftRadius: 20,
+        // borderTopRightRadius: 20,
+        // shadowColor: '#000', // Couleur de l'ombre
+        // shadowOffset: { width: 0, height: 2 }, // Décalage de l'ombre
+        // shadowOpacity: 0.3, // Opacité de l'ombre
+        // shadowRadius: 5, // Rayon de flou de l'ombre
+        // elevation: 5, // Propriété spécifique à Android pour l'ombre
     },
 
     stepTitle: {
@@ -423,7 +415,7 @@ const styles = StyleSheet.create({
     },
     label: {
         fontSize: 16,
-        fontWeight: 'bold',
+        // fontWeight: 'bold',
         marginBottom: 5,
     },
     input: {
@@ -439,7 +431,7 @@ const styles = StyleSheet.create({
         borderRadius: 5,
         padding: 10,
         marginBottom: 10,
-        height: 100,         // Ajuste la hauteur selon le besoin
+        height: 70,         // Ajuste la hauteur selon le besoin
         textAlignVertical: 'top', // Pour aligner le texte en haut
     },
 
@@ -448,49 +440,49 @@ const styles = StyleSheet.create({
         marginVertical: 10,
         borderRadius: 10,
     },
-    amenitiesContainer: {
+    commoditesContainer: {
         flexDirection: 'row',
         flexWrap: 'wrap',
         marginBottom: 10,
     },
-    amenityButton: {
+    commoditesButton: {
         padding: 10,
         borderRadius: 5,
         marginRight: 10,
         marginBottom: 10,
     },
-    amenitySelected: {
+    commoditesSelected: {
         backgroundColor: '#f0ad4e',
     },
-    amenityUnselected: {
+    commoditesUnselected: {
         backgroundColor: '#e0e0e0',
     },
-    amenityText: {
+    commoditesText: {
         color: '#fff',
         fontWeight: 'bold',
     },
     imagePlaceholder: {
-        width: 300,
-        height: 200,
+        width: '100%', // Utilise toute la largeur disponible
+        height: 200, // Hauteur fixe pour le conteneur
         backgroundColor: '#e0e0e0',
-        justifyContent: 'center',
-        alignItems: 'center',
+        justifyContent: 'center', // Centre verticalement
+        alignItems: 'center', // Centre horizontalement
         borderRadius: 10,
         marginVertical: 10,
+    },
+    image: {
+        width: '100%', // Prend 90% de la largeur du conteneur
+        height: 200, // Prend 90% de la hauteur du conteneur
+        borderRadius: 10,
     },
     plusText: {
         fontSize: 40,
         color: '#999',
     },
-    image: {
-        width: 300,
-        height: 200,
-        borderRadius: 10,
-    },
     progressBarContainer: {
-        height: 10,
+        height: 13,
         width: '100%',
-        backgroundColor: '#e0e0e0',
+        backgroundColor: '#f2f2f2',
         position: 'absolute',
         bottom: 80,
         left: 0,
@@ -504,7 +496,7 @@ const styles = StyleSheet.create({
         bottom: 0,
         left: 0,
         right: 0,
-        backgroundColor: '#fff',
+        backgroundColor: '#e3d2a1',
         paddingVertical: 10,
         paddingHorizontal: 20,
         flexDirection: 'row',

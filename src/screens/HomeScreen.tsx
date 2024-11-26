@@ -1,10 +1,11 @@
 import { useNavigation } from '@react-navigation/native';
 import { StackNavigationProp } from '@react-navigation/stack';
 import React from 'react';
-import { StyleSheet, View } from 'react-native';
 import { Location, RootStackParamList } from '../../types';
 import CustomButton from '../components/CustomButton';
 import LocationList from '../components/LocationList';
+import { StyleSheet, Text, View } from 'react-native';
+
 
 type NavigationProp = StackNavigationProp<RootStackParamList, 'LocationDetail'>;
 
@@ -17,6 +18,7 @@ const HomeScreen = () => {
 
     return (
         <View style={styles.container}>
+
             {/* Liste d’emplacements */}
             <LocationList onItemPress={handleLocationPress} />
 

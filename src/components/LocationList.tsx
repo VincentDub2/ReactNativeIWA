@@ -1,44 +1,66 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import { FlatList, Text, View, StyleSheet } from 'react-native';
-import { useSelector } from 'react-redux';
-import { Location } from '../../types'; // Assurez-vous d'importer le type Location
+import { useSelector, useDispatch } from 'react-redux';
+import { useNavigation } from '@react-navigation/native';
 import { RootState } from '../app/store';
 import LocationCard from './LocationCard';
+import { fetchLocationsAsync } from '../features/locations/locationSlice';
+import { Location } from '../../types';
 
-interface LocationListProps {
-    onItemPress: (location: Location) => void; // Utiliser directement Location comme type
-}
-
-const LocationList: React.FC<LocationListProps> = ({ onItemPress }) => {
+const LocationList: React.FC = () => {
+    const dispatch = useDispatch();
+    const navigation = useNavigation();
     const locations = useSelector((state: RootState) => state.locations.locations);
+    const userId = useSelector((state: RootState) => state.users.id);
+    const status = useSelector((state: RootState) => state.locations.status);
 
-    // Filtrer pour ne garder que les emplacements ayant idHost = 1
-    const filteredLocations = locations.filter(location => location.idHost === 1);
+    useEffect(() => {
+        if (userId) {
+            dispatch(fetchLocationsAsync(userId));
+        }
+    }, [dispatch, userId]);
 
     const renderItem = ({ item }: { item: Location }) => (
         <LocationCard
-            name={item.name}
-            address={item.address}
-            amenities={item.amenities}
+            name={item.nom}
+            address={item.adresse}
+            amenities={item.commodites}
             image={item.image}
-            onPress={() => onItemPress(item)} // Utiliser le type Location directement
+            onPress={() => navigation.navigate('LocationDetail', { idEmplacement: item.idEmplacement })}
         />
     );
 
+    const renderHeader = () => (
+        <View style={styles.headerContainer}>
+            <Text style={styles.headerText}>Mes emplacements</Text>
+        </View>
+    );
+
+    if (status === 'loading') {
+        return (
+            <View style={styles.emptyContainer}>
+                <Text style={styles.emptyText}>Chargement des emplacements...</Text>
+            </View>
+        );
+    }
+
+    if (locations.length === 0) {
+        return (
+            <View style={styles.emptyContainer}>
+                <Text style={styles.emptyText}>
+                    Vous n'avez pas encore proposé d'emplacement à la location pour le moment.
+                </Text>
+            </View>
+        );
+    }
+
     return (
         <FlatList
-            data={filteredLocations}
-            keyExtractor={(item) => item.idLocation.toString()} // Utilisation de idLocation comme clé
+            data={locations}
+            keyExtractor={(item) => item.idEmplacement.toString()}
             renderItem={renderItem}
-            contentContainerStyle={[
-                styles.listContainer,
-                { flexGrow: filteredLocations.length === 0 ? 1 : undefined },
-            ]}
-            ListEmptyComponent={
-                <View style={styles.emptyContainer}>
-                    <Text style={styles.emptyText}>Vous n'avez pas encore proposé d'emplacement à la location pour le moment.</Text>
-                </View>
-            }
+            contentContainerStyle={styles.listContainer}
+            ListHeaderComponent={renderHeader} // Ajout du titre
         />
     );
 };
@@ -47,6 +69,20 @@ const styles = StyleSheet.create({
     listContainer: {
         paddingBottom: 75,
         paddingTop: 8,
+    },
+    headerContainer: {
+        paddingVertical: 15,
+        paddingHorizontal: 20,
+        backgroundColor: '#f2f2f2',
+        borderBottomWidth: 1,
+        borderBottomColor: '#ddd',
+        marginBottom: 12,
+        alignItems: 'center', // Ajout pour centrer horizontalement
+    },
+    headerText: {
+        fontSize: 22,
+        fontWeight: 'bold',
+        color: '#5c5c5c',
     },
     emptyContainer: {
         flex: 1,

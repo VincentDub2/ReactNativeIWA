@@ -20,20 +20,18 @@ export type UserActionTypes = SetNameAction;
 
 
 export interface Location {
-    idLocation: number;
-    idHost: number;
-    name: string;
-    address: string;
+    idEmplacement: number;
+    idHote: number;
+    nom: string;
+    adresse: string;
     description: string;
-    amenities: string[];
-    image: any;
+    commodites: string[];
+    image: string | null;
     latitude: number;
     longitude: number;
-    pricePerNight: number;
-    dispo: {
-        startDate: string;
-        endDate: string;
-    };
+    prixParNuit: number;
+    dateDebut: string;
+    dateFin: string;
 }
 
 export type RootStackParamList = {

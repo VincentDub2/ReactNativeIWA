@@ -1,26 +1,28 @@
 import { useNavigation, useRoute } from '@react-navigation/native';
 import React, { useState } from 'react';
 import { Image, ScrollView, StyleSheet, Text, View } from 'react-native';
+import { Calendar } from 'react-native-calendars';
 import MapView, { Marker } from 'react-native-maps';
 import { useDispatch, useSelector } from 'react-redux';
-import CustomButton from '../components/CustomButton';
-import ConfirmationModal from '../components/ConfirmationModal'; // Import de la nouvelle modale
 import { RootState } from '../app/store';
-import { deleteLocation } from '../features/locations/locationSlice';
-import { Calendar } from 'react-native-calendars';
+import ConfirmationModal from '../components/ConfirmationModal'; // Import de la modale de confirmation
+import CustomButton from '../components/CustomButton';
+import { deleteLocationAsync } from '../features/locations/locationSlice';
 
 const LocationDetail = () => {
     const route = useRoute();
-    const { idLocation } = route.params;
+    const { idEmplacement } = route.params;
+    console.log('idEmplacement', idEmplacement);
+    console.log('route', route.params);
 
     const location = useSelector((state: RootState) =>
-        state.locations.locations.find(loc => loc.idLocation === idLocation)
+        state.locations.locations.find(loc => loc.idEmplacement === idEmplacement)
     );
 
     const navigation = useNavigation();
     const dispatch = useDispatch();
 
-    const [isModalVisible, setModalVisible] = useState(false); // État pour la modale
+    const [isModalVisible, setModalVisible] = useState(false); // État pour gérer la modale
 
     if (!location) {
         return (
@@ -36,16 +38,13 @@ const LocationDetail = () => {
 
     const confirmDeleteLocation = () => {
         setModalVisible(false); // Ferme la modale
-        dispatch(deleteLocation(location.idLocation));
+        dispatch(deleteLocationAsync(location.idEmplacement)); // Suppression via le store
         navigation.goBack();
     };
 
     const handleDeleteLocation = () => {
         setModalVisible(true); // Ouvre la modale
     };
-
-    const startDate = location.dispo.startDate.split('T')[0];
-    const endDate = location.dispo.endDate.split('T')[0];
 
     const generateAvailabilityDates = (start, end) => {
         const markedDates = {};
@@ -92,14 +91,14 @@ const LocationDetail = () => {
     };
 
     const markedDates = {
-        ...generateAvailabilityDates(startDate, endDate),
-        ...generateReservationDates(startDate, endDate, 3),
+        ...generateAvailabilityDates(location.dateDebut, location.dateFin),
+        ...generateReservationDates(location.dateDebut, location.dateFin, 3),
     };
 
     const handleDayPress = (day) => {
         const dateStr = day.dateString;
         if (markedDates[dateStr] && markedDates[dateStr].color === '#3b98a8') {
-            console.log(`Reservation day clicked: ${dateStr}`);
+            console.log(`Jour réservé cliqué : ${dateStr}`);
         }
     };
 
@@ -107,10 +106,10 @@ const LocationDetail = () => {
         <View style={styles.container}>
             <ScrollView contentContainerStyle={styles.scrollContainer}>
                 <Image
-                    source={typeof location.image === 'string' ? { uri: location.image } : location.image}
+                    source={typeof location.image === 'string' ? { uri: location.image } : null}
                     style={styles.image}
                 />
-                <Text style={styles.title}>{location.name}</Text>
+                <Text style={styles.title}>{location.nom}</Text>
 
                 <View style={styles.section}>
                     <Text style={styles.sectionTitle}>Description</Text>
@@ -119,7 +118,7 @@ const LocationDetail = () => {
 
                 <View style={styles.section}>
                     <Text style={styles.sectionTitle}>Adresse</Text>
-                    <Text style={styles.address}>{location.address}</Text>
+                    <Text style={styles.address}>{location.adresse}</Text>
                 </View>
 
                 <View style={styles.section}>
@@ -138,8 +137,8 @@ const LocationDetail = () => {
                                 latitude: location.latitude,
                                 longitude: location.longitude,
                             }}
-                            title={location.name}
-                            description={location.address}
+                            title={location.nom}
+                            description={location.adresse}
                         />
                     </MapView>
                 </View>
@@ -248,11 +247,6 @@ const styles = StyleSheet.create({
     map: {
         height: 200,
         borderRadius: 10,
-    },
-    price: {
-        fontSize: 18,
-        color: '#2a9d8f',
-        fontWeight: 'bold',
     },
     buttonContainer: {
         position: 'absolute',

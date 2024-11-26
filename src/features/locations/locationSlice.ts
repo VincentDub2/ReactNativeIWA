@@ -1,122 +1,172 @@
-import { createSlice, PayloadAction } from '@reduxjs/toolkit';
-
-interface Dispo {
-    startDate: string;
-    endDate: string;
-}
+import { createSlice, createAsyncThunk, PayloadAction } from '@reduxjs/toolkit';
+import type { RootState } from "../../app/store";
 
 interface Location {
-    idLocation: number;
-    idHost: number;
-    name: string;
-    address: string;
+    idEmplacement: number;
+    idHote: number;
+    nom: string;
+    adresse: string;
     description: string;
-    amenities: string[];
-    image: any;
+    commodites: string[];
+    image: string | null;
     latitude: number;
     longitude: number;
-    pricePerNight: number;
-    dispo: Dispo;
+    prixParNuit: number;
+    dateDebut: string;
+    dateFin: string;
 }
-
-
 
 interface LocationState {
     locations: Location[];
+    status: 'idle' | 'loading' | 'succeeded' | 'failed';
+    error: string | null;
 }
 
 const initialState: LocationState = {
-    locations: [
-        {
-            idLocation: 1,
-            idHost: 1,
-            name: 'La petite cabane dans la forêt',
-            address: 'Mas de Couronn Les21Arches, Rd 32, 34380 Argelliers',
-            description: 'Une charmante cabane isolée au cœur de la forêt.',
-            amenities: ['Parking', 'Douche', 'Elec'],
-            image: require('../../../assets/images/biv1.jpg'),
-            latitude: 43.7243,
-            longitude: 3.6826,
-            pricePerNight: 45,
-            dispo: {
-                startDate: '2024-03-23T00:00:00.000Z', // Exemple de date ISO
-                endDate: '2024-07-23T00:00:00.000Z'
-            },
-        },
-        {
-            idLocation: 2,
-            idHost: 1,
-            name: 'Auberge du grand chêne',
-            address: '2 Le Plan, 83690 Sillans-la-Cascade',
-            description: 'Auberge située à proximité d\'une cascade avec un grand jardin.',
-            amenities: ['Toit', 'Parking'],
-            image: require('../../../assets/images/biv2.jpg'),
-            latitude: 43.5614,
-            longitude: 6.1808,
-            pricePerNight: 70,
-            dispo: {
-                startDate: '2024-03-23T00:00:00.000Z',
-                endDate: '2024-07-23T00:00:00.000Z'
-            },
-        },
-        {
-            idLocation: 3,
-            idHost: 1,
-            name: 'Maison Clotilde',
-            address: '212 Rue de la République, 12300 Livinhac-le-Haut',
-            description: 'Maison spacieuse avec vue sur le village, idéale pour les familles.',
-            amenities: ['Parking', 'Elec', 'Douche'],
-            image: require('../../../assets/images/biv3.jpeg'),
-            latitude: 44.5906,
-            longitude: 2.1953,
-            pricePerNight: 55,
-            dispo: {
-                startDate: '2024-03-23T00:00:00.000Z',
-                endDate: '2024-07-23T00:00:00.000Z'
-            },
-        },
-        {
-            idLocation: 4,
-            idHost: 2,
-            name: 'Aire de bivouac',
-            address: '87160 Saint-Maixant',
-            description: 'Zone de bivouac accessible pour les randonneurs et campeurs.',
-            amenities: ['Toit'],
-            image: require('../../../assets/images/biv4.jpeg'),
-            latitude: 45.8464,
-            longitude: 0.9742,
-            pricePerNight: 25,
-            dispo: {
-                startDate: '2024-03-23T00:00:00.000Z',
-                endDate: '2024-07-23T00:00:00.000Z'
-            },
-        }
-    ],
+    locations: [],
+    status: 'idle',
+    error: null,
 };
 
+// Action asynchrone pour récupérer les emplacements d'un hôte
+export const fetchLocationsAsync = createAsyncThunk<
+    Location[],
+    number,
+    { state: RootState }
+>(
+    'locations/fetchLocations',
+    async (userId, { getState }) => {
+        const state = getState();
+        const token = state.users.token; // Récupère le token
+        const response = await fetch(`${process.env.EXPO_PUBLIC_API_URL}/emplacements/host/${userId}`, {
+            headers: {
+                Authorization: `Bearer ${token}`,
+                'Content-Type': 'application/json',
+            },
+        });
+        if (!response.ok) {
+            throw new Error('Erreur lors de la récupération des emplacements.');
+        }
+        return await response.json() as Location[];
+    }
+);
+
+// Action asynchrone pour ajouter un emplacement
+export const addLocationAsync = createAsyncThunk<
+    Location,
+    Omit<Location, 'idEmplacement'>,
+    { state: RootState }
+>(
+    'locations/addLocation',
+    async (location, { getState }) => {
+        const state = getState();
+        const token = state.users.token; // Récupère le token
+
+        console.log("Données envoyées au backend :", location);
+
+        const response = await fetch(`${process.env.EXPO_PUBLIC_API_URL}/emplacements`, {
+            method: 'POST',
+            headers: {
+                Authorization: `Bearer ${token}`,
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify(location),
+        });
+
+        console.log("[FRONT] Réponse du backend :", response);
+
+        if (!response.ok) {
+            throw new Error('Erreur lors de l\'ajout de l\'emplacement.');
+        }
+        return await response.json() as Location;
+    }
+);
+
+
+// Action asynchrone pour mettre à jour un emplacement
+export const updateLocationAsync = createAsyncThunk<
+    Location,
+    Location,
+    { state: RootState }
+>(
+    'locations/updateLocation',
+    async (location, { getState }) => {
+        const state = getState();
+        const token = state.users.token; // Récupère le token
+        const response = await fetch(`${process.env.EXPO_PUBLIC_API_URL}/emplacements/${location.idEmplacement}`, {
+            method: 'PUT',
+            headers: {
+                Authorization: `Bearer ${token}`,
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify(location),
+        });
+
+        if (!response.ok) {
+            throw new Error('Erreur lors de la mise à jour de l\'emplacement.');
+        }
+        return await response.json() as Location;
+    }
+);
+
+// Action asynchrone pour supprimer un emplacement
+export const deleteLocationAsync = createAsyncThunk<
+    number,
+    number,
+    { state: RootState }
+>(
+    'locations/deleteLocation',
+    async (idEmplacement, { getState }) => {
+        const state = getState();
+        const token = state.users.token; // Récupère le token
+        const response = await fetch(`${process.env.EXPO_PUBLIC_API_URL}/emplacements/${idEmplacement}`, {
+            method: 'DELETE',
+            headers: {
+                Authorization: `Bearer ${token}`,
+            },
+        });
+
+        if (!response.ok) {
+            throw new Error('Erreur lors de la suppression de l\'emplacement.');
+        }
+        return idEmplacement;
+    }
+);
 
 const locationSlice = createSlice({
     name: 'locations',
     initialState,
-    reducers: {
-        addLocation: (state, action: PayloadAction<Location>) => {
-            state.locations.push(action.payload);
-        },
-        deleteLocation: (state, action: PayloadAction<number>) => {
-            state.locations = state.locations.filter(
-                (location) => location.idLocation !== action.payload
-            );
-        },
-        updateLocation: (state, action: PayloadAction<Location>) => {
-            const index = state.locations.findIndex(
-                (loc) => loc.idLocation === action.payload.idLocation
-            );
-            if (index !== -1) {
-                state.locations[index] = action.payload; // Remplace l'emplacement existant
-            }
-        },
+    reducers: {},
+    extraReducers: (builder) => {
+        builder
+            .addCase(fetchLocationsAsync.pending, (state) => {
+                state.status = 'loading';
+            })
+            .addCase(fetchLocationsAsync.fulfilled, (state, action: PayloadAction<Location[]>) => {
+                state.status = 'succeeded';
+                state.locations = action.payload;
+            })
+            .addCase(fetchLocationsAsync.rejected, (state, action) => {
+                state.status = 'failed';
+                state.error = action.error.message || 'Erreur inconnue';
+            })
+            .addCase(addLocationAsync.fulfilled, (state, action: PayloadAction<Location>) => {
+                state.locations.push(action.payload);
+            })
+            .addCase(updateLocationAsync.fulfilled, (state, action: PayloadAction<Location>) => {
+                const index = state.locations.findIndex(
+                    (loc) => loc.idEmplacement === action.payload.idEmplacement
+                );
+                if (index !== -1) {
+                    state.locations[index] = action.payload;
+                }
+            })
+            .addCase(deleteLocationAsync.fulfilled, (state, action: PayloadAction<number>) => {
+                state.locations = state.locations.filter(
+                    (location) => location.idEmplacement !== action.payload
+                );
+            });
     },
 });
 
-export const { addLocation, deleteLocation, updateLocation } = locationSlice.actions;
 export default locationSlice.reducer;

@@ -98,12 +98,29 @@ export default function Main() {
                         <Stack.Screen
                             name="LocationDetail"
                             component={LocationDetail}
-                            options={{ title: 'Détail de l\'emplacement' }}
-                        />
+                            options={{
+                                title: 'Emplacement', // Définir le titre de l'écran
+                                headerStyle: {
+                                    backgroundColor: '#e3d2a1', // Fond jaune pour l'en-tête
+                                },
+                                headerTintColor: '#000', // Couleur du texte dans l'en-tête
+                                headerTitleStyle: {
+                                    fontWeight: 'bold', // Style du texte
+                                },
+                            }} />
                         <Stack.Screen
-                            name="AddLocation" // Ajout de l'écran AddLocation
+                            name="AddLocation"
                             component={AddLocation}
-                            options={{ title: 'Ajouter un emplacement' }}
+                            options={{
+                                title: 'Ajout emplacement', // Définir le titre de l'écran
+                                headerStyle: {
+                                    backgroundColor: '#e3d2a1', // Fond jaune pour l'en-tête
+                                },
+                                headerTintColor: '#000', // Couleur du texte dans l'en-tête
+                                headerTitleStyle: {
+                                    fontWeight: 'bold', // Style du texte
+                                },
+                            }}
                         />
                         <Stack.Screen
                             name="EditLocation" // Ajout de l'écran AddLocation
