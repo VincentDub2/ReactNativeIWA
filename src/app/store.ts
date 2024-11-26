@@ -2,11 +2,12 @@ import type { Action, ThunkAction } from '@reduxjs/toolkit'
 import { configureStore } from '@reduxjs/toolkit'
 import usersReducer from '../features/users/usersSlice'
 import evaluationsReducer from "../features/evaluations/evaluationsSlice";
-
+import notificationsReducer from "../features/notifications/notificationsSlice";
 export const store = configureStore({
     reducer: {
         users: usersReducer,
         evaluations: evaluationsReducer,
+        notifications: notificationsReducer
     }
 })
 

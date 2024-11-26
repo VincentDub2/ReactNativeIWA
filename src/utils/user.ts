@@ -1,19 +1,39 @@
 import { store } from "../app/store";
-import {User} from "../features/users/usersSlice"; // Importe ton store Redux
+import { User } from "../models/User";
 
 /**
- * Récupère l'user depuis Redux
- * @returns L'user ou `undefined` si non connecté
+ * Récupère l'utilisateur depuis Redux
+ * @returns L'utilisateur ou `undefined` si non connecté
  */
 export const getUser = (): User | undefined => {
-    return store.getState().users; // Accède à l'user dans le slice Redux
+    try {
+        const user = store.getState().users;
+        if (!user) {
+            console.error("Utilisateur non authentifié");
+            return undefined;
+        }
+        return user;
+    }catch (error) {
+        console.error("Erreur lors de la récupération de l'utilisateur :", error);
+        return undefined;
+    }
 };
 
 /**
- * Récupère l'id de l'user depuis Redux
- * @returns L'id de l'user ou `undefined` si non connecté
+ * Récupère l'id de l'utilisateur depuis Redux
+ * @returns L'id ou `undefined` si non connecté
  */
-
 export const getUserId = (): number | undefined => {
-    return store.getState().users.id; // Accède à l'id de l'user dans le slice Redux
+    try {
+        const id = store.getState().users.id;
+        if (!id) {
+            console.error("Utilisateur non authentifié");
+            return undefined;
+        }
+        return id;
+    }
+    catch (error) {
+        console.error("Erreur lors de la récupération de l'id :", error);
+        return undefined;
+    }
 }
