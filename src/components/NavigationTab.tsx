@@ -99,8 +99,6 @@ export default function MyTabs() {
                 }}
             >
                 <Tab.Screen name="Mes emplacements" component={HomeScreen} />
-                <Tab.Screen name="Map" component={MapScreen} />
-                <Tab.Screen name="Account" component={UsersScreen}/>
                 <Tab.Screen 
                     name="MapStack" 
                     component={MapStack} 
