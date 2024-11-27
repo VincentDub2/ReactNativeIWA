@@ -4,7 +4,6 @@ import { Image, View, Text, StyleSheet, Alert, Button, TouchableOpacity } from '
 import { StarRatingDisplay } from 'react-native-star-rating-widget';
 import { useNavigation, NavigationProp } from '@react-navigation/native';
 import { RootStackParamList } from '../../../types'; // Adjust the path as necessary
-import {useTranslation} from "react-i18next";
 import {Emplacement} from "../../models/Emplacement";
 import { useTranslation } from "react-i18next";
 

@@ -6,10 +6,10 @@ import Geocoder from "react-native-geocoding";
 import SearchFilter from "../components/map/SearchFilter";
 import CustomMarker from "../components/map/CustomMarker";
 import MapScreenController from "../controllers/MapScreenController";
-import { useTranslation } from "react-i18next";
 import {useTranslation} from "react-i18next";
 import {useDispatch, useSelector} from "react-redux";
 import {RootState} from "../app/store";
+import {LocationObject} from "expo-location";
 
 
 Geocoder.init(process.env.EXPO_PUBLIC_GOOGLE_API_KEY || "");
@@ -20,7 +20,6 @@ const MapScreen = () => {
 	const dispatch = useDispatch();
 	const emplacement = useSelector((state: RootState) => state.emplacements.emplacements);
 	const [filteredEmplacements, setFilteredEmplacements] = useState(emplacement);
-
 	const mapRef = useRef<any>();
 	const [location, setLocation] = useState<LocationObject | null>(null);
 	const [errorMsg, setErrorMsg] = useState<string | null>(null);
@@ -59,19 +58,6 @@ const MapScreen = () => {
 
 	}, [dispatch]);
 
-	// Charger tous les emplacements
-	useEffect(() => {
-		const loadMarkers = async () => {
-			try {
-				const loadedMarkers = await MapScreenController.loadEmplacements();
-				setMarkers(loadedMarkers);
-				console.log("Emplacements chargés :", loadedMarkers);
-			} catch (error) {
-				Alert.alert(t("map.error_loading_data"));
-			}
-		};
-		loadMarkers();
-	}, [t]);
 
 	// Récupérer la localisation de l'utilisateur
 	useEffect(() => {
@@ -100,22 +86,6 @@ const MapScreen = () => {
 		fetchLocation();
 	}, [t]);
 
-	const toggleAmenity = (amenityId: string) => {
-		if (selectedAmenities.includes(amenityId)) {
-			setSelectedAmenities(selectedAmenities.filter((id) => id !== amenityId));
-		} else {
-			setSelectedAmenities([...selectedAmenities, amenityId]);
-		}
-	};
-
-	const increaseCapacity = () => {
-		setMinCapacity((prevCapacity) => prevCapacity + 1);
-	};
-
-	const decreaseCapacity = () => {
-		setMinCapacity((prevCapacity) => (prevCapacity > 1 ? prevCapacity - 1 : 1));
-	};
-
 
 	// Gestion de la recherche
 	const handleSearch = async () => {
@@ -143,14 +113,18 @@ const MapScreen = () => {
 		}
 	};
 
-	const filterMarkersByAmenities = (markers: Emplacement[]) => {
+	useEffect(() => {
+		setFilteredEmplacements(filterMarkersByAmenities());
+	}, [emplacement, selectedAmenities]);
+
+	const filterMarkersByAmenities = () => {
 		if (selectedAmenities.length === 0) {
-			return markers; // Si aucune commodité n'est sélectionnée, retourner tous les marqueurs
+			return emplacement; // Si aucune commodité n'est sélectionnée, retourner tous les marqueurs
 		}
 
 		console.log("Selected commodités: ", selectedAmenities);
 
-		return markers.filter((marker) =>
+		return emplacement.filter((marker) =>
 			selectedAmenities.every((selectedAmenity) =>
 				marker.commodites.includes(selectedAmenity)
 			)
@@ -168,6 +142,7 @@ const MapScreen = () => {
 				setCityName={setCityName}
 				searchRadius={searchRadius}
 				setSearchRadius={setSearchRadius}
+				minCapacity={minCapacity}
 				selectedAmenities={selectedAmenities}
 				toggleAmenity={(amenityId) =>
 					setSelectedAmenities((prev) =>
@@ -177,9 +152,6 @@ const MapScreen = () => {
 					)
 				}
 				handleSearch={handleSearch}
-			// minCapacity={minCapacity}
-			// increaseCapacity={() => setMinCapacity((prev) => prev + 1)}
-			// decreaseCapacity={() => setMinCapacity((prev) => (prev > 1 ? prev - 1 : 1))}
 			/>
 
 			{/* Carte */}
@@ -194,8 +166,8 @@ const MapScreen = () => {
 				}}
 				showsUserLocation={true}
 			>
-				{filterMarkersByAmenities(markers).map((marker) => (
-					<CustomMarker key={marker.idEmplacement} marker={marker} />
+				{filteredEmplacements.map((marker) => (
+					<CustomMarker key={marker.idEmplacement} marker={marker} mapRef={mapRef} />
 				))}
 			</MapView>
 

@@ -1,15 +1,6 @@
 import React, { useState } from "react";
 import { View, Text, Platform, StyleSheet, Alert, ScrollView, TouchableOpacity, Image } from "react-native";
 import MapView, { Marker } from 'react-native-maps';
-import {
-	View,
-	Text,
-	Platform,
-	StyleSheet,
-	Alert,
-	ScrollView,
-	TouchableOpacity,
-} from "react-native";
 import DateTimePicker from "@react-native-community/datetimepicker";
 import { useRoute, RouteProp } from "@react-navigation/native";
 import { useSelector } from "react-redux";

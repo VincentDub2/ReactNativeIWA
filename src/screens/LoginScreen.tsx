@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { View, Text, TextInput, TouchableOpacity, StyleSheet, ImageBackground, Alert } from 'react-native';
 import { useDispatch } from 'react-redux';
-import { loginAsync } from '../features/users/usersSlice'; 
+import { loginAsync } from '../features/users/usersSlice';
 import { setUserName, setEmail, login } from '../features/users/usersSlice';
 import { useNavigation } from '@react-navigation/native';
 import { StackNavigationProp } from '@react-navigation/stack';
@@ -14,8 +14,8 @@ export default function Login() {
     const navigation = useNavigation<LoginScreenNavigationProp>();
 
     const [username, setUserNameInput] = useState('');
-    const [email, setEmailInput] = useState('mateo@gmail.com');
-    const [password, setPasswordInput] = useState('mateo');
+    const [email, setEmailInput] = useState('D');
+    const [password, setPasswordInput] = useState('D');
     const dispatch = useDispatch<AppDispatch>();
 
     const handleLogin = async () => {
@@ -35,7 +35,7 @@ export default function Login() {
   };
 
     return (
-      <ImageBackground 
+      <ImageBackground
         source={require('../../assets/images/wallpaper-bivouac.png')} // Chemin de l'image de fond
         style={styles.background}
       >
@@ -99,7 +99,7 @@ const styles = StyleSheet.create({
     paddingVertical: 15,
     paddingHorizontal: 30,
     borderRadius: 30,
-    width: '90%', 
+    width: '90%',
     alignItems: 'center',
     marginVertical: 10,
   },

@@ -16,8 +16,6 @@ interface SearchFilterProps {
     selectedAmenities: string[];
     toggleAmenity: (amenity: string) => void;
     minCapacity: number;
-    increaseCapacity: () => void;
-    decreaseCapacity: () => void;
     handleSearch: () => void;
 }
 
@@ -30,9 +28,6 @@ const SearchFilter: React.FC<SearchFilterProps> = ({
                                                        setSearchRadius,
                                                        selectedAmenities,
                                                        toggleAmenity,
-                                                       minCapacity,
-                                                       increaseCapacity,
-                                                       decreaseCapacity,
                                                        handleSearch,
                                                    }) => {
     const {t} = useTranslation();
