@@ -19,8 +19,9 @@ const MapScreen = () => {
 
 	const dispatch = useDispatch();
 	const emplacement = useSelector((state: RootState) => state.emplacements.emplacements);
-	const [filteredEmplacements, setFilteredEmplacements] = useState(emplacement);
+	const myLocation = useSelector((state: RootState) => state.locations.locations);
 	const mapRef = useRef<any>();
+	const [filteredEmplacements, setFilteredEmplacements] = useState(emplacement);
 	const [location, setLocation] = useState<LocationObject | null>(null);
 	const [errorMsg, setErrorMsg] = useState<string | null>(null);
 	const [isAccordionExpanded, setIsAccordionExpanded] = useState(false);
@@ -30,7 +31,6 @@ const MapScreen = () => {
 	const [minCapacity, setMinCapacity] = useState<number>(1);
 
 	const controller = new MapScreenController(dispatch);
-
 
 	useEffect(() => {
 		const loadData = async () => {
@@ -46,7 +46,6 @@ const MapScreen = () => {
 			}
 		}
 
-
 		getUserLocation().catch((error) =>
 			console.error("Erreur lors de la récupération de la localisation :",
 				error)
@@ -56,7 +55,7 @@ const MapScreen = () => {
 			console.error("Erreur lors du chargement des données :", error)
 		);
 
-	}, [dispatch]);
+	}, [dispatch,myLocation]);
 
 
 	// Récupérer la localisation de l'utilisateur
@@ -114,23 +113,27 @@ const MapScreen = () => {
 	};
 
 	useEffect(() => {
-		setFilteredEmplacements(filterMarkersByAmenities());
+		const filterMarkers = () =>
+			emplacement.filter((marker) => {
+
+				// Filtrer par commodités
+				if (selectedAmenities.length > 0) {
+					for (const amenityId of selectedAmenities) {
+						if (!marker.commodites.includes(amenityId)) {
+							console.log(`Exclusion du marker ${marker.nom} (commodité manquante : ${amenityId})`);
+							return false;
+						}
+					}
+				}
+
+				return true;
+			});
+
+		console.log("Filtrage des emplacements...");
+		const filtered = filterMarkers();
+		console.log("Résultat après filtrage :", filtered);
+		setFilteredEmplacements(filtered);
 	}, [emplacement, selectedAmenities]);
-
-	const filterMarkersByAmenities = () => {
-		if (selectedAmenities.length === 0) {
-			return emplacement; // Si aucune commodité n'est sélectionnée, retourner tous les marqueurs
-		}
-
-		console.log("Selected commodités: ", selectedAmenities);
-
-		return emplacement.filter((marker) =>
-			selectedAmenities.every((selectedAmenity) =>
-				marker.commodites.includes(selectedAmenity)
-			)
-		);
-	};
-
 
 	return (
 		<View style={{ flex: 1 }}>
@@ -156,6 +159,7 @@ const MapScreen = () => {
 
 			{/* Carte */}
 			<MapView
+				//key={filteredEmplacements.length}
 				ref={mapRef}
 				style={styles.map}
 				initialRegion={{

@@ -2,6 +2,7 @@ import { createAsyncThunk, createSlice, PayloadAction } from "@reduxjs/toolkit";
 import { RootState } from "../../app/store";
 import { User } from "../../models/User";
 import { Reservation } from "../../models/Reservation";
+import {getApiUrl} from "../../utils/api";
 
 const initialState: User = {
 	id: 0,
@@ -16,6 +17,8 @@ const initialState: User = {
 	token: undefined,
 };
 
+
+const API_URL = getApiUrl();
 // Action asynchrone pour gérer l'enregistrement
 export const registerAsync = createAsyncThunk(
 	"users/registerAsync",
@@ -28,7 +31,7 @@ export const registerAsync = createAsyncThunk(
 	}) => {
 		try {
 			const response = await fetch(
-				`${process.env.EXPO_PUBLIC_API_URL}/user/auth/register`,
+				`${API_URL}/user/auth/register`,
 				{
 					method: "POST",
 					headers: {
@@ -68,10 +71,10 @@ export const loginAsync = createAsyncThunk(
 			"Tentative de connexion avec les informations suivantes:",
 			credentials,
 		);
-		console.log("URL de l'API publique:", process.env.EXPO_PUBLIC_API_URL);
+		console.log("URL de l'API publique:", API_URL);
 		try {
 			const response = await fetch(
-				`${process.env.EXPO_PUBLIC_API_URL}/user/auth/login`,
+				`${API_URL}/user/auth/login`,
 				{
 					method: "POST",
 					headers: {
@@ -131,7 +134,7 @@ export const fetchUserByIdAsync = createAsyncThunk(
 		const token = state.users.token; // Récupère le token depuis Redux
 
 		const response = await fetch(
-			`${process.env.EXPO_PUBLIC_API_URL}/user/${userId}`,
+			`${API_URL}/user/${userId}`,
 			{
 				method: "GET",
 				headers: {
@@ -166,7 +169,7 @@ export const updateUserAsync = createAsyncThunk(
         const password = state.users.password;
 
 
-        const response = await fetch(`${process.env.EXPO_PUBLIC_API_URL}/user/${userData.id}`, {
+        const response = await fetch(`${API_URL}/user/${userData.id}`, {
             method: 'PUT',
             headers: {
                 'Authorization': `Bearer ${token}`, // Authentifiez avec le token
@@ -202,7 +205,7 @@ export const fetchUserReservationsAsync = createAsyncThunk(
             throw new Error("Token ou ID utilisateur manquant.");
         }
 
-        const reservationsResponse = await fetch(`${process.env.EXPO_PUBLIC_API_URL}/reservation`, {
+        const reservationsResponse = await fetch(`${API_URL}/reservation/user/${userId}`, {
             method: 'GET',
             headers: {
                 'Authorization': `Bearer ${token}`,
@@ -217,18 +220,15 @@ export const fetchUserReservationsAsync = createAsyncThunk(
 
         const reservationsData = await reservationsResponse.json();
 
-        //console.log('Réservations récupérées :', reservationsData);
-
-        // Filtrer les réservations pour celles de l'utilisateur connecté
-        const userReservations = reservationsData.filter(
-            (reservation: any) => reservation.idVoyageur === userId
-        );
+		if (!reservationsData || reservationsData.length === 0) {
+			return [];
+		}
 
         // Aller chercher les détails pour chaque réservation
         const enrichedReservations = await Promise.all(
-            userReservations.map(async (reservation: any) => {
+            reservationsData.map(async (reservation: any) => {
                 try {
-                    const emplacementResponse = await fetch(`${process.env.EXPO_PUBLIC_API_URL}/emplacements/${reservation.idEmplacement}`, {
+                    const emplacementResponse = await fetch(`${API_URL}/emplacements/${reservation.idEmplacement}`, {
                         method: 'GET',
                         headers: {
                             'Authorization': `Bearer ${token}`,
