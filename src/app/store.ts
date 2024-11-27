@@ -3,6 +3,7 @@ import { configureStore } from '@reduxjs/toolkit'
 import locationReducer from '../features/locations/locationSlice'
 import usersReducer from '../features/users/usersSlice'
 import evaluationsReducer from "../features/evaluations/evaluationsSlice";
+import notificationsReducer from "../features/notifications/notificationsSlice";
 
 
 export const store = configureStore({
@@ -10,6 +11,7 @@ export const store = configureStore({
         users: usersReducer,
         locations: locationReducer,
         evaluations: evaluationsReducer,
+        notifications: notificationsReducer
     }
 })
 
