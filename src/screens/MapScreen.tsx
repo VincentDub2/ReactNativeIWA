@@ -65,6 +65,46 @@ const MapScreen = () => {
 		fetchLocation();
 	}, [t]);
 
+	// Gestion de la recherche
+	const handleSearch = async () => {
+		if (cityName.trim() === "") {
+			Alert.alert(t("please_enter_city_name"));
+			return;
+		}
+
+		try {
+			const geocodedLocation = await MapScreenController.geocodeCityName(cityName);
+			if (geocodedLocation) {
+				mapRef.current.animateToRegion({
+					latitude: geocodedLocation.latitude,
+					longitude: geocodedLocation.longitude,
+					latitudeDelta: 0.1,
+					longitudeDelta: 0.1,
+				});
+				setIsAccordionExpanded(false);
+			} else {
+				Alert.alert(t("map.city_not_found"));
+			}
+		} catch (error) {
+			Alert.alert(t("map.error_occurred"));
+		}
+	};
+
+	const filterMarkersByAmenities = (markers: Emplacement[]) => {
+		if (selectedAmenities.length === 0) {
+			return markers; // Si aucune commodité n'est sélectionnée, retourner tous les marqueurs
+		}
+
+		console.log("Selected commodités: ", selectedAmenities);
+
+		return markers.filter((marker) =>
+			selectedAmenities.every((selectedAmenity) =>
+				marker.commodites.includes(selectedAmenity)
+			)
+		);
+	};
+
+
 	return (
 		<View style={{ flex: 1 }}>
 			<SearchFilter
@@ -82,9 +122,10 @@ const MapScreen = () => {
 							: [...prev, amenityId]
 					)
 				}
-				// minCapacity={minCapacity}
-				// increaseCapacity={() => setMinCapacity((prev) => prev + 1)}
-				// decreaseCapacity={() => setMinCapacity((prev) => (prev > 1 ? prev - 1 : 1))}
+				handleSearch={handleSearch}
+			// minCapacity={minCapacity}
+			// increaseCapacity={() => setMinCapacity((prev) => prev + 1)}
+			// decreaseCapacity={() => setMinCapacity((prev) => (prev > 1 ? prev - 1 : 1))}
 			/>
 			<MapView
 				ref={mapRef}
@@ -97,14 +138,12 @@ const MapScreen = () => {
 				}}
 				showsUserLocation={true}
 			>
-				{/* Afficher tous les marqueurs */}
-				{markers.map((marker) => (
-					<CustomMarker
-						key={marker.idEmplacement}
-						marker={marker}
-					/>
+				{filterMarkersByAmenities(markers).map((marker) => (
+					<CustomMarker key={marker.idEmplacement} marker={marker} />
 				))}
 			</MapView>
+
+
 		</View>
 	);
 };

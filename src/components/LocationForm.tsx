@@ -13,6 +13,14 @@ import CustomButton from './CustomButton';
 import GooglePlacesAutocompleteCustom from './GooglePlacesAutocompleteCustom';
 import FrAmenitiesSelector from './FrAmenitiesSelector';
 
+const amenitiesList = [
+    { id: 'electrical_outlet', icon: 'power', library: 'MaterialIcons', name: 'Prise électrique' },
+    { id: 'shower', icon: 'shower', library: 'MaterialCommunityIcons', name: 'Douche' },
+    { id: 'drinkable_water', icon: 'local-drink', library: 'MaterialIcons', name: 'Eau potable' },
+    { id: 'toilets', icon: 'toilet', library: 'MaterialCommunityIcons', name: 'Toilettes' },
+    { id: 'wifi', icon: 'wifi', library: 'MaterialIcons', name: 'Wi-Fi' },
+    { id: 'barbecue', icon: 'outdoor-grill', library: 'MaterialIcons', name: 'Barbecue' },
+];
 
 interface LocationFormProps {
     onSubmit: () => void;
@@ -117,11 +125,21 @@ const LocationForm: React.FC<LocationFormProps> = ({ onSubmit, initialValues }) 
         }
     }, [initialValues]);
 
-    const togglecommodites = (commodites: string) => {
-        setSelectedCommodites((prev) =>
-            prev.includes(commodites) ? prev.filter((item) => item !== commodites) : [...prev, commodites]
-        );
+    const togglecommodites = (amenityId: string) => {
+        const amenity = amenitiesList.find((item) => item.id === amenityId); // Trouver l'élément dans la liste
+        if (!amenity) return; // Si l'ID n'existe pas, ne rien faire
+    
+        setSelectedCommodites((prev) => {
+            if (prev.includes(amenity.name)) {
+                // Si le nom est déjà dans la liste, le supprimer
+                return prev.filter((item) => item !== amenity.name);
+            } else {
+                // Sinon, l'ajouter
+                return [...prev, amenity.name];
+            }
+        });
     };
+    
 
     const handleMapPress = (event: MapPressEvent) => {
         setCoordonnées(event.nativeEvent.coordinate);
