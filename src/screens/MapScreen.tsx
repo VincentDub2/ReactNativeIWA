@@ -1,11 +1,12 @@
 import React, { useEffect, useRef, useState } from "react";
 import { View, StyleSheet, Alert } from "react-native";
 import MapView from "react-native-maps";
-import { LocationObject } from "expo-location";
+import * as Location from "expo-location";
 import Geocoder from "react-native-geocoding";
 import SearchFilter from "../components/map/SearchFilter";
 import CustomMarker from "../components/map/CustomMarker";
 import MapScreenController from "../controllers/MapScreenController";
+import { useTranslation } from "react-i18next";
 import {useTranslation} from "react-i18next";
 import {useDispatch, useSelector} from "react-redux";
 import {RootState} from "../app/store";
@@ -14,7 +15,7 @@ import {RootState} from "../app/store";
 Geocoder.init(process.env.EXPO_PUBLIC_GOOGLE_API_KEY || "");
 
 const MapScreen = () => {
-	const { t, i18n } = useTranslation(); // Utiliser le hook i18n
+	const { t } = useTranslation();
 
 	const dispatch = useDispatch();
 	const emplacement = useSelector((state: RootState) => state.emplacements.emplacements);
@@ -58,6 +59,46 @@ const MapScreen = () => {
 
 	}, [dispatch]);
 
+	// Charger tous les emplacements
+	useEffect(() => {
+		const loadMarkers = async () => {
+			try {
+				const loadedMarkers = await MapScreenController.loadEmplacements();
+				setMarkers(loadedMarkers);
+				console.log("Emplacements chargés :", loadedMarkers);
+			} catch (error) {
+				Alert.alert(t("map.error_loading_data"));
+			}
+		};
+		loadMarkers();
+	}, [t]);
+
+	// Récupérer la localisation de l'utilisateur
+	useEffect(() => {
+		const fetchLocation = async () => {
+			try {
+				const { status } = await Location.requestForegroundPermissionsAsync();
+				if (status !== "granted") {
+					setLocation(null);
+					Alert.alert(t("map.permission_denied"));
+					return;
+				}
+				const userLocation = await Location.getCurrentPositionAsync({});
+				setLocation(userLocation);
+				if (mapRef.current) {
+					mapRef.current.animateToRegion({
+						latitude: userLocation.coords.latitude,
+						longitude: userLocation.coords.longitude,
+						latitudeDelta: 0.1,
+						longitudeDelta: 0.1,
+					});
+				}
+			} catch (error) {
+				Alert.alert(t("map.error_occurred"));
+			}
+		};
+		fetchLocation();
+	}, [t]);
 
 	const toggleAmenity = (amenityId: string) => {
 		if (selectedAmenities.includes(amenityId)) {
@@ -102,35 +143,20 @@ const MapScreen = () => {
 		}
 	};
 
-	useEffect(() => {
-		const filterMarkers = () =>
-			emplacement.filter((marker) => {
-				console.log("Vérification du marker :", marker);
+	const filterMarkersByAmenities = (markers: Emplacement[]) => {
+		if (selectedAmenities.length === 0) {
+			return markers; // Si aucune commodité n'est sélectionnée, retourner tous les marqueurs
+		}
 
-				// Filtrer par commodités
-				if (selectedAmenities.length > 0) {
-					for (const amenityId of selectedAmenities) {
-						if (!marker.commodites.includes(amenityId)) {
-							console.log(`Exclusion du marker ${marker.nom} (commodité manquante : ${amenityId})`);
-							return false;
-						}
-					}
-				}
+		console.log("Selected commodités: ", selectedAmenities);
 
-				// Filtrer par capacité
-				if (marker.capacity < minCapacity) {
-					console.log(`Exclusion du marker ${marker.nom} (capacité insuffisante)`);
-					return false;
-				}
+		return markers.filter((marker) =>
+			selectedAmenities.every((selectedAmenity) =>
+				marker.commodites.includes(selectedAmenity)
+			)
+		);
+	};
 
-				return true;
-			});
-
-		console.log("Filtrage des emplacements...");
-		const filtered = filterMarkers();
-		console.log("Résultat après filtrage :", filtered);
-		setFilteredEmplacements(filtered);
-	}, [emplacement, selectedAmenities, minCapacity]);
 
 	return (
 		<View style={{ flex: 1 }}>
@@ -143,11 +169,17 @@ const MapScreen = () => {
 				searchRadius={searchRadius}
 				setSearchRadius={setSearchRadius}
 				selectedAmenities={selectedAmenities}
-				toggleAmenity={toggleAmenity}
-				minCapacity={minCapacity}
-				increaseCapacity={increaseCapacity}
-				decreaseCapacity={decreaseCapacity}
+				toggleAmenity={(amenityId) =>
+					setSelectedAmenities((prev) =>
+						prev.includes(amenityId)
+							? prev.filter((id) => id !== amenityId)
+							: [...prev, amenityId]
+					)
+				}
 				handleSearch={handleSearch}
+			// minCapacity={minCapacity}
+			// increaseCapacity={() => setMinCapacity((prev) => prev + 1)}
+			// decreaseCapacity={() => setMinCapacity((prev) => (prev > 1 ? prev - 1 : 1))}
 			/>
 
 			{/* Carte */}
@@ -155,18 +187,19 @@ const MapScreen = () => {
 				ref={mapRef}
 				style={styles.map}
 				initialRegion={{
-					latitude: location?.coords?.latitude || 37.78825,
-					longitude: location?.coords?.longitude || -122.4324,
-					latitudeDelta: 0.0922,
-					longitudeDelta: 0.0421,
+					latitude: location?.coords?.latitude || 43.61609385259106,
+					longitude: location?.coords?.longitude || 3.8512520758997955,
+					latitudeDelta: 0.2,
+					longitudeDelta: 0.2,
 				}}
 				showsUserLocation={true}
 			>
-				{/* Afficher les marqueurs filtrés */}
-				{filteredEmplacements.map((marker, index) => (
-					<CustomMarker key={index} marker={marker} />
+				{filterMarkersByAmenities(markers).map((marker) => (
+					<CustomMarker key={marker.idEmplacement} marker={marker} />
 				))}
 			</MapView>
+
+
 		</View>
 	);
 };

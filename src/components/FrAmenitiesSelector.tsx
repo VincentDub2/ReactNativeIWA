@@ -44,17 +44,17 @@ const FrAmenitiesSelector: React.FC<AmenitiesSelectorProps> = ({ selectedAmeniti
                             onPress={() => toggleAmenity(amenity.id)}
                             style={[
                                 styles.amenityIconContainer,
-                                selectedAmenities.includes(amenity.id) && styles.amenityIconSelected,
+                                selectedAmenities.includes(amenity.name) && styles.amenityIconSelected, // Vérifie par nom
                             ]}
                         >
                             <IconComponent
                                 name={amenity.icon as any}
                                 size={24}
-                                color={selectedAmenities.includes(amenity.id) ? 'black' : 'gray'}
+                                color={selectedAmenities.includes(amenity.name) ? 'black' : 'gray'} // Vérifie par nom
                             />
                             <Text
                                 style={{
-                                    color: selectedAmenities.includes(amenity.id) ? '#000' : '#888',
+                                    color: selectedAmenities.includes(amenity.name) ? '#000' : '#888', // Vérifie par nom
                                     marginTop: 5,
                                     textAlign: 'center',
                                     fontSize: 12,

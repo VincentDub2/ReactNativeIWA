@@ -71,13 +71,12 @@ const SearchFilter: React.FC<SearchFilterProps> = ({
                         selectedAmenities={selectedAmenities}
                         toggleAmenity={toggleAmenity}
                     />
-                    {/* Sélecteur de capacité */}
+                    {/* Sélecteur de capacité
                     <CapacitySelector
                         minCapacity={minCapacity}
                         increaseCapacity={increaseCapacity}
                         decreaseCapacity={decreaseCapacity}
-                    />
-                    {/* Bouton pour lancer la recherche */}
+                    /> */}
                     <TouchableOpacity
                         className="bg-primary p-2 justify-center items-center rounded-full mt-2"
                         onPress={handleSearch}

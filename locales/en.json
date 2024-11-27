@@ -25,6 +25,7 @@
     "search_filters": "Search Filters",
     "enter_city_name": "Enter a city name",
     "search_radius": "Search radius: {{radius}} km",
-    "search": "Search"
+    "search": "Search",
+    "learn_more": "Learn more >"
   }
 }
