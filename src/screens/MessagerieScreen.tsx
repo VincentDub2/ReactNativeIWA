@@ -1,4 +1,5 @@
 import axios from "axios";
+import { getToken } from "../utils/auth";
 import React, { useState, useEffect } from "react";
 import {
 	Button,
@@ -44,6 +45,7 @@ export default function MessagingScreen() {
 
 	useEffect(() => {
 		const fetchConversations = async () => {
+			const token = getToken();
 			try {
 				const userId = id;
 				console.log("recupération des conversations de user ", userId);
@@ -53,6 +55,11 @@ export default function MessagingScreen() {
 				);
 				const response = await axios.get(
 					`${process.env.EXPO_PUBLIC_API_URL}/messages/user/${userId}`,
+					{
+						headers: {
+							Authorization: `Bearer ${token}`,
+						},
+					},
 				);
 				setConversations(response.data);
 			} catch (error) {
@@ -67,8 +74,14 @@ export default function MessagingScreen() {
 
 	const handleSelectConversation = async (conversationId: number) => {
 		try {
+			const token = getToken();
 			const response = await axios.get(
 				`${process.env.EXPO_PUBLIC_API_URL}/messages/conversation/${conversationId}`,
+				{
+					headers: {
+						Authorization: `Bearer ${token}`,
+					},
+				},
 			);
 
 			// La réponse est un tableau de messages
@@ -101,12 +114,14 @@ export default function MessagingScreen() {
 			message.append("contenu", newMessage);
 
 			try {
+				const token = getToken();
 				const response = await axios.post(
 					`${process.env.EXPO_PUBLIC_API_URL}/messages/send`,
 					message,
 					{
 						headers: {
 							"Content-Type": "application/x-www-form-urlencoded",
+							Authorization: `Bearer ${token}`,
 						},
 					},
 				);
@@ -154,7 +169,7 @@ export default function MessagingScreen() {
 				data={selectedConversation?.messages}
 				keyExtractor={(item) => item.id.toString()}
 				renderItem={({ item }) => {
-					const isSender = item.senderId === 1; // L'utilisateur connecté
+					const isSender = item.senderId === id; // L'utilisateur connecté
 					return (
 						<View
 							style={[
