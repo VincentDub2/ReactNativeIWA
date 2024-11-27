@@ -137,7 +137,7 @@ export const fetchUserByIdAsync = createAsyncThunk(
 
 export const updateUserAsync = createAsyncThunk(
     'users/updateUserAsync',
-    async (userData: { id: number; username: string; email: string; firstname: string; lastname: string, password?: string }, { getState }) => {
+    async (userData: { id: number; username: string; email: string; firstname: string; lastname: string, phone: string, password?: string }, { getState }) => {
         const state: RootState = getState() as RootState;
         const token = state.users.token; // Récupérez le token pour l'authentification
 
@@ -157,6 +157,7 @@ export const updateUserAsync = createAsyncThunk(
                 firstName: userData.firstname,
                 lastName: userData.lastname,
                 password: password,
+                phone: userData.phone,
             }),
         });
 
@@ -195,6 +196,8 @@ export const fetchUserReservationsAsync = createAsyncThunk(
 
         const reservationsData = await reservationsResponse.json();
 
+        //console.log('Réservations récupérées :', reservationsData);
+
         // Filtrer les réservations pour celles de l'utilisateur connecté
         const userReservations = reservationsData.filter(
             (reservation: any) => reservation.idVoyageur === userId
@@ -219,6 +222,7 @@ export const fetchUserReservationsAsync = createAsyncThunk(
                     const emplacementData = await emplacementResponse.json();
 
                     return {
+                        idReservation: reservation.idReservation,
                         nom: emplacementData.nom,
                         adresse: emplacementData.adresse,
                         dateDebut: reservation.dateArrive,
@@ -228,6 +232,7 @@ export const fetchUserReservationsAsync = createAsyncThunk(
                 } catch (error) {
                     //console.error(`Erreur pour l'emplacement ${reservation.idEmplacement}:`, error);
                     return {
+                        idReservation: reservation.idReservation,
                         nom: "Emplacement inconnu",
                         adresse: "Non disponible",
                         dateDebut: reservation.dateArrive,

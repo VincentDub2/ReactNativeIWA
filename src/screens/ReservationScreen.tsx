@@ -38,6 +38,10 @@ const ReservationScreen = () => {
         return `${year}-${month}-${day}T00:00:00`;
     };
 
+    const generateRandomId = (): string => {
+        return Math.random().toString(36).substring(2, 15) + Math.random().toString(36).substring(2, 15);
+    };
+
     const handleReservation = async () => {
         if (!token) {
             Alert.alert("Erreur", "Vous devez être connecté pour effectuer cette action.");
@@ -48,6 +52,16 @@ const ReservationScreen = () => {
             Alert.alert("Erreur", "Veuillez sélectionner les dates.");
             return;
         }
+        if (dateFin < dateDebut) {
+            Alert.alert(
+                "Erreur",
+                "La date de départ ne peut pas être inférieure à la date d'arrivée."
+            );
+            return;
+        }
+    
+
+        const reservationId = generateRandomId();
 
         const body: ReservationRequest = {
             idEmplacement: marker.idEmplacement,
@@ -59,11 +73,13 @@ const ReservationScreen = () => {
         await ReservationController.makeReservation(body, token);
         dispatch(
             addReservation({
+                id: reservationId,
                 nom: marker.nom,
                 dateDebut: formatDateToLocalDateTime(dateDebut),
                 dateFin: formatDateToLocalDateTime(dateFin),
                 adresse: marker.adresse,
                 idEmplacement: marker.idEmplacement,
+                idReservation: undefined
             })
         );
     };
@@ -71,14 +87,21 @@ const ReservationScreen = () => {
     return (
         <ScrollView contentContainerStyle={styles.scrollContainer}>
             <View style={styles.container}>
-                <Text style={styles.title}>
-                    Réserver l'emplacement : {marker.nom}
-                </Text>
+                {/* Titre principal */}
+                <Text style={styles.mainTitle}>Réservation de l'emplacement</Text>
+                {/* Nom et description */}
+                <Text style={styles.emplacementName}>{marker.nom}</Text>
+                <Text style={styles.emplacementDescription}>{marker.description}</Text>
 
+                {/* Bouton pour choisir la date d'arrivée */}
                 <TouchableOpacity style={styles.button} onPress={() => setShowDateDebutPicker(true)}>
                     <Text style={styles.buttonText}>Choisir ma date d'arrivée</Text>
                 </TouchableOpacity>
-                {dateDebut && <Text style={styles.dateText}>Date d'arrivée: {dateDebut.toLocaleDateString()}</Text>}
+                {dateDebut && (
+                    <Text style={styles.dateText}>
+                        Date d'arrivée : {dateDebut.toLocaleDateString()}
+                    </Text>
+                )}
                 {showDateDebutPicker && (
                     <DateTimePicker
                         value={dateDebut || new Date()}
@@ -91,10 +114,15 @@ const ReservationScreen = () => {
                     />
                 )}
 
+                {/* Bouton pour choisir la date de départ */}
                 <TouchableOpacity style={styles.button} onPress={() => setShowDateFinPicker(true)}>
                     <Text style={styles.buttonText}>Choisir ma date de départ</Text>
                 </TouchableOpacity>
-                {dateFin && <Text style={styles.dateText}>Date de départ: {dateFin.toLocaleDateString()}</Text>}
+                {dateFin && (
+                    <Text style={styles.dateText}>
+                        Date de départ : {dateFin.toLocaleDateString()}
+                    </Text>
+                )}
                 {showDateFinPicker && (
                     <DateTimePicker
                         value={dateFin || new Date()}
@@ -107,6 +135,7 @@ const ReservationScreen = () => {
                     />
                 )}
 
+                {/* Bouton de confirmation */}
                 <TouchableOpacity style={styles.confirmButton} onPress={handleReservation}>
                     <Text style={styles.confirmButtonText}>Confirmer la réservation</Text>
                 </TouchableOpacity>
@@ -124,12 +153,28 @@ const styles = StyleSheet.create({
     container: {
         flex: 1,
         padding: 20,
+        alignItems: "center",
         backgroundColor: "#fff",
     },
-    title: {
+    mainTitle: {
+        fontSize: 24,
+        fontWeight: "bold",
+        textAlign: "center",
+        color: "#333",
+        marginBottom: 20,
+    },
+    emplacementName: {
         fontSize: 20,
         fontWeight: "bold",
+        color: "#8B4513",
+        marginBottom: 10,
+        textAlign: "center",
+    },
+    emplacementDescription: {
+        fontSize: 16,
+        color: "#666",
         marginBottom: 20,
+        textAlign: "center",
     },
     dateText: {
         marginTop: 10,
@@ -140,7 +185,7 @@ const styles = StyleSheet.create({
         backgroundColor: "#d2b48c", // Couleur des boutons principaux
         paddingVertical: 12,
         paddingHorizontal: 20,
-        borderRadius: 30,
+        borderRadius: 8,
         marginVertical: 10,
         alignItems: "center",
         width: "80%",
@@ -154,7 +199,7 @@ const styles = StyleSheet.create({
         backgroundColor: "#8B4513", // Couleur du bouton de confirmation
         paddingVertical: 15,
         paddingHorizontal: 30,
-        borderRadius: 30,
+        borderRadius: 9,
         marginTop: 20,
         width: "80%",
         alignItems: "center",

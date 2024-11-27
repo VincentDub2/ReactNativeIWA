@@ -264,10 +264,15 @@ export default function UsersScreen() {
 									style={styles.reservationBox}
 									onPress={() => {
 										if (isPastReservation) {
+											// Redirection pour les réservations passées
 											navigation.navigate("EvaluationScreen", {
 												reservation: reservation,
 											});
-											//console.log("Évaluation de la réservation :", reservation);
+										} else {
+											// Redirection pour les réservations actuelles
+											navigation.navigate("ReservationDetail", {
+												reservationId: reservation.idReservation, // Passe l'ID pour le détail
+											});
 										}
 									}}
 								>
