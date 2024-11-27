@@ -61,8 +61,8 @@ The project is structured as follows:
 
 1. **Clone the Repository**:
    ```bash
-   git clone https://github.com/your-repo/stickersmash.git
-   cd stickersmash
+   git clone https://github.com/VincentDub2/ReactNativeIWA
+   cd ReactNativeIWA
     ```
 2. **Install Dependencies**:
     ```bash
@@ -82,6 +82,13 @@ The project is structured as follows:
    ```bash
    yarn start
    ```
+    - Open the Expo Go app on your mobile device.
+    - Scan the QR code to run the application.
+    - Alternatively, run the application in a simulator.
+    - Press `i` to open the iOS simulator or `a` for the Android emulator.
+    - Press `w` to open the web version.
+    - Press `r` to reload the application.
+    - Press `d` to open the developer menu.
    
 ## 🧪 Testing
 
