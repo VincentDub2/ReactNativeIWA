@@ -137,7 +137,7 @@ export const fetchUserByIdAsync = createAsyncThunk(
 
 export const updateUserAsync = createAsyncThunk(
     'users/updateUserAsync',
-    async (userData: { id: number; username: string; email: string; firstname: string; lastname: string, password?: string }, { getState }) => {
+    async (userData: { id: number; username: string; email: string; firstname: string; lastname: string, phone: string, password?: string }, { getState }) => {
         const state: RootState = getState() as RootState;
         const token = state.users.token; // Récupérez le token pour l'authentification
 
@@ -157,6 +157,7 @@ export const updateUserAsync = createAsyncThunk(
                 firstName: userData.firstname,
                 lastName: userData.lastname,
                 password: password,
+                phone: userData.phone,
             }),
         });
 

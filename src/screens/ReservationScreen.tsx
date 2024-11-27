@@ -52,6 +52,14 @@ const ReservationScreen = () => {
             Alert.alert("Erreur", "Veuillez sélectionner les dates.");
             return;
         }
+        if (dateFin < dateDebut) {
+            Alert.alert(
+                "Erreur",
+                "La date de départ ne peut pas être inférieure à la date d'arrivée."
+            );
+            return;
+        }
+    
 
         const reservationId = generateRandomId();
 
