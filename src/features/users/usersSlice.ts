@@ -1,8 +1,7 @@
-import { createAsyncThunk, createSlice, PayloadAction } from '@reduxjs/toolkit'
+import { createAsyncThunk, createSlice, PayloadAction } from '@reduxjs/toolkit';
 import { RootState } from '../../app/store';
 import {User} from "../../models/User";
 import {Reservation} from "../../models/Reservation";
-
 
 
 const initialState: User = {
@@ -57,6 +56,8 @@ export const registerAsync = createAsyncThunk(
 export const loginAsync = createAsyncThunk(
     'users/loginAsync',
     async (credentials: { email: string; password: string }) => {
+        console.log('Tentative de connexion avec les informations suivantes:', credentials);
+        console.log('URL de l\'API publique:', process.env.EXPO_PUBLIC_API_URL);
         try {
             const response = await fetch(`${process.env.EXPO_PUBLIC_API_URL}/user/auth/login`, {
                 method: 'POST',
@@ -115,7 +116,7 @@ export const fetchUserByIdAsync = createAsyncThunk(
         const state: RootState = getState() as RootState;
         const token = state.users.token; // Récupère le token depuis Redux
 
-        const response = await fetch(`http://localhost:8090/api/v1/user/${userId}`, {
+        const response = await fetch(`${process.env.EXPO_PUBLIC_API_URL}/user/${userId}`, {
             method: 'GET',
             headers: {
                 'Authorization': `Bearer ${token}`, // Inclut le token dans les headers
@@ -144,7 +145,7 @@ export const updateUserAsync = createAsyncThunk(
         const password = state.users.password;
 
 
-        const response = await fetch(`http://localhost:8090/api/v1/user/${userData.id}`, {
+        const response = await fetch(`${process.env.EXPO_PUBLIC_API_URL}/user/${userData.id}`, {
             method: 'PUT',
             headers: {
                 'Authorization': `Bearer ${token}`, // Authentifiez avec le token
@@ -179,7 +180,7 @@ export const fetchUserReservationsAsync = createAsyncThunk(
             throw new Error("Token ou ID utilisateur manquant.");
         }
 
-        const response = await fetch(`http://localhost:8090/api/v1/reservation`, {
+        const reservationsResponse = await fetch(`${process.env.EXPO_PUBLIC_API_URL}/reservation`, {
             method: 'GET',
             headers: {
                 'Authorization': `Bearer ${token}`,
@@ -187,19 +188,57 @@ export const fetchUserReservationsAsync = createAsyncThunk(
             },
         });
 
-        if (!response.ok) {
-            const errorText = await response.text();
+        if (!reservationsResponse.ok) {
+            const errorText = await reservationsResponse.text();
             throw new Error(`Erreur lors de la récupération des réservations : ${errorText}`);
         }
 
-        const data = await response.json();
+        const reservationsData = await reservationsResponse.json();
 
         // Filtrer les réservations pour celles de l'utilisateur connecté
-        const userReservations = data.filter(
+        const userReservations = reservationsData.filter(
             (reservation: any) => reservation.idVoyageur === userId
         );
 
-        return userReservations;
+        // Aller chercher les détails pour chaque réservation
+        const enrichedReservations = await Promise.all(
+            userReservations.map(async (reservation: any) => {
+                try {
+                    const emplacementResponse = await fetch(`${process.env.EXPO_PUBLIC_API_URL}/emplacements/${reservation.idEmplacement}`, {
+                        method: 'GET',
+                        headers: {
+                            'Authorization': `Bearer ${token}`,
+                            'Content-Type': 'application/json',
+                        },
+                    });
+
+                    if (!emplacementResponse.ok) {
+                        throw new Error(`Erreur lors de la récupération de l'emplacement : ${reservation.idEmplacement}`);
+                    }
+
+                    const emplacementData = await emplacementResponse.json();
+
+                    return {
+                        nom: emplacementData.nom,
+                        adresse: emplacementData.adresse,
+                        dateDebut: reservation.dateArrive,
+                        dateFin: reservation.dateDepart,
+                        idEmplacement: reservation.idEmplacement,
+                    };
+                } catch (error) {
+                    //console.error(`Erreur pour l'emplacement ${reservation.idEmplacement}:`, error);
+                    return {
+                        nom: "Emplacement inconnu",
+                        adresse: "Non disponible",
+                        dateDebut: reservation.dateArrive,
+                        dateFin: reservation.dateDepart,
+                        idEmplacement: reservation.idEmplacement,
+                    };
+                }
+            })
+        );
+
+        return enrichedReservations;
     }
 );
 
@@ -241,6 +280,7 @@ export const usersSlice = createSlice({
         },
         addReservation: (state, action: PayloadAction<Reservation>) => {
             state.reservations.push(action.payload); // Ajouter une nouvelle réservation
+            console.log('Nouvelle réservation ajoutée :', action.payload);
         },
         removeReservation: (state, action: PayloadAction<number>) => {
             state.reservations.splice(action.payload, 1); // Supprimer une réservation par son index
@@ -287,12 +327,7 @@ export const usersSlice = createSlice({
                 //console.error('Erreur lors de la mise à jour des informations utilisateur :', action.error.message);
             })
             .addCase(fetchUserReservationsAsync.fulfilled, (state, action) => {
-                state.reservations = action.payload.map((reservation: any) => ({
-                    nom: `Emplacement ${reservation.idEmplacement}`, // Nom générique ou réel si disponible
-                    dateDebut: reservation.dateArrive,
-                    dateFin: reservation.dateDepart,
-                    adresse: `Adresse: ${reservation.idEmplacement}`, // Adresse générique ou réelle
-                }));
+                state.reservations = action.payload;
             })
             .addCase(fetchUserReservationsAsync.rejected, (state, action) => {
                 console.error('Erreur lors de la récupération des réservations :', action.error.message);

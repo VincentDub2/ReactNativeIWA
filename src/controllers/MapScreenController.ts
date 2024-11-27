@@ -24,7 +24,7 @@ export default class MapScreenController {
     static async loadEmplacements() : Promise<Emplacement[]> {
         try {
             const emplacements = await EmplacementController.fetchAllEmplacements();
-            console.log("emplacements", emplacements);
+            //console.log("emplacements", emplacements);
             return emplacements;
         } catch (error) {
             console.error("Erreur lors du chargement des emplacements :", error);

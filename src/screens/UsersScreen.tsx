@@ -40,6 +40,7 @@ export default function UsersScreen() {
 			const refreshUserData = () => {
 				//console.log('Rafraîchissement des données utilisateur...');
 				dispatch(fetchUserByIdAsync(id));
+				dispatch(fetchUserReservationsAsync());
 			};
 	
 			// Définir un intervalle
@@ -215,7 +216,14 @@ export default function UsersScreen() {
 					<Text style={styles.reservationsTitle}>Mes réservations</Text>
 
 					<ScrollView style={styles.reservationsContainer} contentContainerStyle={{ paddingBottom: 20 }}>
-						{reservations.map((reservation, index) => {
+					{reservations
+						.slice() // Crée une copie pour éviter de modifier l'original
+						.sort((a, b) => {
+							const dateA = a.dateFin ? new Date(a.dateFin).getTime() : 0;
+							const dateB = b.dateFin ? new Date(b.dateFin).getTime() : 0;
+							return dateA - dateB; // Classement par ordre croissant
+						})
+						.map((reservation, index) => {
 							const isPastReservation =
 								reservation.dateFin && new Date(reservation.dateFin) < new Date();
 
@@ -225,7 +233,10 @@ export default function UsersScreen() {
 									style={styles.reservationBox}
 									onPress={() => {
 										if (isPastReservation) {
-											navigation.navigate("EvaluationScreen", { reservation });
+											navigation.navigate("EvaluationScreen", {
+												reservation: reservation,
+											});
+											//console.log("Évaluation de la réservation :", reservation);
 										}
 									}}
 								>

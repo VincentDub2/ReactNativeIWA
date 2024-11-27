@@ -19,6 +19,7 @@ export default class EvaluationController {
                 Alert.alert("Erreur", "Utilisateur non authentifié.");
                 return;
             }
+            //console.log("Evaluation:", evaluation);
 
             const response = await axios.post(
                 `${process.env.EXPO_PUBLIC_API_URL}/evaluation`,
