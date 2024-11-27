@@ -5,6 +5,7 @@ import usersReducer from '../features/users/usersSlice'
 import evaluationsReducer from "../features/evaluations/evaluationsSlice";
 import notificationsReducer from "../features/notifications/notificationsSlice";
 import languageReducer from "../features/setting/languageSlice";
+import emplacementReducer from "../features/emplacements/emplacementSlice";
 
 export const store = configureStore({
     reducer: {
@@ -12,7 +13,8 @@ export const store = configureStore({
         locations: locationReducer,
         evaluations: evaluationsReducer,
         notifications: notificationsReducer,
-        language: languageReducer
+        language: languageReducer,
+        emplacements: emplacementReducer,
     }
 })
 

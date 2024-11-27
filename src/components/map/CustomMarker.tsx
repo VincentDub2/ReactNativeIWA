@@ -6,7 +6,6 @@ import { useNavigation, NavigationProp } from '@react-navigation/native';
 import { RootStackParamList } from '../../../types'; // Adjust the path as necessary
 import {useTranslation} from "react-i18next";
 import {Emplacement} from "../../models/Emplacement";
-import EmplacementController from '../../controllers/EmplacementController';
 
 interface CustomMarkerProps {
     marker: Emplacement; // Marqueur contenant les données
@@ -17,21 +16,6 @@ const CustomMarker: React.FC<CustomMarkerProps> = ({ marker }) => {
     const navigation = useNavigation<NavigationProp<RootStackParamList>>();
     const [selectedMarker, setSelectedMarker] = useState<any>(null);
     const [averageNote, setAverageNote] = useState<number | null>(null);
-
-
-    useEffect(() => {
-        const fetchNote = async () => {
-            try {
-                const note = await EmplacementController.fetchAverageNote(marker.idEmplacement);
-                setAverageNote(note);
-            } catch (error) {
-                console.error("Erreur lors de la récupération de la note moyenne :", error);
-            }
-        };
-    
-        fetchNote();
-    }, [marker.idEmplacement]);
-
 
     const handleReservation = () => {
         navigation.navigate("ReservationScreen", { marker });

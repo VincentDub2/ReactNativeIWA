@@ -1,15 +1,14 @@
 import React, { useEffect, useRef, useState } from "react";
 import { View, StyleSheet, Alert } from "react-native";
 import MapView from "react-native-maps";
-import * as Location from "expo-location";
 import { LocationObject } from "expo-location";
 import Geocoder from "react-native-geocoding";
 import SearchFilter from "../components/map/SearchFilter";
 import CustomMarker from "../components/map/CustomMarker";
-
-import { Emplacement } from "../models/Emplacement";
 import MapScreenController from "../controllers/MapScreenController";
 import {useTranslation} from "react-i18next";
+import {useDispatch, useSelector} from "react-redux";
+import {RootState} from "../app/store";
 
 
 Geocoder.init(process.env.EXPO_PUBLIC_GOOGLE_API_KEY || "");
@@ -17,20 +16,47 @@ Geocoder.init(process.env.EXPO_PUBLIC_GOOGLE_API_KEY || "");
 const MapScreen = () => {
 	const { t, i18n } = useTranslation(); // Utiliser le hook i18n
 
+	const dispatch = useDispatch();
+	const emplacement = useSelector((state: RootState) => state.emplacements.emplacements);
+	const [filteredEmplacements, setFilteredEmplacements] = useState(emplacement);
+
 	const mapRef = useRef<any>();
 	const [location, setLocation] = useState<LocationObject | null>(null);
 	const [errorMsg, setErrorMsg] = useState<string | null>(null);
 	const [isAccordionExpanded, setIsAccordionExpanded] = useState(false);
 	const [cityName, setCityName] = useState("");
 	const [searchRadius, setSearchRadius] = useState(10); // Rayon par défaut en km
-	const [cityCoordinates, setCityCoordinates] = useState<{
-		latitude: number;
-		longitude: number;
-	} | null>(null);
 	const [selectedAmenities, setSelectedAmenities] = useState<string[]>([]);
 	const [minCapacity, setMinCapacity] = useState<number>(1);
 
-	const [markers, setMarkers] = useState<Emplacement[]>([]);
+	const controller = new MapScreenController(dispatch);
+
+
+	useEffect(() => {
+		const loadData = async () => {
+			await controller.loadEmplacements();
+		};
+
+		const getUserLocation = async () => {
+			try {
+				const location = await controller.getUserLocation();
+				setLocation(location as any);
+			} catch (error) {
+				setErrorMsg(t("map.location_error"));
+			}
+		}
+
+
+		getUserLocation().catch((error) =>
+			console.error("Erreur lors de la récupération de la localisation :",
+				error)
+		);
+
+		loadData().catch((error) =>
+			console.error("Erreur lors du chargement des données :", error)
+		);
+
+	}, [dispatch]);
 
 
 	const toggleAmenity = (amenityId: string) => {
@@ -49,31 +75,6 @@ const MapScreen = () => {
 		setMinCapacity((prevCapacity) => (prevCapacity > 1 ? prevCapacity - 1 : 1));
 	};
 
-	// Charger les emplacements
-	useEffect(() => {
-		const loadMarkers = async () => {
-			try {
-				const loadedMarkers = await MapScreenController.loadEmplacements();
-				setMarkers(loadedMarkers);
-			} catch (error) {
-				Alert.alert(t("map.error_loading_data")); // Utilise `t` pour la traduction
-			}
-		};
-		loadMarkers();
-	}, [t]); // Ajoutez `t` dans les dépendances
-
-	// Récupérer la localisation de l'utilisateur
-	useEffect(() => {
-		const fetchLocation = async () => {
-			try {
-				const userLocation = await MapScreenController.getUserLocation();
-				setLocation(userLocation);
-			} catch (error) {
-				Alert.alert(t("map.permission_denied"));
-			}
-		};
-		fetchLocation();
-	}, [t]);
 
 	// Gestion de la recherche
 	const handleSearch = async () => {
@@ -83,7 +84,7 @@ const MapScreen = () => {
 		}
 
 		try {
-			const geocodedLocation = await MapScreenController.geocodeCityName(cityName);
+			const geocodedLocation = await controller.geocodeCityName(cityName);
 			if (geocodedLocation) {
 				mapRef.current.animateToRegion({
 					latitude: geocodedLocation.latitude,
@@ -95,25 +96,41 @@ const MapScreen = () => {
 			} else {
 				Alert.alert(t("map.city_not_found"));
 			}
+
 		} catch (error) {
 			Alert.alert(t("map.error_occurred"));
 		}
 	};
 
-	// Filtrer les marqueurs
-	const filterMarkers = () =>
-		markers.filter((marker) => {
-			// Filtrer par commodités
-			if (selectedAmenities.length > 0) {
-				for (const amenityId of selectedAmenities) {
-					if (!marker.commodites.includes(amenityId)) {
-						return false;
+	useEffect(() => {
+		const filterMarkers = () =>
+			emplacement.filter((marker) => {
+				console.log("Vérification du marker :", marker);
+
+				// Filtrer par commodités
+				if (selectedAmenities.length > 0) {
+					for (const amenityId of selectedAmenities) {
+						if (!marker.commodites.includes(amenityId)) {
+							console.log(`Exclusion du marker ${marker.nom} (commodité manquante : ${amenityId})`);
+							return false;
+						}
 					}
 				}
-			}
-			// Filtrer par capacité
-			return marker.capacity >= minCapacity;
-		});
+
+				// Filtrer par capacité
+				if (marker.capacity < minCapacity) {
+					console.log(`Exclusion du marker ${marker.nom} (capacité insuffisante)`);
+					return false;
+				}
+
+				return true;
+			});
+
+		console.log("Filtrage des emplacements...");
+		const filtered = filterMarkers();
+		console.log("Résultat après filtrage :", filtered);
+		setFilteredEmplacements(filtered);
+	}, [emplacement, selectedAmenities, minCapacity]);
 
 	return (
 		<View style={{ flex: 1 }}>
@@ -146,7 +163,7 @@ const MapScreen = () => {
 				showsUserLocation={true}
 			>
 				{/* Afficher les marqueurs filtrés */}
-				{filterMarkers().map((marker, index) => (
+				{filteredEmplacements.map((marker, index) => (
 					<CustomMarker key={index} marker={marker} />
 				))}
 			</MapView>

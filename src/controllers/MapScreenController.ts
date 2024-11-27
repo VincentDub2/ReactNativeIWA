@@ -1,13 +1,20 @@
 import * as Location from "expo-location";
 import Geocoder from "react-native-geocoding";
-import EmplacementController from "./EmplacementController";
-import {Emplacement} from "../models/Emplacement";
+import {AppDispatch} from "../app/store";
+import {fetchEmplacementsAsync} from "../features/emplacements/emplacementSlice";
+
 
 Geocoder.init(process.env.EXPO_PUBLIC_GOOGLE_API_KEY || "");
 
 export default class MapScreenController {
+    private readonly dispatch: AppDispatch;
+
+    constructor(dispatch: AppDispatch) {
+        this.dispatch = dispatch;
+    }
+
     // Récupérer la localisation de l'utilisateur
-    static async getUserLocation() : Promise<Location.LocationObject> {
+    async getUserLocation() : Promise<Location.LocationObject> {
         try {
             const { status } = await Location.requestForegroundPermissionsAsync();
             if (status !== "granted") {
@@ -20,20 +27,21 @@ export default class MapScreenController {
         }
     }
 
-    // Charger les emplacements depuis l'API
-    static async loadEmplacements() : Promise<Emplacement[]> {
+
+    /**
+     * Charge les notifications pour l'utilisateur actuel.
+     */
+    async loadEmplacements(): Promise<void> {
         try {
-            const emplacements = await EmplacementController.fetchAllEmplacements();
-            //console.log("emplacements", emplacements);
-            return emplacements;
+            console.log("Chargement des emplacements...");
+            await this.dispatch(fetchEmplacementsAsync()).unwrap();
         } catch (error) {
-            console.error("Erreur lors du chargement des emplacements :", error);
-            throw error;
+            console.error('Erreur lors du chargement des notifications :', error);
         }
     }
 
     // Géocoder un nom de ville pour obtenir ses coordonnées
-    static async geocodeCityName(city: string) {
+    async geocodeCityName(city: string) {
         try {
             const json = await Geocoder.from(city);
             if (json.results.length > 0) {
@@ -50,4 +58,5 @@ export default class MapScreenController {
             throw error;
         }
     }
+
 }
