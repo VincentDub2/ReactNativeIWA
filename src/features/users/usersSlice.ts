@@ -195,6 +195,8 @@ export const fetchUserReservationsAsync = createAsyncThunk(
 
         const reservationsData = await reservationsResponse.json();
 
+        //console.log('Réservations récupérées :', reservationsData);
+
         // Filtrer les réservations pour celles de l'utilisateur connecté
         const userReservations = reservationsData.filter(
             (reservation: any) => reservation.idVoyageur === userId
@@ -219,6 +221,7 @@ export const fetchUserReservationsAsync = createAsyncThunk(
                     const emplacementData = await emplacementResponse.json();
 
                     return {
+                        idReservation: reservation.idReservation,
                         nom: emplacementData.nom,
                         adresse: emplacementData.adresse,
                         dateDebut: reservation.dateArrive,
@@ -228,6 +231,7 @@ export const fetchUserReservationsAsync = createAsyncThunk(
                 } catch (error) {
                     //console.error(`Erreur pour l'emplacement ${reservation.idEmplacement}:`, error);
                     return {
+                        idReservation: reservation.idReservation,
                         nom: "Emplacement inconnu",
                         adresse: "Non disponible",
                         dateDebut: reservation.dateArrive,

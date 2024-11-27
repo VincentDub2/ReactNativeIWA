@@ -10,6 +10,7 @@ import HeadBar from "./HeadBar";
 import { createStackNavigator } from '@react-navigation/stack';
 import ReservationScreen from '../screens/ReservationScreen';
 import EvaluationScreen from '../screens/EvaluationScreen';
+import ReservationScreenDetail from '../screens/ReservationDetailScreen';
 
 const Tab = createBottomTabNavigator();
 const Stack = createStackNavigator();
@@ -47,6 +48,13 @@ function UserStack() {
                 component={EvaluationScreen}
                 options={{
                     title: "Évaluer un séjour",
+                }}
+            />
+            <Stack.Screen
+                name="ReservationDetail"
+                component={ReservationScreenDetail}
+                options={{
+                    title: "Détails de la réservation",
                 }}
             />
         </Stack.Navigator>
