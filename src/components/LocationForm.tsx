@@ -7,7 +7,6 @@ import { Animated, Easing, Image, ScrollView, StyleSheet, Text, TextInput, Touch
 import MapView, { MapPressEvent, Marker } from 'react-native-maps';
 import { useDispatch, useSelector } from 'react-redux';
 import { RootState } from '../app/store';
-import commoditesData from '../data/commodites.json';
 import { addLocationAsync, updateLocationAsync } from '../features/locations/locationSlice';
 import { useModal } from '../ModalProvider';
 import CustomButton from './CustomButton';
@@ -30,16 +29,6 @@ interface LocationFormProps {
         dateDebut: string;
         dateFin: string;
     };
-}
-
-interface commodites {
-    id: number;
-    nom: string;
-}
-
-interface Coordonnées {
-    latitude: number;
-    longitude: number;
 }
 
 const LocationForm: React.FC<LocationFormProps> = ({ onSubmit, initialValues }) => {

@@ -9,6 +9,7 @@ export default class EmplacementController {
     // Méthode pour récupérer tous les emplacements depuis l'API
     static async fetchAllEmplacements(): Promise<Emplacement[]> {
         const token = getToken();
+        console.log("[Emp contr] requete sur: ", `${this.API_URL}/emplacements/`);
         try {
             const responseAxios = await axios.get(`${this.API_URL}/emplacements/`, {
                 headers: {
@@ -53,6 +54,7 @@ export default class EmplacementController {
                 return emplacement;
             });
 
+            console.log("[Emp contr] mapData: ", mapData);
             return mapData;
         } catch (error) {
             console.error("Erreur lors de la récupération des emplacements :", error);
