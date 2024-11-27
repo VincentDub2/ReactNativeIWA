@@ -27,6 +27,7 @@ const MapScreen = () => {
 	// Charger tous les emplacements
 	useEffect(() => {
 		const loadMarkers = async () => {
+			console.log("Chargement des emplacements...");
 			try {
 				const loadedMarkers = await MapScreenController.loadEmplacements();
 				setMarkers(loadedMarkers);
@@ -130,6 +131,7 @@ const MapScreen = () => {
 			<MapView
 				ref={mapRef}
 				style={styles.map}
+				key={markers.length} // Forcer le re-rendu si le nombre de marqueurs change
 				initialRegion={{
 					latitude: location?.coords?.latitude || 43.61609385259106,
 					longitude: location?.coords?.longitude || 3.8512520758997955,
@@ -142,6 +144,7 @@ const MapScreen = () => {
 					<CustomMarker key={marker.idEmplacement} marker={marker} />
 				))}
 			</MapView>
+
 
 
 		</View>
