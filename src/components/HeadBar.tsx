@@ -71,8 +71,8 @@ export default function HeadBar() {
 				<View style={styles.modalContainer}>
 					<View style={styles.modalContent}>
 						<NotificationsView />
-						<TouchableOpacity onPress={closeNotificationsModal} style={styles.closeButton}>
-							<Text style={styles.closeButtonText}>Fermer</Text>
+						<TouchableOpacity onPress={closeNotificationsModal} className="bg-primary-100 rounded p-2 items-center font-bold">
+							<Text className="color-white font-bold text-xl">Fermer</Text>
 						</TouchableOpacity>
 					</View>
 				</View>
@@ -110,16 +110,5 @@ const styles = StyleSheet.create({
 		backgroundColor: "white",
 		borderRadius: 10,
 		padding: 20,
-	},
-	closeButton: {
-		marginTop: 20,
-		padding: 10,
-		backgroundColor: "red",
-		borderRadius: 5,
-		alignItems: "center",
-	},
-	closeButtonText: {
-		color: "white",
-		fontWeight: "bold",
 	},
 });

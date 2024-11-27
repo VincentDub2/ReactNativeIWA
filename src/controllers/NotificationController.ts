@@ -1,5 +1,5 @@
 import {AppDispatch, RootState} from "../app/store";
-import {fetchNotifications, markAsRead, markAsReadAPI} from "../features/notifications/notificationsSlice";
+import {fetchNotifications, markAsRead, markAsReadAPI,deleteNotificationAPI} from "../features/notifications/notificationsSlice";
 import {fetchUserByIdAsync} from "../features/users/usersSlice";
 
 export default class NotificationsController {
@@ -27,6 +27,19 @@ export default class NotificationsController {
      */
     markNotificationAsRead(notificationId: number): void {
         this.dispatch(markAsReadAPI(notificationId));
+    }
+
+    /**
+     * Supprime une notification.
+     * @param notificationId L'ID de la notification à supprimer.
+     */
+    deleteNotification(notificationId: number): void {
+        try {
+            console.log("Controller : Suppression de la notification", notificationId);
+            this.dispatch(deleteNotificationAPI(notificationId));
+        } catch (error) {
+            console.error("Erreur lors de la suppression de la notification :", error);
+        }
     }
 
     /**

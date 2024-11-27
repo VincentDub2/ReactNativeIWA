@@ -102,7 +102,38 @@ export const markAsReadAPI = createAsyncThunk(
     }
 );
 
+export const deleteNotificationAPI = createAsyncThunk(
+    'notifications/deleteNotification',
+    async (notificationId: number, { rejectWithValue, getState }) => {
+        const state = getState() as RootState;
+        const token = state.users.token;
 
+        if (!token) {
+            return rejectWithValue('Utilisateur non authentifié ou token manquant.');
+        }
+
+        try {
+            const response = await axios.delete(
+                `${API_URL}/notification/${notificationId}`,
+                {
+                    headers: {
+                        Authorization: `Bearer ${token}`,
+                        'Content-Type': 'application/json',
+                    },
+                }
+            );
+
+            if (response.status !== 200) {
+                throw new Error(`Erreur HTTP : ${response.status}`);
+            }
+            console.log("Notification supprimée avec succès");
+
+            return notificationId; // Retourne l'ID de la notification supprimée
+        } catch (error: any) {
+            return rejectWithValue(error.message || 'Erreur lors de la suppression de la notification.');
+        }
+    }
+);
 
 const notificationsSlice = createSlice({
     name: "notifications",
@@ -141,6 +172,15 @@ const notificationsSlice = createSlice({
             })
             .addCase(fetchNotifications.rejected, (state, action) => {
                 state.loading = false;
+                state.error = action.payload as string;
+            })
+            .addCase(deleteNotificationAPI.fulfilled, (state, action) => {
+                state.notifications = state.notifications.filter(
+                    (notif) => notif.id !== action.payload
+                );
+                state.unreadCount = state.notifications.filter((notif) => !notif.read).length;
+            })
+            .addCase(deleteNotificationAPI.rejected, (state, action) => {
                 state.error = action.payload as string;
             });
     },
