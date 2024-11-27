@@ -9,6 +9,8 @@ import {
 	TouchableOpacity,
 	View,
 } from "react-native";
+import { useSelector } from "react-redux";
+import { RootState } from "../app/store";
 
 export default function MessagingScreen() {
 	const [conversations, setConversations] = useState<
@@ -29,10 +31,26 @@ export default function MessagingScreen() {
 	} | null>(null);
 	const [newMessage, setNewMessage] = useState("");
 
+	const {
+		username,
+		email,
+		firstname,
+		lastname,
+		phone,
+		reservations,
+		isAuthenticated,
+		id,
+	} = useSelector((state: RootState) => state.users);
+
 	useEffect(() => {
 		const fetchConversations = async () => {
 			try {
-				const userId = 1; // A remplacer par l'ID réel de l'utilisateur connecté
+				const userId = id;
+				console.log("recupération des conversations de user ", userId);
+				console.log(
+					"url : ",
+					`${process.env.EXPO_PUBLIC_API_URL}/messages/user/${userId}`,
+				);
 				const response = await axios.get(
 					`${process.env.EXPO_PUBLIC_API_URL}/messages/user/${userId}`,
 				);
@@ -45,7 +63,7 @@ export default function MessagingScreen() {
 			}
 		};
 		fetchConversations();
-	}, []);
+	}, [id]);
 
 	const handleSelectConversation = async (conversationId: number) => {
 		try {
@@ -79,7 +97,7 @@ export default function MessagingScreen() {
 		if (newMessage.trim() !== "" && selectedConversation) {
 			const message = new URLSearchParams();
 			message.append("conversationId", selectedConversation.id.toString());
-			message.append("senderId", "1"); // Remplacez par l'ID réel de l'utilisateur
+			message.append("senderId", id.toString());
 			message.append("contenu", newMessage);
 
 			try {
@@ -106,7 +124,7 @@ export default function MessagingScreen() {
 						},
 					],
 				});
-				setNewMessage(""); // Réinitialiser le champ de saisie
+				setNewMessage("");
 			} catch (error) {
 				console.error("Erreur lors de l'envoi du message", error);
 			}
