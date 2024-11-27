@@ -4,14 +4,15 @@ import locationReducer from '../features/locations/locationSlice'
 import usersReducer from '../features/users/usersSlice'
 import evaluationsReducer from "../features/evaluations/evaluationsSlice";
 import notificationsReducer from "../features/notifications/notificationsSlice";
-
+import languageReducer from "../features/setting/languageSlice";
 
 export const store = configureStore({
     reducer: {
         users: usersReducer,
         locations: locationReducer,
         evaluations: evaluationsReducer,
-        notifications: notificationsReducer
+        notifications: notificationsReducer,
+        language: languageReducer
     }
 })
 
