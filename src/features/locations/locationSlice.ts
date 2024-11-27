@@ -177,6 +177,8 @@ const locationSlice = createSlice({
             })
             .addCase(addLocationAsync.fulfilled, (state, action: PayloadAction<Location>) => {
                 state.locations.push(action.payload);
+                state.status = 'succeeded';
+                state.error = null;
             })
             .addCase(updateLocationAsync.fulfilled, (state, action: PayloadAction<Location>) => {
                 const index = state.locations.findIndex(

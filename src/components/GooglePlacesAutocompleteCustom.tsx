@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { View, TextInput, FlatList, Text, TouchableOpacity, StyleSheet } from 'react-native';
 import axios from 'axios';
-import { GOOGLE_MAPS_API_KEY } from '@env';
+import { EXPO_PUBLIC_GOOGLE_API_KEY } from '@env';
 
 const GooglePlacesAutocompleteCustom = ({ onPlaceSelected }) => {
     const [searchText, setSearchText] = useState('');
@@ -14,17 +14,21 @@ const GooglePlacesAutocompleteCustom = ({ onPlaceSelected }) => {
         }
 
         try {
+            console.log('fetchPlaces', input);
             const response = await axios.get(
                 `https://maps.googleapis.com/maps/api/place/autocomplete/json`,
                 {
                     params: {
                         input,
-                        key: GOOGLE_MAPS_API_KEY,
+                        key: EXPO_PUBLIC_GOOGLE_API_KEY,
                         language: 'fr',
                         components: 'country:fr',
                     },
                 }
             );
+            console.log('clé api', EXPO_PUBLIC_GOOGLE_API_KEY);
+
+            console.log('response', response.data.predictions);
             setSuggestions(response.data.predictions);
         } catch (error) {
             console.error('Erreur lors de la récupération des suggestions :', error);
@@ -38,7 +42,7 @@ const GooglePlacesAutocompleteCustom = ({ onPlaceSelected }) => {
                 {
                     params: {
                         place_id: placeId,
-                        key: GOOGLE_MAPS_API_KEY,
+                        key: EXPO_PUBLIC_GOOGLE_API_KEY,
                     },
                 }
             );

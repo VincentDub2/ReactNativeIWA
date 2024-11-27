@@ -27,9 +27,9 @@ export default function ReservationDetailScreen() {
 
     return (
         <View style={styles.container}>
-            <Text style={styles.questionText}>Souhaitez-vous supprimer cette réservation ?</Text>
-            <TouchableOpacity style={styles.deleteButton} onPress={handleDelete}>
-                <Text style={styles.deleteButtonText}>Supprimer</Text>
+            <Text style={styles.questionText}>Souhaitez-vous annulez cette réservation ?</Text>
+            <TouchableOpacity className="bg-primary-100 font-bold rounded items-center p-4" onPress={handleDelete}>
+                <Text className="text-2xl color-white">Annulez</Text>
             </TouchableOpacity>
         </View>
     );
