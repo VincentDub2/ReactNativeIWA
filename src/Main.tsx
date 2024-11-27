@@ -17,6 +17,7 @@ import MessagingScreen from "./screens/MessagerieScreen";
 import UsersScreen from "./screens/UsersScreen";
 import ReservationScreen from "./screens/ReservationScreen";
 import EvaluationScreen from "./screens/EvaluationScreen";
+import ReservationDetailScreen from "./screens/ReservationDetailScreen";
 
 
 import "./global.css";
@@ -94,6 +95,11 @@ export default function Main() {
                             name="EvaluationScreen"
                             component={EvaluationScreen}
                             options={{ title: "Évaluation" }}
+                        />
+                        <Stack.Screen
+                            name="ReservationDetail"
+                            component={ReservationDetailScreen}
+                            options={{ title: "Détails de la réservation" }}
                         />
                         <Stack.Screen
                             name="LocationDetail"

@@ -7,8 +7,8 @@ import en from "../locales/en.json";
 
 
 const resources = {
-    "en-US": { translation: en },
-    "fr-FR": { translation: fr },
+    "en": { translation: en },
+    "fr": { translation: fr },
 };
 
 const initI18n = async () => {
@@ -18,11 +18,11 @@ const initI18n = async () => {
         savedLanguage = Localization.getLocales()[0].languageCode;
     }
 
-    i18n.use(initReactI18next).init({
+    await i18n.use(initReactI18next).init({
         compatibilityJSON: "v3",
         resources,
-        lng: savedLanguage?.startsWith('fr') ? 'fr' : 'en',
-        fallbackLng: "en-US",
+        lng: savedLanguage?.startsWith('fr') ? 'en' : 'fr',
+        fallbackLng: "en",
         interpolation: {
             escapeValue: false,
         },

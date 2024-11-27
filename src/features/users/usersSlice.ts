@@ -157,135 +157,115 @@ export const fetchUserByIdAsync = createAsyncThunk(
 );
 
 export const updateUserAsync = createAsyncThunk(
-	"users/updateUserAsync",
-	async (
-		userData: {
-			id: number;
-			username: string;
-			email: string;
-			firstname: string;
-			lastname: string;
-			password?: string;
-		},
-		{ getState },
-	) => {
-		const state: RootState = getState() as RootState;
-		const token = state.users.token; // Récupérez le token pour l'authentification
+    'users/updateUserAsync',
+    async (userData: { id: number; username: string; email: string; firstname: string; lastname: string, phone: string, password?: string }, { getState }) => {
+        const state: RootState = getState() as RootState;
+        const token = state.users.token; // Récupérez le token pour l'authentification
 
-		// Récupérez le mot de passe existant depuis Redux
-		const password = state.users.password;
+        // Récupérez le mot de passe existant depuis Redux
+        const password = state.users.password;
 
-		const response = await fetch(
-			`${process.env.EXPO_PUBLIC_API_URL}/user/${userData.id}`,
-			{
-				method: "PUT",
-				headers: {
-					Authorization: `Bearer ${token}`, // Authentifiez avec le token
-					"Content-Type": "application/json",
-				},
-				body: JSON.stringify({
-					username: userData.username,
-					email: userData.email,
-					firstName: userData.firstname,
-					lastName: userData.lastname,
-					password: password,
-				}),
-			},
-		);
 
-		if (!response.ok) {
-			const errorMessage = await response.text();
-			throw new Error(
-				errorMessage ||
-					"Erreur lors de la mise à jour des informations utilisateur.",
-			);
-		}
+        const response = await fetch(`${process.env.EXPO_PUBLIC_API_URL}/user/${userData.id}`, {
+            method: 'PUT',
+            headers: {
+                'Authorization': `Bearer ${token}`, // Authentifiez avec le token
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({
+                username: userData.username,
+                email: userData.email,
+                firstName: userData.firstname,
+                lastName: userData.lastname,
+                password: password,
+                phone: userData.phone,
+            }),
+        });
 
-		return await response.json(); // Retourne les nouvelles données utilisateur
-	},
+        if (!response.ok) {
+            const errorMessage = await response.text();
+            throw new Error(errorMessage || 'Erreur lors de la mise à jour des informations utilisateur.');
+        }
+
+        return await response.json(); // Retourne les nouvelles données utilisateur
+    }
 );
 
 export const fetchUserReservationsAsync = createAsyncThunk(
-	"users/fetchUserReservations",
-	async (_, { getState }) => {
-		const state: RootState = getState() as RootState;
-		const token = state.users.token;
-		const userId = state.users.id;
+    'users/fetchUserReservations',
+    async (_, { getState }) => {
+        const state: RootState = getState() as RootState;
+        const token = state.users.token;
+        const userId = state.users.id;
 
-		if (!token || !userId) {
-			throw new Error("Token ou ID utilisateur manquant.");
-		}
+        if (!token || !userId) {
+            throw new Error("Token ou ID utilisateur manquant.");
+        }
 
-		const reservationsResponse = await fetch(
-			`${process.env.EXPO_PUBLIC_API_URL}/reservation`,
-			{
-				method: "GET",
-				headers: {
-					Authorization: `Bearer ${token}`,
-					"Content-Type": "application/json",
-				},
-			},
-		);
+        const reservationsResponse = await fetch(`${process.env.EXPO_PUBLIC_API_URL}/reservation`, {
+            method: 'GET',
+            headers: {
+                'Authorization': `Bearer ${token}`,
+                'Content-Type': 'application/json',
+            },
+        });
 
-		if (!reservationsResponse.ok) {
-			const errorText = await reservationsResponse.text();
-			throw new Error(
-				`Erreur lors de la récupération des réservations : ${errorText}`,
-			);
-		}
+        if (!reservationsResponse.ok) {
+            const errorText = await reservationsResponse.text();
+            throw new Error(`Erreur lors de la récupération des réservations : ${errorText}`);
+        }
 
-		const reservationsData = await reservationsResponse.json();
+        const reservationsData = await reservationsResponse.json();
 
-		// Filtrer les réservations pour celles de l'utilisateur connecté
-		const userReservations = reservationsData.filter(
-			(reservation: any) => reservation.idVoyageur === userId,
-		);
+        //console.log('Réservations récupérées :', reservationsData);
 
-		// Aller chercher les détails pour chaque réservation
-		const enrichedReservations = await Promise.all(
-			userReservations.map(async (reservation: any) => {
-				try {
-					const emplacementResponse = await fetch(
-						`${process.env.EXPO_PUBLIC_API_URL}/emplacements/${reservation.idEmplacement}`,
-						{
-							method: "GET",
-							headers: {
-								Authorization: `Bearer ${token}`,
-								"Content-Type": "application/json",
-							},
-						},
-					);
+        // Filtrer les réservations pour celles de l'utilisateur connecté
+        const userReservations = reservationsData.filter(
+            (reservation: any) => reservation.idVoyageur === userId
+        );
 
-					if (!emplacementResponse.ok) {
-						throw new Error(
-							`Erreur lors de la récupération de l'emplacement : ${reservation.idEmplacement}`,
-						);
-					}
+        // Aller chercher les détails pour chaque réservation
+        const enrichedReservations = await Promise.all(
+            userReservations.map(async (reservation: any) => {
+                try {
+                    const emplacementResponse = await fetch(`${process.env.EXPO_PUBLIC_API_URL}/emplacements/${reservation.idEmplacement}`, {
+                        method: 'GET',
+                        headers: {
+                            'Authorization': `Bearer ${token}`,
+                            'Content-Type': 'application/json',
+                        },
+                    });
 
-					const emplacementData = await emplacementResponse.json();
+                    if (!emplacementResponse.ok) {
+                        throw new Error(`Erreur lors de la récupération de l'emplacement : ${reservation.idEmplacement}`);
+                    }
 
-					return {
-						nom: emplacementData.nom,
-						adresse: emplacementData.adresse,
-						dateDebut: reservation.dateArrive,
-						dateFin: reservation.dateDepart,
-						idEmplacement: reservation.idEmplacement,
-					};
-				} catch (error) {
-					//console.error(`Erreur pour l'emplacement ${reservation.idEmplacement}:`, error);
-					return {
-						nom: "Emplacement inconnu",
-						adresse: "Non disponible",
-						dateDebut: reservation.dateArrive,
-						dateFin: reservation.dateDepart,
-						idEmplacement: reservation.idEmplacement,
-					};
-				}
-			}),
-		);
+                    const emplacementData = await emplacementResponse.json();
 
-		return enrichedReservations;
-	},
+                    return {
+                        idReservation: reservation.idReservation,
+                        nom: emplacementData.nom,
+                        adresse: emplacementData.adresse,
+                        dateDebut: reservation.dateArrive,
+                        dateFin: reservation.dateDepart,
+                        idEmplacement: reservation.idEmplacement,
+                    };
+                } catch (error) {
+                    //console.error(`Erreur pour l'emplacement ${reservation.idEmplacement}:`, error);
+                    return {
+                        idReservation: reservation.idReservation,
+                        nom: "Emplacement inconnu",
+                        adresse: "Non disponible",
+                        dateDebut: reservation.dateArrive,
+                        dateFin: reservation.dateDepart,
+                        idEmplacement: reservation.idEmplacement,
+                    };
+                }
+            })
+        );
+
+        return enrichedReservations;
+    }
 );
 
 export const usersSlice = createSlice({

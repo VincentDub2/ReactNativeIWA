@@ -8,10 +8,23 @@ import CustomButton from "../components/CustomButton";
 import UserInfo from "../components/UserInfo";
 import isAuthenticated from "../features/users/usersSlice";
 import { fetchUserByIdAsync } from "../features/users/usersSlice";
+import i18n from "../i18n";
+import AsyncStorage from "@react-native-async-storage/async-storage";
+import {changeLanguageAsync} from "../features/setting/languageSlice";
+import {useTranslation} from "react-i18next";
 
 export default function UsersScreen() {
 	const navigation = useNavigation<any>();
 	const dispatch = useDispatch<AppDispatch>();
+
+	const { t, i18n } = useTranslation();
+	const [selectedLanguage, setSelectedLanguage] = useState<string>(i18n.language);
+
+	useEffect(() => {
+		console.log("Langue sélectionnée :", i18n.language);
+		setSelectedLanguage(i18n.language);
+	}, [i18n.language]);
+
 	// Récupérer les informations de l'utilisateur via Redux
 	const { username, email, firstname, lastname, phone, reservations, isAuthenticated, id } = useSelector((state: RootState) => state.users);
 
@@ -34,6 +47,14 @@ export default function UsersScreen() {
 		}
 	}, [username, email, firstname, lastname, phone, isEditing]);
 
+
+	const changeLanguage = async () => {
+		const newLanguage = i18n.language === "en" ? "fr" : "en";
+		console.log("Changement de langue en :", newLanguage);
+		await AsyncStorage.setItem("language", newLanguage);
+		i18n.changeLanguage(newLanguage);
+	};
+
 	useEffect(() => {
 		if (isAuthenticated && id !== undefined) {
 			// Fonction pour actualiser les données utilisateur
@@ -42,15 +63,15 @@ export default function UsersScreen() {
 				dispatch(fetchUserByIdAsync(id));
 				dispatch(fetchUserReservationsAsync());
 			};
-	
+
 			// Définir un intervalle
 			const interval = setInterval(() => {
 				refreshUserData();
 			}, 5000); // Actualise toutes les 5 secondes
-	
+
 			// Rafraîchir immédiatement une première fois
 			refreshUserData();
-	
+
 			// Nettoyage de l’intervalle
 			return () => clearInterval(interval);
 		}
@@ -81,7 +102,7 @@ export default function UsersScreen() {
 			lastname: newLastName,
 			phone: newPhone,
 		};
-	
+
 		// Envoyez les données à l'API
 		dispatch(updateUserAsync(updatedUser))
 			.then(() => {
@@ -114,12 +135,22 @@ export default function UsersScreen() {
 		// La redirection se fait automatiquement via useEffect lorsque isAuthenticated passe à false
 	};
 
+
+
+
 	return (
 		<View style={styles.container}>
-			{/* Bouton Logout en haut de l'écran */}
-            <TouchableOpacity onPress={handleLogout} style={styles.logoutButtonContainer}>
-                <Text style={styles.logoutButtonText}>Logout</Text>
-            </TouchableOpacity>
+			<View style={styles.topBar}>
+				{/* Bouton pour changer la langue */}
+				<TouchableOpacity onPress={() => changeLanguage()} style={styles.languageButton}>
+					<Text style={styles.languageButtonText}>{selectedLanguage === "en" ? "EN" : "FR"}</Text>
+				</TouchableOpacity>
+
+				{/* Bouton Logout */}
+				<TouchableOpacity onPress={handleLogout} style={styles.logoutButtonContainer}>
+					<Text style={styles.logoutButtonText}>Logout</Text>
+				</TouchableOpacity>
+			</View>
 
 			<UserInfo
 				name={username}
@@ -233,10 +264,15 @@ export default function UsersScreen() {
 									style={styles.reservationBox}
 									onPress={() => {
 										if (isPastReservation) {
+											// Redirection pour les réservations passées
 											navigation.navigate("EvaluationScreen", {
 												reservation: reservation,
 											});
-											//console.log("Évaluation de la réservation :", reservation);
+										} else {
+											// Redirection pour les réservations actuelles
+											navigation.navigate("ReservationDetail", {
+												reservationId: reservation.idReservation, // Passe l'ID pour le détail
+											});
 										}
 									}}
 								>
@@ -390,4 +426,27 @@ const styles = StyleSheet.create({
 		color: "#555",
 		textAlign: "center",
 	},
+	topBar: {
+		flexDirection: "row",
+		justifyContent: "space-between",
+		alignItems: "center",
+		width: "100%",
+		paddingHorizontal: 15,
+		marginTop: 10,
+	},
+	languageButton: {
+		backgroundColor: "#E9D69F",
+		borderRadius: 25,
+		width: 80,
+		height: 40,
+		justifyContent: "center",
+		alignItems: "center",
+	},
+
+	languageButtonText: {
+		color: "#fff",
+		fontSize: 16,
+		fontWeight: "bold",
+	},
+
 });

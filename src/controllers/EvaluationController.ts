@@ -14,7 +14,7 @@ export default class EvaluationController {
         commentaire: string;
     }): Promise<void> {
         try {
-            const token = await getToken(); // Récupérer le token utilisateur
+            const token = getToken(); // Récupérer le token utilisateur
             if (!token) {
                 Alert.alert("Erreur", "Utilisateur non authentifié.");
                 return;

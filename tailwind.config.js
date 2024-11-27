@@ -20,6 +20,7 @@ module.exports = {
         foreground: "hsl(var(--foreground))",
         primary: {
           DEFAULT: "rgba(205, 163, 42, 0.4)",  // Ajout de la couleur personnalisée avec transparence
+          100:"rgba(205, 163, 42, 0.8)", // Ajout de la couleur personnalisée avec transparence
           foreground: "#FFFFFF", // Couleur du texte pour la couleur principale
         },
         secondary: {
