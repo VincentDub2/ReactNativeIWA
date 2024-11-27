@@ -6,15 +6,17 @@ import { LocationObject } from "expo-location";
 import Geocoder from "react-native-geocoding";
 import SearchFilter from "../components/map/SearchFilter";
 import CustomMarker from "../components/map/CustomMarker";
-import { useTranslation } from "react-i18next";
+
 import { Emplacement } from "../models/Emplacement";
 import MapScreenController from "../controllers/MapScreenController";
+import {useTranslation} from "react-i18next";
 
 
 Geocoder.init(process.env.EXPO_PUBLIC_GOOGLE_API_KEY || "");
 
 const MapScreen = () => {
-	const { t } = useTranslation();
+	const { t, i18n } = useTranslation(); // Utiliser le hook i18n
+
 	const mapRef = useRef<any>();
 	const [location, setLocation] = useState<LocationObject | null>(null);
 	const [errorMsg, setErrorMsg] = useState<string | null>(null);
@@ -54,11 +56,11 @@ const MapScreen = () => {
 				const loadedMarkers = await MapScreenController.loadEmplacements();
 				setMarkers(loadedMarkers);
 			} catch (error) {
-				Alert.alert(t("map.error_loading_data"));
+				Alert.alert(t("map.error_loading_data")); // Utilise `t` pour la traduction
 			}
 		};
 		loadMarkers();
-	}, []);
+	}, [t]); // Ajoutez `t` dans les dépendances
 
 	// Récupérer la localisation de l'utilisateur
 	useEffect(() => {
@@ -71,7 +73,7 @@ const MapScreen = () => {
 			}
 		};
 		fetchLocation();
-	}, []);
+	}, [t]);
 
 	// Gestion de la recherche
 	const handleSearch = async () => {
