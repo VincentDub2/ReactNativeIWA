@@ -82,9 +82,9 @@ const MapScreen = () => {
 							: [...prev, amenityId]
 					)
 				}
-				minCapacity={minCapacity}
-				increaseCapacity={() => setMinCapacity((prev) => prev + 1)}
-				decreaseCapacity={() => setMinCapacity((prev) => (prev > 1 ? prev - 1 : 1))}
+				// minCapacity={minCapacity}
+				// increaseCapacity={() => setMinCapacity((prev) => prev + 1)}
+				// decreaseCapacity={() => setMinCapacity((prev) => (prev > 1 ? prev - 1 : 1))}
 			/>
 			<MapView
 				ref={mapRef}

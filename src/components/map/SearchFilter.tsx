@@ -4,7 +4,7 @@ import Slider from '@react-native-community/slider';
 import Collapsible from 'react-native-collapsible';
 import AmenitiesSelector from './AmenitiesSelector';
 import CapacitySelector from './CapacitySelector';
-import {useTranslation} from "react-i18next";
+import { useTranslation } from "react-i18next";
 
 interface SearchFilterProps {
     isAccordionExpanded: boolean;
@@ -15,27 +15,27 @@ interface SearchFilterProps {
     setSearchRadius: (radius: number) => void;
     selectedAmenities: string[];
     toggleAmenity: (amenity: string) => void;
-    minCapacity: number;
-    increaseCapacity: () => void;
-    decreaseCapacity: () => void;
+    // minCapacity: number;
+    // increaseCapacity: () => void;
+    // decreaseCapacity: () => void;
     handleSearch: () => void;
 }
 
 const SearchFilter: React.FC<SearchFilterProps> = ({
-                                                       isAccordionExpanded,
-                                                       setIsAccordionExpanded,
-                                                       cityName,
-                                                       setCityName,
-                                                       searchRadius,
-                                                       setSearchRadius,
-                                                       selectedAmenities,
-                                                       toggleAmenity,
-                                                       minCapacity,
-                                                       increaseCapacity,
-                                                       decreaseCapacity,
-                                                       handleSearch,
-                                                   }) => {
-    const {t} = useTranslation();
+    isAccordionExpanded,
+    setIsAccordionExpanded,
+    cityName,
+    setCityName,
+    searchRadius,
+    setSearchRadius,
+    selectedAmenities,
+    toggleAmenity,
+    // minCapacity,
+    // increaseCapacity,
+    // decreaseCapacity,
+    handleSearch,
+}) => {
+    const { t } = useTranslation();
     return (
         <View style={styles.accordionContainer}>
             <TouchableOpacity
@@ -56,7 +56,7 @@ const SearchFilter: React.FC<SearchFilterProps> = ({
                     {/* Slider pour le rayon de recherche */}
                     <Text>{t('map.search_radius', { radius: searchRadius })}</Text>
                     <Slider
-                        style={{ width: '100%', height: 40}}
+                        style={{ width: '100%', height: 40 }}
                         minimumValue={1}
                         maximumValue={50}
                         step={1}
@@ -72,11 +72,11 @@ const SearchFilter: React.FC<SearchFilterProps> = ({
                         toggleAmenity={toggleAmenity}
                     />
                     {/* Sélecteur de capacité */}
-                    <CapacitySelector
+                    {/* <CapacitySelector
                         minCapacity={minCapacity}
                         increaseCapacity={increaseCapacity}
                         decreaseCapacity={decreaseCapacity}
-                    />
+                    /> */}
                     {/* Bouton pour lancer la recherche */}
                     <TouchableOpacity
                         className="bg-primary p-2 justify-center items-center rounded-full mt-2"
