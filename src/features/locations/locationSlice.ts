@@ -28,6 +28,31 @@ const initialState: LocationState = {
     error: null,
 };
 
+/**
+ * Action asynchrone pour récupérer les emplacements tous les emplacements
+ */
+export const fetchAllLocationsAsync = createAsyncThunk<
+    Location[],
+    void,
+    { state: RootState }
+>(
+    'locations/fetchLocations',
+    async (_, { getState }) => {
+        const state = getState();
+        const token = state.users.token; // Récupère le token
+        const response = await fetch(`${process.env.EXPO_PUBLIC_API_URL}/emplacements`, {
+            headers: {
+                Authorization: `Bearer ${token}`,
+                'Content-Type': 'application/json',
+            },
+        });
+        if (!response.ok) {
+            throw new Error('Erreur lors de la récupération des emplacements.');
+        }
+        return await response.json() as Location[];
+    }
+);
+
 // Action asynchrone pour récupérer les emplacements d'un hôte
 export const fetchLocationsAsync = createAsyncThunk<
     Location[],
