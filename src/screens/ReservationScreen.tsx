@@ -229,9 +229,7 @@ const ReservationScreen = () => {
 						if (!messageSent) handleContactButton(marker.idHote);
 					}}
 				>
-					<Text
-						style={[styles.hostButton, messageSent && styles.disabledButton]}
-					>
+					<Text style={styles.hostButton}>
 						{messageSent ? "Message envoyé" : "Envoyer un message"}
 					</Text>
 				</TouchableOpacity>
@@ -448,9 +446,6 @@ const styles = StyleSheet.create({
 		marginVertical: 10,
 		width: "80%",
 		alignSelf: "center",
-	},
-	disabledButton: {
-		backgroundColor: "#cccccc", // Grise pour indiquer que le bouton est désactivé
 	},
 });
 
