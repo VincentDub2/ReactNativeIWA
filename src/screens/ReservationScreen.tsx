@@ -16,7 +16,7 @@ import {
 } from "react-native";
 import MapView, { Marker } from "react-native-maps";
 import { StarRatingDisplay } from "react-native-star-rating-widget";
-import { useSelector } from "react-redux";
+import {useDispatch, useSelector} from "react-redux";
 import type { RootStackParamList } from "../../types";
 import type { RootState } from "../app/store";
 import { ReservationController } from "../controllers/ReservationController";
@@ -43,6 +43,7 @@ const ReservationScreen = () => {
 	>;
 
 	const navigation = useNavigation<ReservationScreenNavigationProp>();
+	const dispatch = useDispatch();
 
 	const token = useSelector((state: RootState) => state.users.token);
 	const userId = useSelector((state: RootState) => state.users.id);
@@ -450,6 +451,3 @@ const styles = StyleSheet.create({
 });
 
 export default ReservationScreen;
-function dispatch(arg0: any) {
-	throw new Error("Function not implemented.");
-}

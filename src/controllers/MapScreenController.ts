@@ -20,7 +20,7 @@ export default class MapScreenController {
             if (status !== "granted") {
                 throw new Error("Permission denied");
             }
-            return await Location.getCurrentPositionAsync({});
+            return await Location.getCurrentPositionAsync();
         } catch (error) {
             console.error("Erreur lors de la récupération de la localisation :", error);
             throw error;
