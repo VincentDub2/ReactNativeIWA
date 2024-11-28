@@ -4,8 +4,8 @@ import { Image, View, Text, StyleSheet, Alert, Button, TouchableOpacity } from '
 import { StarRatingDisplay } from 'react-native-star-rating-widget';
 import { useNavigation, NavigationProp } from '@react-navigation/native';
 import { RootStackParamList } from '../../../types'; // Adjust the path as necessary
-import {Emplacement} from "../../models/Emplacement";
 import { useTranslation } from "react-i18next";
+import {Emplacement} from "../../features/emplacements/emplacementSlice";
 
 interface CustomMarkerProps {
     marker: Emplacement; // Marqueur contenant les données
@@ -92,16 +92,15 @@ const CustomMarker: React.FC<CustomMarkerProps> = ({ marker, mapRef }) => {
                             <Text key={idx} style={styles.calloutAmenity}>- {amenity}</Text>
                         ))}
 
-                        {/* Note moyenne
-                        {averageNote !== null ? (
+                        {marker.note == -1 ? (
                             <StarRatingDisplay
                                 starStyle={{ marginVertical: 5 }}
-                                rating={averageNote}
+                                rating={marker.note}
                                 starSize={24}
                             />
                         ) : (
                             <Text style={styles.calloutNoReviews}>{t('map.no_reviews')}</Text>
-                        )} */}
+                        )}
 
                         <Text style={styles.calloutLearnMore}>
                             {t('map.learn_more')}

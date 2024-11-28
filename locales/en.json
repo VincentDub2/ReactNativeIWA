@@ -3,6 +3,7 @@
   "about": "About",
   "contact": "Contact",
   "map": {
+    "no_reviews": "No reviews",
     "please_enter_city_name": "Please enter a city name.",
     "permission_denied": "Permission to access location was denied.",
     "city_not_found": "City not found. Please check the city name.",

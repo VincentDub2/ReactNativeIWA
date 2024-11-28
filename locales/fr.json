@@ -3,6 +3,7 @@
   "about": "À propos",
   "contact": "Contact",
   "map" : {
+    "no_reviews": "Aucun avis",
     "please_enter_city_name": "Veuillez entrer un nom de ville.",
     "permission_denied": "La permission d'accéder à la localisation a été refusée.",
     "city_not_found": "Ville non trouvée. Veuillez vérifier le nom de la ville.",

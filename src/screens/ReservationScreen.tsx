@@ -5,7 +5,6 @@ import DateTimePicker from "@react-native-community/datetimepicker";
 import { useRoute, RouteProp } from "@react-navigation/native";
 import { useSelector } from "react-redux";
 import { RootState } from "../app/store";
-import { Emplacement } from "../models/Emplacement";
 import { ReservationRequest } from "../models/Reservation";
 import { ReservationController } from "../controllers/ReservationController";
 import { addReservation } from "../features/users/usersSlice";
@@ -13,6 +12,8 @@ import { useNavigation } from "@react-navigation/native";
 import { StackNavigationProp } from "@react-navigation/stack";
 import { RootStackParamList } from "../../types";
 import axios from "axios";
+import {StarRatingDisplay} from "react-native-star-rating-widget";
+import {Emplacement} from "../features/emplacements/emplacementSlice";
 
 type RouteParams = {
 	marker: Emplacement;
@@ -207,8 +208,25 @@ const ReservationScreen = () => {
                     <Text style={styles.hostButtonText}>Envoyer un message</Text>
                 </TouchableOpacity>
             </View>
-
-
+			<View style={styles.section}>
+				<Text style={styles.sectionTitle}>Moyenne des avis</Text>
+					<View className="items-center">
+						<StarRatingDisplay rating={marker.note || 0}/>
+					</View>
+				<View>
+					<Text style={styles.sectionTitle}>Dernier avis</Text>
+				</View>
+				{marker.evaluations.length > 0 ? (
+					marker.evaluations.map((evaluation, index) => (
+						<View key={index}>
+							<Text style={styles.description}>{evaluation.commentaire}</Text>
+							<StarRatingDisplay rating={evaluation.note} />
+						</View>
+					))
+				) : (
+					<Text style={styles.description}>Aucun avis pour le moment</Text>
+				)}
+			</View>
             <View style={styles.section}>
 
                 <Text style={styles.sectionTitle}>Réserver</Text>
