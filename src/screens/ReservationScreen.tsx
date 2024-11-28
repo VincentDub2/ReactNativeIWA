@@ -1,6 +1,15 @@
 import React, { useState } from "react";
-import { View, Text, Platform, StyleSheet, Alert, ScrollView, TouchableOpacity, Image } from "react-native";
-import MapView, { Marker } from 'react-native-maps';
+import {
+	View,
+	Text,
+	Platform,
+	StyleSheet,
+	Alert,
+	ScrollView,
+	TouchableOpacity,
+	Image,
+} from "react-native";
+import MapView, { Marker } from "react-native-maps";
 import DateTimePicker from "@react-native-community/datetimepicker";
 import { useRoute, RouteProp } from "@react-navigation/native";
 import { useSelector } from "react-redux";
@@ -12,8 +21,8 @@ import { useNavigation } from "@react-navigation/native";
 import { StackNavigationProp } from "@react-navigation/stack";
 import { RootStackParamList } from "../../types";
 import axios from "axios";
-import {StarRatingDisplay} from "react-native-star-rating-widget";
-import {Emplacement} from "../features/emplacements/emplacementSlice";
+import { StarRatingDisplay } from "react-native-star-rating-widget";
+import { Emplacement } from "../features/emplacements/emplacementSlice";
 
 type RouteParams = {
 	marker: Emplacement;
@@ -58,13 +67,18 @@ const ReservationScreen = () => {
 			// Étape 1 : Vérifier si une conversation existe déjà avec l'hôte
 			const responseConversations = await axios.get(
 				`${process.env.EXPO_PUBLIC_API_URL}/messages/user/${userId}`,
+				{
+					headers: {
+						Authorization: `Bearer ${token}`,
+					},
+				},
 			);
 
 			const conversations = responseConversations.data;
 			const existingConversation = conversations.find(
 				(conv: any) =>
-					(conv.personOneId === userId && conv.personTwoId === marker.idHote) ||
-					(conv.personOneId === marker.idHote && conv.personTwoId === userId),
+					(conv.personOneId === userId && conv.personTwoId === hostId) ||
+					(conv.personOneId === hostId && conv.personTwoId === userId),
 			);
 
 			if (existingConversation) {
@@ -76,7 +90,7 @@ const ReservationScreen = () => {
 					{
 						params: {
 							personOneId: userId,
-							personTwoId: marker.idHote,
+							personTwoId: hostId,
 						},
 					},
 				);
@@ -93,6 +107,7 @@ const ReservationScreen = () => {
 				{
 					headers: {
 						"Content-Type": "application/x-www-form-urlencoded",
+						Authorization: `Bearer ${token}`,
 					},
 				},
 			);
@@ -150,69 +165,75 @@ const ReservationScreen = () => {
 	return (
 		<ScrollView contentContainerStyle={styles.scrollContainer}>
 			{/* Image de l'emplacement */}
-            <Image
-                source={typeof marker.image === 'string' ? { uri: marker.image } : null}
-                style={styles.image}
-            />
-            {/* Nom de l'emplacement */}
-            <Text style={styles.title}>{marker.nom}</Text>
+			<Image
+				source={typeof marker.image === "string" ? { uri: marker.image } : null}
+				style={styles.image}
+			/>
+			{/* Nom de l'emplacement */}
+			<Text style={styles.title}>{marker.nom}</Text>
 
-            {/* Section Description */}
-            <View style={styles.section}>
+			{/* Section Description */}
+			<View style={styles.section}>
 				<Text style={styles.sectionTitle}>Description</Text>
 				<Text style={styles.description}>{marker.description}</Text>
-            </View>
+			</View>
 
-            {/* Section Adresse */}
-            <View style={styles.section}>
+			{/* Section Adresse */}
+			<View style={styles.section}>
 				<Text style={styles.sectionTitle}>Adresse</Text>
-                <Text style={styles.address}>{marker.adresse}</Text>
-            </View>
+				<Text style={styles.address}>{marker.adresse}</Text>
+			</View>
 
-            {/* Section Adresse */}
-            <View style={styles.section}>
-                <Text style={styles.sectionTitle}>Commoditées</Text>
-                <View>
-                    {marker.commodites.map((commodite, index) => (
-                        <Text key={index} style={styles.address}> {commodite}</Text>
-				))}
-                </View>
-            </View>
+			{/* Section Adresse */}
+			<View style={styles.section}>
+				<Text style={styles.sectionTitle}>Commoditées</Text>
+				<View>
+					{marker.commodites.map((commodite, index) => (
+						<Text key={index} style={styles.address}>
+							{" "}
+							{commodite}
+						</Text>
+					))}
+				</View>
+			</View>
 
-            {/* Section Localisation */}
-            <View style={styles.section}>
-                <Text style={styles.sectionTitle}>Localisation</Text>
-                <MapView
-                    style={styles.map}
-                    initialRegion={{
-                        latitude: marker.latitude,
-                        longitude: marker.longitude,
-                        latitudeDelta: 0.08,
-                        longitudeDelta: 0.08,
-                    }}
-                >
-                    <Marker
-                        coordinate={{
-                            latitude: marker.latitude,
-                            longitude: marker.longitude,
-                        }}
-                        title={marker.nom}
-                        description={marker.adresse}
-                    />
-                </MapView>
-            </View>
+			{/* Section Localisation */}
+			<View style={styles.section}>
+				<Text style={styles.sectionTitle}>Localisation</Text>
+				<MapView
+					style={styles.map}
+					initialRegion={{
+						latitude: marker.latitude,
+						longitude: marker.longitude,
+						latitudeDelta: 0.08,
+						longitudeDelta: 0.08,
+					}}
+				>
+					<Marker
+						coordinate={{
+							latitude: marker.latitude,
+							longitude: marker.longitude,
+						}}
+						title={marker.nom}
+						description={marker.adresse}
+					/>
+				</MapView>
+			</View>
 
-            <View style={styles.section}>
-                <Text style={styles.sectionTitle}>Contacter l'hôte</Text>
-                <TouchableOpacity style={styles.hostButton} onPress={() => console.log(marker.idHote)}>
-                    <Text style={styles.hostButtonText}>Envoyer un message</Text>
-                </TouchableOpacity>
-            </View>
+			<View style={styles.section}>
+				<Text style={styles.sectionTitle}>Contacter l'hôte</Text>
+				<TouchableOpacity
+					style={styles.hostButton}
+					onPress={handleContactButton(marker.idHote)}
+				>
+					<Text style={styles.hostButtonText}>Envoyer un message</Text>
+				</TouchableOpacity>
+			</View>
 			<View style={styles.section}>
 				<Text style={styles.sectionTitle}>Moyenne des avis</Text>
-					<View className="items-center">
-						<StarRatingDisplay rating={marker.note || 0}/>
-					</View>
+				<View className="items-center">
+					<StarRatingDisplay rating={marker.note || 0} />
+				</View>
 				<View>
 					<Text style={styles.sectionTitle}>Dernier avis</Text>
 				</View>
@@ -227,9 +248,8 @@ const ReservationScreen = () => {
 					<Text style={styles.description}>Aucun avis pour le moment</Text>
 				)}
 			</View>
-            <View style={styles.section}>
-
-                <Text style={styles.sectionTitle}>Réserver</Text>
+			<View style={styles.section}>
+				<Text style={styles.sectionTitle}>Réserver</Text>
 
 				{/* Bouton pour choisir la date d'arrivée */}
 				<TouchableOpacity
@@ -280,10 +300,7 @@ const ReservationScreen = () => {
 				)}
 
 				{/* Bouton de confirmation */}
-				<TouchableOpacity
-					style={styles.hostButton}
-					onPress={handleReservation}
-				>
+				<TouchableOpacity style={styles.hostButton} onPress={handleReservation}>
 					<Text style={styles.confirmButtonText}>Confirmer la réservation</Text>
 				</TouchableOpacity>
 			</View>
@@ -295,7 +312,6 @@ const styles = StyleSheet.create({
 	scrollContainer: {
 		flexGrow: 1,
 		padding: 16,
-
 	},
 	container: {
 		flex: 1,
@@ -305,9 +321,9 @@ const styles = StyleSheet.create({
 	},
 	mainTitle: {
 		fontSize: 26,
-		fontWeight: 'bold',
+		fontWeight: "bold",
 
-		color: '#333',
+		color: "#333",
 		marginBottom: 15,
 	},
 	emplacementName: {
@@ -321,7 +337,6 @@ const styles = StyleSheet.create({
 		fontSize: 16,
 		color: "#666",
 		marginBottom: 20,
-
 	},
 	dateText: {
 		marginTop: 10,
@@ -354,79 +369,79 @@ const styles = StyleSheet.create({
 	confirmButtonText: {
 		color: "#fff",
 		fontSize: 15,
-        fontWeight: "bold",
-
-    },
-    image: {
-        width: '100%',
-        height: 200,
-        borderRadius: 10,
-        marginBottom: 20,
-    },
-    title: {
-        fontSize: 26,
-        fontWeight: 'bold',
-        color: '#333',
-        marginBottom: 15,
-        textAlign: 'center',
-    },
-    section: {
-        marginBottom: 20,
-        padding: 10,
-        backgroundColor: '#fff',
-        borderRadius: 8,
-        shadowColor: '#000',
-        shadowOffset: { width: 0, height: 1 },
-        shadowOpacity: 0.1,
-        shadowRadius: 4,
-        elevation: 3,
-    },
-    sectionTitle: {fontSize: 18,
-		fontWeight: '600',
-        color: 'black',
-        marginBottom: 10,
-        borderBottomWidth: 1,
-        borderBottomColor: '#ddd',
-        paddingBottom: 5,
-    },
-    description: {
-        fontSize: 16,
-        color: '#666',
-        lineHeight: 22,
-    },
-    address: {
-        fontSize: 16,
-        color: '#555',
-    },
-    map: {
-        height: 200,
-        borderRadius: 10,
-    },
-    hostButton: {
-        backgroundColor: '#f0ac4e', // Couleur du bouton
-        paddingVertical: 12,
-        paddingHorizontal: 20,
-        borderRadius: 8,
-        alignItems: 'center',
-        marginVertical: 10,
-        width: '80%',
-        alignSelf: 'center',
-    },
-    hostButtonText: {
-        color: '#fff',
-        fontSize: 16,
-        fontWeight: 'bold',
-	},hostButton2: {
-        backgroundColor: '#e3d2a1', // Couleur du bouton
-        paddingVertical: 12,
-        paddingHorizontal: 20,
-        borderRadius: 8,
-        alignItems: 'center',
-        marginVertical: 10,
-        width: '80%',
-        alignSelf: 'center',
-    },
-
+		fontWeight: "bold",
+	},
+	image: {
+		width: "100%",
+		height: 200,
+		borderRadius: 10,
+		marginBottom: 20,
+	},
+	title: {
+		fontSize: 26,
+		fontWeight: "bold",
+		color: "#333",
+		marginBottom: 15,
+		textAlign: "center",
+	},
+	section: {
+		marginBottom: 20,
+		padding: 10,
+		backgroundColor: "#fff",
+		borderRadius: 8,
+		shadowColor: "#000",
+		shadowOffset: { width: 0, height: 1 },
+		shadowOpacity: 0.1,
+		shadowRadius: 4,
+		elevation: 3,
+	},
+	sectionTitle: {
+		fontSize: 18,
+		fontWeight: "600",
+		color: "black",
+		marginBottom: 10,
+		borderBottomWidth: 1,
+		borderBottomColor: "#ddd",
+		paddingBottom: 5,
+	},
+	description: {
+		fontSize: 16,
+		color: "#666",
+		lineHeight: 22,
+	},
+	address: {
+		fontSize: 16,
+		color: "#555",
+	},
+	map: {
+		height: 200,
+		borderRadius: 10,
+	},
+	hostButton: {
+		backgroundColor: "#f0ac4e", // Couleur du bouton
+		paddingVertical: 12,
+		paddingHorizontal: 20,
+		borderRadius: 8,
+		alignItems: "center",
+		marginVertical: 10,
+		width: "80%",
+		alignSelf: "center",
+	},
+	hostButtonText: {
+		color: "#fff",
+		fontSize: 16,
+		fontWeight: "bold",
+	},
+	hostButton2: {
+		backgroundColor: "#e3d2a1", // Couleur du bouton
+		paddingVertical: 12,
+		paddingHorizontal: 20,
+		borderRadius: 8,
+		alignItems: "center",
+		marginVertical: 10,
+		width: "80%",
+		alignSelf: "center",
+	},
 });
 
 export default ReservationScreen;
