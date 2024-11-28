@@ -9,6 +9,7 @@ import ConfirmationModal from '../components/ConfirmationModal'; // Import de la
 import CustomButton from '../components/CustomButton';
 import { deleteLocationAsync } from '../features/locations/locationSlice';
 import axios from 'axios';
+import { StarRatingDisplay } from 'react-native-star-rating-widget';
 
 
 const LocationDetail = () => {
@@ -24,6 +25,34 @@ const LocationDetail = () => {
     const location = useSelector((state: RootState) =>
         state.locations.locations.find(loc => loc.idEmplacement === idEmplacement)
     );
+
+
+    const [evaluations, setEvaluations] = useState([]);
+
+	useEffect(() => {
+		const fetchEvaluations = async () => {
+			try {
+				const response = await axios.get(
+					`${process.env.EXPO_PUBLIC_API_URL}/evaluation`,
+					{
+						headers: {
+							Authorization: `Bearer ${token}`,
+							"Content-Type": "application/json",
+						},
+					}
+				);
+				// Filtrer les évaluations par l'ID de l'emplacement
+				const filteredEvaluations = response.data.filter(
+					(evaluation: any) => evaluation.emplacementId === idEmplacement
+				);
+				setEvaluations(filteredEvaluations);
+			} catch (error) {
+				console.error("Erreur lors de la récupération des évaluations :", error);
+			}
+		};
+
+		fetchEvaluations();
+	}, [idEmplacement, token]);
 
     useEffect(() => {
         fetch(`${process.env.EXPO_PUBLIC_API_URL}/reservation/emplacement/${idEmplacement}`, {
@@ -169,6 +198,20 @@ const LocationDetail = () => {
                         />
                     </MapView>
                 </View>
+
+                <View style={styles.section}>
+					<Text style={styles.sectionTitle}>Derniers avis</Text>
+					{evaluations.length > 0 ? (
+						evaluations.map((evaluation, index) => (
+							<View key={index} style={{ marginBottom: 10 }}>
+								<Text style={styles.description}>{evaluation.commentaire}</Text>
+								<StarRatingDisplay rating={evaluation.note} />
+							</View>
+						))
+					) : (
+						<Text style={styles.description}>Aucun avis pour le moment</Text>
+					)}
+				</View>
 
                 <View style={styles.section}>
                     <Text style={styles.sectionTitle}>Disponibilité</Text>
