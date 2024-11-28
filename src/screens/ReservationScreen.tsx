@@ -1,28 +1,28 @@
+import DateTimePicker from "@react-native-community/datetimepicker";
+import { type RouteProp, useRoute } from "@react-navigation/native";
+import { useNavigation } from "@react-navigation/native";
+import type { StackNavigationProp } from "@react-navigation/stack";
+import axios from "axios";
 import React, { useState } from "react";
 import {
-	View,
-	Text,
-	Platform,
-	StyleSheet,
 	Alert,
-	ScrollView,
-	TouchableOpacity,
 	Image,
+	Platform,
+	ScrollView,
+	StyleSheet,
+	Text,
+	TouchableOpacity,
+	View,
 } from "react-native";
 import MapView, { Marker } from "react-native-maps";
-import DateTimePicker from "@react-native-community/datetimepicker";
-import { useRoute, RouteProp } from "@react-navigation/native";
-import { useSelector } from "react-redux";
-import { RootState } from "../app/store";
-import { ReservationRequest } from "../models/Reservation";
-import { ReservationController } from "../controllers/ReservationController";
-import { addReservation } from "../features/users/usersSlice";
-import { useNavigation } from "@react-navigation/native";
-import { StackNavigationProp } from "@react-navigation/stack";
-import { RootStackParamList } from "../../types";
-import axios from "axios";
 import { StarRatingDisplay } from "react-native-star-rating-widget";
-import { Emplacement } from "../features/emplacements/emplacementSlice";
+import { useSelector } from "react-redux";
+import type { RootStackParamList } from "../../types";
+import type { RootState } from "../app/store";
+import { ReservationController } from "../controllers/ReservationController";
+import type { Emplacement } from "../features/emplacements/emplacementSlice";
+import { addReservation } from "../features/users/usersSlice";
+import type { ReservationRequest } from "../models/Reservation";
 
 type RouteParams = {
 	marker: Emplacement;
@@ -63,8 +63,7 @@ const ReservationScreen = () => {
 	const handleContactButton = async (hostId: number) => {
 		try {
 			let conversationId;
-
-			// Étape 1 : Vérifier si une conversation existe déjà avec l'hôte
+			console.log("Envoi d'un message à l'hôte");
 			const responseConversations = await axios.get(
 				`${process.env.EXPO_PUBLIC_API_URL}/messages/user/${userId}`,
 				{
@@ -73,7 +72,7 @@ const ReservationScreen = () => {
 					},
 				},
 			);
-
+			console.log("Conversations récupérées : ", responseConversations.data);
 			const conversations = responseConversations.data;
 			const existingConversation = conversations.find(
 				(conv: any) =>
@@ -83,7 +82,9 @@ const ReservationScreen = () => {
 
 			if (existingConversation) {
 				conversationId = existingConversation.id;
+				console.log("Conversation existante : ", conversationId);
 			} else {
+				console.log("Création d'une nouvelle conversation");
 				const responseCreateConversation = await axios.post(
 					`${process.env.EXPO_PUBLIC_API_URL}/messages/conversation`,
 					null,
@@ -95,12 +96,13 @@ const ReservationScreen = () => {
 					},
 				);
 				conversationId = responseCreateConversation.data.id;
+				console.log("Nouvelle conversation créée : ", conversationId);
 			}
 			const message = new URLSearchParams();
 			message.append("conversationId", conversationId.toString());
 			message.append("senderId", userId.toString());
 			message.append("contenu", "quack!");
-
+			console.log("Envoi du message : ", message);
 			await axios.post(
 				`${process.env.EXPO_PUBLIC_API_URL}/messages/send`,
 				message,
@@ -224,7 +226,7 @@ const ReservationScreen = () => {
 				<Text style={styles.sectionTitle}>Contacter l'hôte</Text>
 				<TouchableOpacity
 					style={styles.hostButton}
-					onPress={handleContactButton(marker.idHote)}
+					onPress={() => handleContactButton(marker.idHote)}
 				>
 					<Text style={styles.hostButtonText}>Envoyer un message</Text>
 				</TouchableOpacity>
