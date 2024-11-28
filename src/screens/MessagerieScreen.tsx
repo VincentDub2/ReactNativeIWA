@@ -12,6 +12,7 @@ import {
 } from "react-native";
 import { useSelector } from "react-redux";
 import { RootState } from "../app/store";
+import { head } from "axios";
 
 export default function MessagingScreen() {
 	const [conversations, setConversations] = useState<
@@ -48,11 +49,6 @@ export default function MessagingScreen() {
 			const token = getToken();
 			try {
 				const userId = id;
-				console.log("recupération des conversations de user ", userId);
-				console.log(
-					"url : ",
-					`${process.env.EXPO_PUBLIC_API_URL}/messages/user/${userId}`,
-				);
 				const response = await axios.get(
 					`${process.env.EXPO_PUBLIC_API_URL}/messages/user/${userId}`,
 					{
@@ -61,7 +57,35 @@ export default function MessagingScreen() {
 						},
 					},
 				);
-				setConversations(response.data);
+	
+				// Précharger les noms d'utilisateurs
+				const enrichedConversations = await Promise.all(
+					response.data.map(async (conversation: any) => {
+						const otherPersonId =
+							conversation.personOneId === id
+								? conversation.personTwoId
+								: conversation.personOneId;
+	
+						try {
+							const userResponse = await axios.get(
+								`${process.env.EXPO_PUBLIC_API_URL}/user/${otherPersonId}`,
+								{ headers: { Authorization: `Bearer ${token}` } },
+							);
+							return {
+								...conversation,
+								username: userResponse.data.username || "Utilisateur inconnu",
+							};
+						} catch (error) {
+							console.error(
+								"Erreur lors de la récupération du nom de l'utilisateur",
+								error,
+							);
+							return { ...conversation, username: "Utilisateur inconnu" };
+						}
+					}),
+				);
+	
+				setConversations(enrichedConversations);
 			} catch (error) {
 				console.error(
 					"Erreur lors de la récupération des conversations",
@@ -69,6 +93,7 @@ export default function MessagingScreen() {
 				);
 			}
 		};
+	
 		fetchConversations();
 	}, [id]);
 
@@ -155,9 +180,7 @@ export default function MessagingScreen() {
 					style={styles.conversationItem}
 					onPress={() => handleSelectConversation(item.id)}
 				>
-					<Text style={styles.conversationText}>
-						Conversation avec user {item.personTwoId}
-					</Text>
+					<Text style={styles.conversationText}>{item.username}</Text>
 				</TouchableOpacity>
 			)}
 		/>
