@@ -12,6 +12,7 @@ import {
 } from "react-native";
 import { useSelector } from "react-redux";
 import { RootState } from "../app/store";
+import { head } from "axios";
 
 export default function MessagingScreen() {
 	const [conversations, setConversations] = useState<
@@ -156,12 +157,28 @@ export default function MessagingScreen() {
 					onPress={() => handleSelectConversation(item.id)}
 				>
 					<Text style={styles.conversationText}>
-						Conversation avec user {item.personTwoId}
+						{getOtherUserName(item.personTwoId)}
 					</Text>
 				</TouchableOpacity>
 			)}
 		/>
 	);
+
+	const getOtherUserName = (personTwoId: number) => {
+		try {
+			const response = axios.get(
+				`${process.env.EXPO_PUBLIC_API_URL}/users/${personTwoId}`,
+				{ headers: { Authorization: `Bearer ${getToken()}` } },
+			);
+			return response.username;
+		} catch (error) {
+			console.error(
+				"Erreur lors de la récupération du nom de l'utilisateur",
+				error,
+			);
+			return "Utilisateur inconnu";
+		}
+	};
 
 	const renderMessages = () => (
 		<View style={styles.messagesContainer}>
