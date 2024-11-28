@@ -1,5 +1,5 @@
 import { useNavigation, useRoute } from '@react-navigation/native';
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { Image, ScrollView, StyleSheet, Text, View } from 'react-native';
 import { Calendar } from 'react-native-calendars';
 import MapView, { Marker } from 'react-native-maps';
@@ -8,16 +8,34 @@ import { RootState } from '../app/store';
 import ConfirmationModal from '../components/ConfirmationModal'; // Import de la modale de confirmation
 import CustomButton from '../components/CustomButton';
 import { deleteLocationAsync } from '../features/locations/locationSlice';
+import axios from 'axios';
+
 
 const LocationDetail = () => {
     const route = useRoute();
+    const [reservations, setReservations] = useState([]);
+
     const { idEmplacement } = route.params;
     console.log('idEmplacement', idEmplacement);
     console.log('route', route.params);
+    const token = useSelector((state: RootState) => state.users.token); // Récupérer le token depuis Redux
+
 
     const location = useSelector((state: RootState) =>
         state.locations.locations.find(loc => loc.idEmplacement === idEmplacement)
     );
+
+    useEffect(() => {
+        fetch(`${process.env.EXPO_PUBLIC_API_URL}/reservation/emplacement/${idEmplacement}`, {
+            headers: {
+                Authorization: `Bearer ${token}`,
+                'Content-Type': 'application/json',
+            },
+        })
+            .then(response => response.json())
+            .then(data => setReservations(data));
+    }, [idEmplacement, token]);
+
 
     const navigation = useNavigation();
     const dispatch = useDispatch();
@@ -46,6 +64,10 @@ const LocationDetail = () => {
         setModalVisible(true); // Ouvre la modale
     };
 
+    const handleReservationClick = (idVoyageur) => {
+        console.log(`ID de l'utilisateur : ${idVoyageur}`);
+    };
+
     const generateAvailabilityDates = (start, end) => {
         const markedDates = {};
         let currentDate = new Date(start);
@@ -54,7 +76,7 @@ const LocationDetail = () => {
         while (currentDate <= endDate) {
             const dateString = currentDate.toISOString().split('T')[0];
             markedDates[dateString] = {
-                color: '#b6e9f2',
+                color: '#b6e9f2', // Bleu clair pour disponibilité
                 textColor: 'black',
                 startingDay: dateString === start,
                 endingDay: dateString === end,
@@ -65,34 +87,39 @@ const LocationDetail = () => {
         return markedDates;
     };
 
-    const generateReservationDates = (start, end, numPeriods) => {
+    const generateReservationDates = (reservations) => {
         const reservationDates = {};
-        const startDate = new Date(start);
-        const endDate = new Date(end);
 
-        for (let i = 0; i < numPeriods; i++) {
-            const periodStart = new Date(startDate.getTime() + Math.random() * (endDate.getTime() - startDate.getTime()));
-            const periodLength = Math.floor(Math.random() * 3) + 1;
+        reservations.forEach((reservation) => {
+            const periodStart = new Date(reservation.dateArrive);
+            const periodEnd = new Date(reservation.dateDepart);
 
-            for (let j = 0; j < periodLength; j++) {
-                const currentDate = new Date(periodStart);
-                currentDate.setDate(periodStart.getDate() + j);
-                const dateString = currentDate.toISOString().split('T')[0];
+            for (
+                let currentDate = new Date(periodStart);
+                currentDate <= periodEnd;
+                currentDate.setDate(currentDate.getDate() + 1)
+            ) {
+                const futureDate = new Date(currentDate); // Décalage d'un jour
+                futureDate.setDate(futureDate.getDate() + 1);
 
-                if (currentDate > endDate) break;
+                const dateString = futureDate.toISOString().split('T')[0];
 
                 reservationDates[dateString] = {
-                    color: '#3b98a8',
-                    textColor: 'white',
+                    color: '#3b98a8', // Bleu foncé pour les jours réservés
+                    textColor: 'white', // Texte blanc pour une meilleure visibilité
                 };
             }
-        }
+        });
+
         return reservationDates;
     };
 
+
+
+
     const markedDates = {
         ...generateAvailabilityDates(location.dateDebut, location.dateFin),
-        ...generateReservationDates(location.dateDebut, location.dateFin, 3),
+        ...generateReservationDates(reservations),
     };
 
     const handleDayPress = (day) => {
@@ -167,6 +194,26 @@ const LocationDetail = () => {
                             <Text style={styles.legendText}>Jours réservés</Text>
                         </View>
                     </View>
+                </View>
+
+                <View style={styles.section}>
+                    <Text style={styles.sectionTitle}>Réservations</Text>
+                    {reservations.length === 0 ? (
+                        <Text style={styles.noReservationText}>Aucune réservation disponible pour cet emplacement.</Text>
+                    ) : (
+                        reservations.map((reservation) => (
+                            <View
+                                key={reservation.idReservation}
+                                style={styles.reservationCard}
+                                onClick={() => handleReservationClick(reservation.idVoyageur)}
+                            >
+                                <Text style={styles.reservationText}>Voyageur: {reservation.idVoyageur}</Text>
+                                <Text style={styles.reservationText}>Arrivée: {reservation.dateArrive.split('T')[0]}</Text>
+                                <Text style={styles.reservationText}>Départ: {reservation.dateDepart.split('T')[0]}</Text>
+                                <Text style={styles.reservationText}>Prix: {reservation.prix.toFixed(2)}€</Text>
+                            </View>
+                        ))
+                    )}
                 </View>
 
                 <CustomButton
@@ -280,6 +327,29 @@ const styles = StyleSheet.create({
         fontSize: 14,
         color: '#333',
     },
+    reservationCard: {
+        padding: 15,
+        marginBottom: 10,
+        backgroundColor: '#e3f2fd', // Couleur de fond pour le style
+        borderRadius: 8,
+        shadowColor: '#000',
+        shadowOffset: { width: 0, height: 1 },
+        shadowOpacity: 0.1,
+        shadowRadius: 4,
+        elevation: 3,
+    },
+    reservationText: {
+        fontSize: 16,
+        color: '#555',
+        marginBottom: 5,
+    },
+    noReservationText: {
+        fontSize: 16,
+        color: '#999',
+        fontStyle: 'italic',
+        textAlign: 'center',
+    },
+
 });
 
 export default LocationDetail;
