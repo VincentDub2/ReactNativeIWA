@@ -63,7 +63,6 @@ const ReservationScreen = () => {
 	const handleContactButton = async (hostId: number) => {
 		try {
 			let conversationId;
-			console.log("Envoi d'un message à l'hôte");
 			const responseConversations = await axios.get(
 				`${process.env.EXPO_PUBLIC_API_URL}/messages/user/${userId}`,
 				{
@@ -72,7 +71,6 @@ const ReservationScreen = () => {
 					},
 				},
 			);
-			console.log("Conversations récupérées : ", responseConversations.data);
 			const conversations = responseConversations.data;
 			const existingConversation = conversations.find(
 				(conv: any) =>
@@ -82,9 +80,7 @@ const ReservationScreen = () => {
 
 			if (existingConversation) {
 				conversationId = existingConversation.id;
-				console.log("Conversation existante : ", conversationId);
 			} else {
-				console.log("Création d'une nouvelle conversation");
 				const responseCreateConversation = await axios.post(
 					`${process.env.EXPO_PUBLIC_API_URL}/messages/conversation`,
 					null,
@@ -93,16 +89,17 @@ const ReservationScreen = () => {
 							personOneId: userId,
 							personTwoId: hostId,
 						},
+						headers: {
+							Authorization: `Bearer ${token}`,
+						},
 					},
 				);
 				conversationId = responseCreateConversation.data.id;
-				console.log("Nouvelle conversation créée : ", conversationId);
 			}
 			const message = new URLSearchParams();
 			message.append("conversationId", conversationId.toString());
 			message.append("senderId", userId.toString());
 			message.append("contenu", "quack!");
-			console.log("Envoi du message : ", message);
 			await axios.post(
 				`${process.env.EXPO_PUBLIC_API_URL}/messages/send`,
 				message,
