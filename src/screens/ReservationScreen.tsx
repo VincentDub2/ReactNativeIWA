@@ -35,6 +35,7 @@ const ReservationScreen = () => {
 	const [dateFin, setDateFin] = useState<Date | null>(null);
 	const [showDateDebutPicker, setShowDateDebutPicker] = useState(false);
 	const [showDateFinPicker, setShowDateFinPicker] = useState(false);
+	const [messageSent, setMessageSent] = useState(false);
 
 	type ReservationScreenNavigationProp = StackNavigationProp<
 		RootStackParamList,
@@ -111,6 +112,7 @@ const ReservationScreen = () => {
 				},
 			);
 			console.log("Message envoyé : 'quack !'");
+			setMessageSent(true);
 		} catch (error) {
 			console.error("Erreur lors de la gestion du bouton de contact", error);
 			console.log("Une erreur s'est produite lors de l'envoi du message.");
@@ -223,9 +225,15 @@ const ReservationScreen = () => {
 				<Text style={styles.sectionTitle}>Contacter l'hôte</Text>
 				<TouchableOpacity
 					style={styles.hostButton}
-					onPress={() => handleContactButton(marker.idHote)}
+					onPress={() => {
+						if (!messageSent) handleContactButton(marker.idHote);
+					}}
 				>
-					<Text style={styles.hostButtonText}>Envoyer un message</Text>
+					<Text
+						style={[styles.hostButton, messageSent && styles.disabledButton]}
+					>
+						{messageSent ? "Message envoyé" : "Envoyer un message"}
+					</Text>
 				</TouchableOpacity>
 			</View>
 			<View style={styles.section}>
@@ -440,6 +448,9 @@ const styles = StyleSheet.create({
 		marginVertical: 10,
 		width: "80%",
 		alignSelf: "center",
+	},
+	disabledButton: {
+		backgroundColor: "#cccccc", // Grise pour indiquer que le bouton est désactivé
 	},
 });
 
