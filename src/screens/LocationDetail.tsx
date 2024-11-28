@@ -9,6 +9,7 @@ import ConfirmationModal from '../components/ConfirmationModal'; // Import de la
 import CustomButton from '../components/CustomButton';
 import { deleteLocationAsync } from '../features/locations/locationSlice';
 import axios from 'axios';
+import { StarRatingDisplay } from 'react-native-star-rating-widget';
 
 
 const LocationDetail = () => {
@@ -25,16 +26,85 @@ const LocationDetail = () => {
         state.locations.locations.find(loc => loc.idEmplacement === idEmplacement)
     );
 
+
+    const [evaluations, setEvaluations] = useState([]);
+
+	useEffect(() => {
+		const fetchEvaluations = async () => {
+			try {
+				const response = await axios.get(
+					`${process.env.EXPO_PUBLIC_API_URL}/evaluation`,
+					{
+						headers: {
+							Authorization: `Bearer ${token}`,
+							"Content-Type": "application/json",
+						},
+					}
+				);
+				// Filtrer les évaluations par l'ID de l'emplacement
+				const filteredEvaluations = response.data.filter(
+					(evaluation: any) => evaluation.emplacementId === idEmplacement
+				);
+				setEvaluations(filteredEvaluations);
+			} catch (error) {
+				console.error("Erreur lors de la récupération des évaluations :", error);
+			}
+		};
+
+		fetchEvaluations();
+	}, [idEmplacement, token]);
+
+
     useEffect(() => {
-        fetch(`${process.env.EXPO_PUBLIC_API_URL}/reservation/emplacement/${idEmplacement}`, {
-            headers: {
-                Authorization: `Bearer ${token}`,
-                'Content-Type': 'application/json',
-            },
-        })
-            .then(response => response.json())
-            .then(data => setReservations(data));
-    }, [idEmplacement, token]);
+    const fetchReservations = async () => {
+        try {
+            // Récupération des réservations pour l'emplacement donné
+            const response = await fetch(
+                `${process.env.EXPO_PUBLIC_API_URL}/reservation/emplacement/${idEmplacement}`,
+                {
+                    headers: {
+                        Authorization: `Bearer ${token}`,
+                        "Content-Type": "application/json",
+                    },
+                }
+            );
+            const reservationsData = await response.json();
+
+            // Ajouter le nom d'utilisateur à chaque réservation
+            const reservationsWithUsernames = await Promise.all(
+                reservationsData.map(async (reservation: any) => {
+                    try {
+                        const userResponse = await axios.get(
+                            `${process.env.EXPO_PUBLIC_API_URL}/user/${reservation.idVoyageur}`,
+                            { headers: { Authorization: `Bearer ${token}` } },
+                        );
+                        return {
+                            ...reservation,
+                            username: userResponse.data.username || "Utilisateur inconnu",
+                        };
+                    } catch (error) {
+                        console.error(
+                            "Erreur lors de la récupération du nom de l'utilisateur",
+                            error
+                        );
+                        return {
+                            ...reservation,
+                            username: "Utilisateur inconnu",
+                        };
+                    }
+                })
+            );
+
+            setReservations(reservationsWithUsernames);
+            console.log('reservations', reservationsWithUsernames);
+        } catch (error) {
+            console.error("Erreur lors de la récupération des réservations", error);
+        }
+    };
+
+    fetchReservations();
+}, [idEmplacement, token]);
+
 
 
     const navigation = useNavigation();
@@ -171,6 +241,20 @@ const LocationDetail = () => {
                 </View>
 
                 <View style={styles.section}>
+					<Text style={styles.sectionTitle}>Derniers avis</Text>
+					{evaluations.length > 0 ? (
+						evaluations.map((evaluation, index) => (
+							<View key={index} style={{ marginBottom: 10 }}>
+								<Text style={styles.description}>{evaluation.commentaire}</Text>
+								<StarRatingDisplay rating={evaluation.note} />
+							</View>
+						))
+					) : (
+						<Text style={styles.description}>Aucun avis pour le moment</Text>
+					)}
+				</View>
+
+                <View style={styles.section}>
                     <Text style={styles.sectionTitle}>Disponibilité</Text>
                     <Calendar
                         markingType="period"
@@ -207,7 +291,8 @@ const LocationDetail = () => {
                                 style={styles.reservationCard}
                                 onClick={() => handleReservationClick(reservation.idVoyageur)}
                             >
-                                <Text style={styles.reservationText}>Voyageur: {reservation.idVoyageur}</Text>
+                                
+                                <Text style={styles.reservationText}>Voyageur: {reservation.username}</Text>
                                 <Text style={styles.reservationText}>Arrivée: {reservation.dateArrive.split('T')[0]}</Text>
                                 <Text style={styles.reservationText}>Départ: {reservation.dateDepart.split('T')[0]}</Text>
                                 <Text style={styles.reservationText}>Prix: {reservation.prix.toFixed(2)}€</Text>
