@@ -3,7 +3,7 @@ import { type RouteProp, useRoute } from "@react-navigation/native";
 import { useNavigation } from "@react-navigation/native";
 import type { StackNavigationProp } from "@react-navigation/stack";
 import axios from "axios";
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import {
 	Alert,
 	Image,
@@ -42,6 +42,8 @@ const ReservationScreen = () => {
 		"ReservationScreen"
 	>;
 
+	console.log("marker", marker);
+
 	const navigation = useNavigation<ReservationScreenNavigationProp>();
 
 	const token = useSelector((state: RootState) => state.users.token);
@@ -53,6 +55,34 @@ const ReservationScreen = () => {
 		const day = String(date.getDate()).padStart(2, "0");
 		return `${year}-${month}-${day}T00:00:00`;
 	};
+
+	const [evaluations, setEvaluations] = useState([]);
+
+	useEffect(() => {
+		const fetchEvaluations = async () => {
+			try {
+				const response = await axios.get(
+					`${process.env.EXPO_PUBLIC_API_URL}/evaluation`,
+					{
+						headers: {
+							Authorization: `Bearer ${token}`,
+							"Content-Type": "application/json",
+						},
+					}
+				);
+				// Filtrer les évaluations par l'ID de l'emplacement
+				const filteredEvaluations = response.data.filter(
+					(evaluation: any) => evaluation.emplacementId === marker.idEmplacement
+				);
+				setEvaluations(filteredEvaluations);
+			} catch (error) {
+				console.error("Erreur lors de la récupération des évaluations :", error);
+			}
+		};
+
+		fetchEvaluations();
+	}, [marker.idEmplacement, token]);
+
 
 	const generateRandomId = (): string => {
 		return (
@@ -239,20 +269,22 @@ const ReservationScreen = () => {
 				<View className="items-center">
 					<StarRatingDisplay rating={marker.note || 0} />
 				</View>
-				<View>
-					<Text style={styles.sectionTitle}>Dernier avis</Text>
-				</View>
-				{marker.evaluations.length > 0 ? (
-					marker.evaluations.map((evaluation, index) => (
-						<View key={index}>
-							<Text style={styles.description}>{evaluation.commentaire}</Text>
-							<StarRatingDisplay rating={evaluation.note} />
-						</View>
-					))
-				) : (
-					<Text style={styles.description}>Aucun avis pour le moment</Text>
-				)}
+				
 			</View>
+
+			<View style={styles.section}>
+					<Text style={styles.sectionTitle}>Derniers avis</Text>
+					{evaluations.length > 0 ? (
+						evaluations.map((evaluation, index) => (
+							<View key={index} style={{ marginBottom: 10 }}>
+								<Text style={styles.description}>{evaluation.commentaire}</Text>
+								<StarRatingDisplay rating={evaluation.note} />
+							</View>
+						))
+					) : (
+						<Text style={styles.description}>Aucun avis pour le moment</Text>
+					)}
+				</View>
 			<View style={styles.section}>
 				<Text style={styles.sectionTitle}>Réserver</Text>
 

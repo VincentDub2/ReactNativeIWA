@@ -5,7 +5,7 @@ import { StarRatingDisplay } from 'react-native-star-rating-widget';
 import { useNavigation, NavigationProp } from '@react-navigation/native';
 import { RootStackParamList } from '../../../types'; // Adjust the path as necessary
 import { useTranslation } from "react-i18next";
-import {Emplacement} from "../../features/emplacements/emplacementSlice";
+import { Emplacement } from "../../features/emplacements/emplacementSlice";
 
 interface CustomMarkerProps {
     marker: Emplacement; // Marqueur contenant les données
@@ -37,6 +37,7 @@ const CustomMarker: React.FC<CustomMarkerProps> = ({ marker, mapRef }) => {
                 longitudeDelta: 0.05,
             });
         }
+        
 
         // Réinitialiser l'état après 150 ms
         setTimeout(() => setIsClicked(false), 150);
@@ -55,6 +56,7 @@ const CustomMarker: React.FC<CustomMarkerProps> = ({ marker, mapRef }) => {
                 onPress={() => {
                     setIsClicked(true); // Active l'état de clic
                     setTimeout(() => setIsClicked(false), 150); // Réinitialise après 150ms
+                    console.log(marker);
                 }}
             >
                 <View
@@ -92,7 +94,7 @@ const CustomMarker: React.FC<CustomMarkerProps> = ({ marker, mapRef }) => {
                             <Text key={idx} style={styles.calloutAmenity}>- {amenity}</Text>
                         ))}
 
-                        {marker.note == -1 ? (
+                        {/* {marker.note == -1 ? (
                             <StarRatingDisplay
                                 starStyle={{ marginVertical: 5 }}
                                 rating={marker.note}
@@ -100,7 +102,20 @@ const CustomMarker: React.FC<CustomMarkerProps> = ({ marker, mapRef }) => {
                             />
                         ) : (
                             <Text style={styles.calloutNoReviews}>{t('map.no_reviews')}</Text>
+                        )} */}
+
+
+                        {marker.note == -1 ? (
+                            <Text style={styles.calloutNoReviews}>{t('map.no_reviews')}</Text>
+
+                        ) : (
+                            <StarRatingDisplay
+                                starStyle={{ marginVertical: 5 }}
+                                rating={marker.note}
+                                starSize={24}
+                            />
                         )}
+
 
                         <Text style={styles.calloutLearnMore}>
                             {t('map.learn_more')}
