@@ -163,14 +163,42 @@ export default function MessagingScreen() {
 		/>
 	);
 
+	const formatTime = (dateString: string) => {
+		const date = new Date(dateString);
+		const hours = date.getHours().toString().padStart(2, "0");
+		const minutes = date.getMinutes().toString().padStart(2, "0");
+		return `${hours}:${minutes}`;
+	};
+
+	const formatFullDate = (dateString: string) => {
+		const date = new Date(dateString);
+		const day = date.getDate().toString().padStart(2, "0");
+		const month = date.toLocaleString("default", { month: "short" });
+		const year = date.getFullYear();
+		return `${day} ${month} ${year}`;
+	};
+
 	const renderMessages = () => (
 		<View style={styles.messagesContainer}>
 			<FlatList
 				data={selectedConversation?.messages}
 				keyExtractor={(item) => item.id.toString()}
-				renderItem={({ item }) => {
+				renderItem={({ item, index}) => {
 					const isSender = item.senderId === id; // L'utilisateur connecté
+					const currentMessageDate = formatFullDate(item.date);
+
+					// Vérifie si la date précédente est différente
+					const previousMessage = selectedConversation?.messages[index - 1];
+					const previousMessageDate = previousMessage
+						? formatFullDate(previousMessage.date)
+						: null;
+
+					const showDate = currentMessageDate !== previousMessageDate;
 					return (
+						<View>
+						{showDate && (
+                            <Text style={styles.dateSeparator}>{currentMessageDate}</Text>
+                        )}
 						<View
 							style={[
 								styles.messageBubble,
@@ -178,7 +206,8 @@ export default function MessagingScreen() {
 							]}
 						>
 							<Text style={styles.messageText}>{item.content}</Text>
-							<Text style={styles.messageDate}>{item.date}</Text>
+							<Text style={styles.messageDate}>{formatTime(item.date)}</Text>
+						</View>
 						</View>
 					);
 				}}
@@ -286,4 +315,11 @@ const styles = StyleSheet.create({
 		fontSize: 16,
 		fontWeight: "bold",
 	},
+	dateSeparator: {
+        textAlign: "center",
+        fontSize: 14,
+        color: "#666",
+        marginVertical: 10,
+        fontWeight: "bold",
+    },
 });
