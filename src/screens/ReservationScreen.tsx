@@ -229,7 +229,7 @@ const ReservationScreen = () => {
 						if (!messageSent) handleContactButton(marker.idHote);
 					}}
 				>
-					<Text style={styles.hostButton}>
+					<Text style={styles.confirmButtonText}>
 						{messageSent ? "Message envoyé" : "Envoyer un message"}
 					</Text>
 				</TouchableOpacity>
