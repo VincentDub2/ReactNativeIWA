@@ -32,12 +32,41 @@ interface emplacementState {
     emplacements: Emplacement[];
     status: 'idle' | 'loading' | 'succeeded' | 'failed';
     error: string | null;
+    emplacementView: Emplacement | null;
+}
+
+const fakeEmplacement = {
+    idEmplacement: 1,
+    idHote: 1,
+    nom: "Emplacement test",
+    adresse: "1 rue de test",
+    description: "Description de test",
+    commodites: ["test1", "test2"],
+    note: 3,
+    capacity: 5,
+    image: null,
+    latitude: 0,
+    longitude: 0,
+    prixParNuit: 50,
+    dateDebut: "2021-12-01",
+    dateFin: "2021-12-31",
+    evaluations: [
+        {
+            note: 4,
+            commentaire: "Très bon emplacement"
+        },
+        {
+            note: 2,
+            commentaire: "Mauvais emplacement"
+        }
+    ]
 }
 
 const initialState: emplacementState = {
     emplacements: [],
     status: 'idle',
     error: null,
+    emplacementView: fakeEmplacement,
 };
 
 const API_URL = getApiUrl();
@@ -84,6 +113,8 @@ export const fetchEmplacementsAsync = createAsyncThunk<
         return emplacementWithNote as Emplacement[];
     }
 );
+
+
 
 async function fetchAverageNote(emplacementId: number): Promise<number | null> {
     const token = getToken();
@@ -134,7 +165,39 @@ async function fetchEvaluation(emplacementId: number): Promise<Evaluation[] | nu
         return null; // Retourne `null` par défaut en cas d'erreur
     }
 }
+/**
+ * Action asynchrone pour récupérer les emplacements tous les emplacements
+ */
+export const fetchOneEmplacementAsync = createAsyncThunk<
+    Emplacement,
+    number, // L'ID de l'emplacement à récupérer
+    { state: RootState }
+>(
+    'emplacements/fetchOneEmplacement',
+    async (idEmplacement, { getState }) => {
+        const state = getState();
+        const token = state.users.token; // Récupère le token
 
+        const response = await axios.get(`${API_URL}/emplacements/${idEmplacement}`, {
+            headers: {
+                Authorization: `Bearer ${token}`,
+                'Content-Type': 'application/json',
+            },
+        });
+
+        if (response.status !== 200) {
+            throw new Error('Erreur lors de la récupération de l’emplacement.');
+        }
+
+        const emplacement = response.data;
+
+        // Récupérer les notes et évaluations
+        emplacement.note = await fetchAverageNote(emplacement.idEmplacement) || -1;
+        emplacement.evaluations = await fetchEvaluation(emplacement.idEmplacement) || [];
+
+        return emplacement as Emplacement;
+    }
+);
 
 const emplacementSlice = createSlice({
     name: 'emplacements',
@@ -152,7 +215,20 @@ const emplacementSlice = createSlice({
             .addCase(fetchEmplacementsAsync.rejected, (state, action) => {
                 state.status = 'failed';
                 state.error = action.error.message || 'Erreur inconnue';
+            })
+            // Gestion d'un seul emplacement
+            .addCase(fetchOneEmplacementAsync.pending, (state) => {
+                state.status = 'loading';
+            })
+            .addCase(fetchOneEmplacementAsync.fulfilled, (state, action: PayloadAction<Emplacement>) => {
+                state.status = 'succeeded';
+                state.emplacementView = action.payload;
+            })
+            .addCase(fetchOneEmplacementAsync.rejected, (state, action) => {
+                state.status = 'failed';
+                state.error = action.error.message || 'Erreur inconnue';
             });
+
     },
 });
 
