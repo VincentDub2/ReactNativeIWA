@@ -3,9 +3,10 @@ import type { RootState } from "../../app/store";
 import {getToken} from "../../utils/auth";
 import axios from "axios";
 import {getApiUrl} from "../../utils/api";
+import {Evaluation} from "../../models/Evaluation";
 
 
-interface Emplacement {
+export interface Emplacement {
     idEmplacement: number;
     idHote: number;
     nom: string;
@@ -20,8 +21,13 @@ interface Emplacement {
     prixParNuit: number;
     dateDebut: string;
     dateFin: string;
+    evaluations: evaluation[];
 }
 
+interface evaluation {
+    note: number;
+    commentaire: string;
+}
 interface emplacementState {
     emplacements: Emplacement[];
     status: 'idle' | 'loading' | 'succeeded' | 'failed';
@@ -66,8 +72,9 @@ export const fetchEmplacementsAsync = createAsyncThunk<
 
         const emplacementWithNote = await Promise.all(
             data.map(async (emplacement: Emplacement) => {
-                emplacement.note = await fetchAverageNote(emplacement.idEmplacement) || 0;
+                emplacement.note = await fetchAverageNote(emplacement.idEmplacement) || -1;
                 emplacement.capacity = Math.floor(Math.random() * 10) + 1;
+                emplacement.evaluations = await fetchEvaluation(emplacement.idEmplacement) || [];
                 return emplacement;
             })
         );
@@ -103,6 +110,30 @@ async function fetchAverageNote(emplacementId: number): Promise<number | null> {
 }
 }
 
+async function fetchEvaluation(emplacementId: number): Promise<Evaluation[] | null> {
+    const token = getToken();
+
+    try {
+        const response = await axios.get(
+            `${API_URL}/evaluation/emplacement/${emplacementId}`,
+            {
+                headers: {
+                    "Content-Type": "application/json",
+                    Authorization: `Bearer ${token}`,
+                },
+            }
+        );
+
+        if (response.status === 200) {
+            return response.data ; // Retourne `null` si aucune note n'est disponible
+        } else {
+            throw new Error(`Erreur HTTP : ${response.status}`);
+        }
+    } catch (error) {
+        //console.error(`Erreur lors de la récupération de la note moyenne pour l'emplacement ${emplacementId} :`, error);
+        return null; // Retourne `null` par défaut en cas d'erreur
+    }
+}
 
 
 const emplacementSlice = createSlice({
