@@ -14,8 +14,8 @@ export default function Login() {
     const navigation = useNavigation<LoginScreenNavigationProp>();
 
     const [username, setUserNameInput] = useState('');
-    const [email, setEmailInput] = useState('D');
-    const [password, setPasswordInput] = useState('D');
+    const [email, setEmailInput] = useState('mateo@gmail.com');
+    const [password, setPasswordInput] = useState('mateo');
     const dispatch = useDispatch<AppDispatch>();
 
     const handleLogin = async () => {
