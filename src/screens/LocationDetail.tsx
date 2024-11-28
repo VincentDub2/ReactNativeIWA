@@ -54,16 +54,57 @@ const LocationDetail = () => {
 		fetchEvaluations();
 	}, [idEmplacement, token]);
 
+
     useEffect(() => {
-        fetch(`${process.env.EXPO_PUBLIC_API_URL}/reservation/emplacement/${idEmplacement}`, {
-            headers: {
-                Authorization: `Bearer ${token}`,
-                'Content-Type': 'application/json',
-            },
-        })
-            .then(response => response.json())
-            .then(data => setReservations(data));
-    }, [idEmplacement, token]);
+    const fetchReservations = async () => {
+        try {
+            // Récupération des réservations pour l'emplacement donné
+            const response = await fetch(
+                `${process.env.EXPO_PUBLIC_API_URL}/reservation/emplacement/${idEmplacement}`,
+                {
+                    headers: {
+                        Authorization: `Bearer ${token}`,
+                        "Content-Type": "application/json",
+                    },
+                }
+            );
+            const reservationsData = await response.json();
+
+            // Ajouter le nom d'utilisateur à chaque réservation
+            const reservationsWithUsernames = await Promise.all(
+                reservationsData.map(async (reservation: any) => {
+                    try {
+                        const userResponse = await axios.get(
+                            `${process.env.EXPO_PUBLIC_API_URL}/user/${reservation.idVoyageur}`,
+                            { headers: { Authorization: `Bearer ${token}` } },
+                        );
+                        return {
+                            ...reservation,
+                            username: userResponse.data.username || "Utilisateur inconnu",
+                        };
+                    } catch (error) {
+                        console.error(
+                            "Erreur lors de la récupération du nom de l'utilisateur",
+                            error
+                        );
+                        return {
+                            ...reservation,
+                            username: "Utilisateur inconnu",
+                        };
+                    }
+                })
+            );
+
+            setReservations(reservationsWithUsernames);
+            console.log('reservations', reservationsWithUsernames);
+        } catch (error) {
+            console.error("Erreur lors de la récupération des réservations", error);
+        }
+    };
+
+    fetchReservations();
+}, [idEmplacement, token]);
+
 
 
     const navigation = useNavigation();
@@ -250,7 +291,8 @@ const LocationDetail = () => {
                                 style={styles.reservationCard}
                                 onClick={() => handleReservationClick(reservation.idVoyageur)}
                             >
-                                <Text style={styles.reservationText}>Voyageur: {reservation.idVoyageur}</Text>
+                                
+                                <Text style={styles.reservationText}>Voyageur: {reservation.username}</Text>
                                 <Text style={styles.reservationText}>Arrivée: {reservation.dateArrive.split('T')[0]}</Text>
                                 <Text style={styles.reservationText}>Départ: {reservation.dateDepart.split('T')[0]}</Text>
                                 <Text style={styles.reservationText}>Prix: {reservation.prix.toFixed(2)}€</Text>
