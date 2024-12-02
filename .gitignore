@@ -11,6 +11,9 @@ node_modules/
 dist/
 web-build/
 
+yarn.lock
+package.json
+
 # Native
 *.orig.*
 *.jks
@@ -33,6 +36,7 @@ yarn-error.*
 
 # local env files
 .env*.local
+.env
 
 # typescript
 *.tsbuildinfo
